@@ -1,7 +1,7 @@
 # Database Schema: Ligtas-Lakbay
 
 ## 1. Database Paradigm
-Ligtas-Lakbay uses SQLite as a relational data store. The database schema is defined using Prisma ORM.
+Ligtas-Lakbay uses Supabase PostgreSQL as its relational data store, optimized for serverless execution on Vercel via connection pooling. The database schema is defined and generated using Prisma ORM.
 
 ---
 
@@ -26,12 +26,13 @@ Represents a crowdsourced hazard logged by a commuter.
 ---
 
 ## 3. Prisma Schema Layout (`prisma/schema.prisma`)
-This schema definition will be used directly to bootstrap our database.
+This schema definition will be used directly to bootstrap our database. It references double environment variables (`DATABASE_URL` and `DIRECT_URL`) to support Supabase's transaction connection pooling.
 
 ```prisma
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // Transaction pool URL (e.g., port 6543)
+  directUrl = env("DIRECT_URL")     // Direct migration URL (e.g., port 5432)
 }
 
 generator client {
