@@ -26,14 +26,14 @@
   - **Rain Mode:** Avoids historically and currently reported flood-prone routes and waterlogged crossings.
 - **Smart Hazard Reporting & Validation:**
   - **Interactive Report Form:** Simple photo capture and description interface for reporting issues (e.g., blocked sidewalks, high floods, broken elevators).
-  - **Google Cloud Vision API Verification (Simulation/Integration):** Verifies uploaded image content to classify hazard types and gauge severity.
+  - **Hugging Face Inference API Verification:** Verifies uploaded image content using hosted open-source vision models (like ViT) to classify hazard types and gauge severity.
   - **Dynamic Map Annotations:** Custom map markers displaying user reports with verified statuses.
 - **Interactive Map Dashboard:** A responsive mobile-first map interface displaying custom navigation routes, current weather-related overlays, and crowd-reported hazards.
 
 ---
 
 ## 5. Success Metrics
-- **Verification Accuracy:** >85% accuracy in hazard classification using Google Cloud Vision API.
+- **Verification Accuracy:** >85% accuracy in hazard classification using the Hugging Face Inference API.
 - **Active User Engagement:** Number of crowdsourced reports submitted per week.
 - **Route Adoption Rate:** Percentage of users selecting alternative routes based on reported hazards.
 - **Accessibility Index:** Number of accessibility hazards (e.g., broken ramps) logged and bypassed.

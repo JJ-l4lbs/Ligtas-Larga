@@ -13,7 +13,7 @@ Before starting construction, ensure the following API credentials are set in yo
 | **Google Maps JS API** | `@react-google-maps/api` | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Render map canvas, place markers | Step 5.1 |
 | **Google Places API** | Google Maps Autocomplete | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Autocomplete "Where To" & "From" inputs | Step 6.1 |
 | **Google Routes API** | Google Directions Service | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Retrieve direction path coordinates | Step 6.2 |
-| **Google Cloud Vision**| `@google-cloud/vision` | `GOOGLE_APPLICATION_CREDENTIALS` | Image classification & hazard confirmation | Step 3.2 |
+| **Hugging Face Inference API**| native fetch client | `HUGGING_FACE_API_KEY` | Image classification & hazard confirmation | Step 3.2 |
 | **Prisma ORM (Supabase)**| `@prisma/client` | `DATABASE_URL` & `DIRECT_URL` | Connect to hosted PostgreSQL database | Step 2.1 |
 
 ---
@@ -26,7 +26,7 @@ Before starting construction, ensure the following API credentials are set in yo
 - **Verification:** Execute `npm run dev` and ensure the application boots on `http://localhost:3000` with no compilation errors.
 
 #### Step 1.2: Install Core Dependencies
-- **What to do:** Install the npm packages: `@react-google-maps/api`, `@google-cloud/vision`, `@prisma/client`, and development dependencies: `prisma`, `typescript`, `@types/react`.
+- **What to do:** Install the npm packages: `@react-google-maps/api`, `@prisma/client`, and development dependencies: `prisma`, `typescript`, `@types/react`.
 - **Verification:** Inspect `package.json` to verify packages are installed.
 
 #### Step 1.3: Configure Local Environment Variables
@@ -62,8 +62,8 @@ Before starting construction, ensure the following API credentials are set in yo
   - `POST`: Creates a new report record with coordinate locations and returns the created model.
 - **Verification:** Query `http://localhost:3000/api/reports` with a tool or browser to verify it returns a JSON list of seeded hazards.
 
-#### Step 3.2: Develop Vision API Photo Verification Route
-- **What to do:** Create `/app/api/vision/route.ts` to accept an attached image payload, forward it to the Google Cloud Vision API, analyze returned image classification labels (e.g. "flooding", "water", "sidewalk", "barrier"), and return validation status (`isValidated: true/false`).
+#### Step 3.2: Develop Hugging Face Photo Verification Route
+- **What to do:** Create `/app/api/vision/route.ts` to accept an attached image payload, forward it to the Hugging Face Inference API (using a hosted open-source vision model), analyze returned labels (e.g. "flooding", "water", "sidewalk", "barrier"), and return validation status (`isValidated: true/false`).
 - **Verification:** Send a POST request containing a sample photo to `/api/vision` and check the JSON response structure.
 
 ---
@@ -104,5 +104,5 @@ Before starting construction, ensure the following API credentials are set in yo
   - Choose a hazard category (Flooding, Obstacle, Accessibility Outage).
   - Pick location coordinates on the map.
   - Select/snap verification photos.
-  - Submit the record. Submitting must call `/api/vision` first to verify the image, then call `/api/reports` to save to Supabase database.
+  - Submit the record. Submitting must call `/api/vision` first to verify the image via Hugging Face API, then call `/api/reports` to save to Supabase database.
 - **Verification:** Trigger the reporting flow, select a location, upload an image, and submit. Verify that a verification loading screen displays, and a new validated pin is instantly added to the map.

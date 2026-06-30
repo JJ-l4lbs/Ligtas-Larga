@@ -43,7 +43,7 @@
 - **Modal Panel:** Centered card with glassmorphism overlay.
 - **Interactive Image Uploader:** A custom drag-and-drop file select target with image preview capability.
 - **Hazard Details Fields:** Selection list for hazard type (Blocked Walkway, Flooding, Broken Elevator/Escalator, Street Obstruction) and simple text notes.
-- **Submission Feedback:** Auto-analysis indicator showing Google Cloud Vision processing status.
+- **Submission Feedback:** Auto-analysis indicator showing Hugging Face Inference API processing status.
 
 ---
 
@@ -55,7 +55,7 @@
 
 ### 2. Hazard Report Submission & Verification
 - *Action:* User snaps a photo and hits "Verify & Post".
-- *Feedback:* A progress loader displays "Verifying image with Cloud Vision API...".
+- *Feedback:* A progress loader displays "Verifying image with Hugging Face API...".
 - *Result:* Once validated, the modal closes with a slide-down animation, and a pulsing color-coded marker instantly spawns on the map.
 
 ---
@@ -89,7 +89,7 @@ graph TD
     %% Hazard reporting actions from main dashboard
     REPORT_TRIGGER -->|Tap Report| LOC_PINNER[5. Hazard Location Pin Selector]
     LOC_PINNER -->|Confirm Location| REPORT_MODAL[6. Hazard Details Form Modal]
-    REPORT_MODAL -->|Attach Image & Submit| VERIFYING_STATE[7. Cloud Vision Verification Loader]
+    REPORT_MODAL -->|Attach Image & Submit| VERIFYING_STATE[7. Hugging Face Verification Loader]
     
     VERIFYING_STATE -->|Validation Succeeded| CONFIRMATION[8. Submission Success Toast]
     VERIFYING_STATE -->|Validation Failed| FAIL_SCREEN[9. Verification Error Message]

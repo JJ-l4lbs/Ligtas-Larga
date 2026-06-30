@@ -13,7 +13,7 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **FE-5.1** | Interactive Map Canvas | Step 5.1 | ⏳ Pending | - Use `@react-google-maps/api` hook to load maps canvas<br/>- Center viewport on target city coordinates<br/>- Fetch and render custom markers for hazard points |
 | **FE-6.1** | Initial Location Picker & Search | Step 6.1 | ⏳ Pending | - Create landing/intro screen layout to solicit origin & destination<br/>- Attach Places API autocomplete to search inputs<br/>- Implement floating dashboard search overlay for on-the-fly route modifications |
 | **FE-6.2** | Routing Profile Drawer & Logic | Step 6.2 | ⏳ Pending | - Create profile selector drawer (Accessibility, Student, Rain modes)<br/>- Integrate Directions Service path overlay on map canvas<br/>- Pass coordinates of severe hazards to bypass obstacles dynamically |
-| **FE-7.1** | Smart Hazard Reporting Form | Step 7.1 | ⏳ Pending | - Create reporting modal triggered from dashboard button<br/>- Build image upload picker interface with drag-and-drop support<br/>- Provide validation state loading indicators during Cloud Vision checks |
+| **FE-7.1** | Smart Hazard Reporting Form | Step 7.1 | ⏳ Pending | - Create reporting modal triggered from dashboard button<br/>- Build image upload picker interface with drag-and-drop support<br/>- Provide validation state loading indicators during Hugging Face checks |
 
 ---
 
@@ -21,8 +21,8 @@ This ledger maps out the frontend and backend development tasks required to buil
 
 | Task ID | Service / API Route | Build.md Step | Status | Action Items & Requirements |
 | :--- | :--- | :--- | :--- | :--- |
-| **BE-1.2** | Package & Environment Config | Step 1.2, 1.3 | ⏳ Pending | - Install dependencies (`@prisma/client`, `@google-cloud/vision`, `prisma` CLI)<br/>- Configure `.env.local` with API Keys and Supabase pooled connection strings |
+| **BE-1.2** | Package & Environment Config | Step 1.2, 1.3 | ⏳ Pending | - Install dependencies (`@prisma/client`, `prisma` CLI)<br/>- Configure `.env.local` with API Keys, Hugging Face Token, and Supabase pooled connection strings |
 | **BE-2.1** | Database Setup & Prisma ORM | Step 2.1, 2.2 | ⏳ Pending | - Write `HazardReport` schema model in `/prisma/schema.prisma` targeting `postgresql` provider<br/>- Run migrations to synchronize tables with Supabase cloud database |
 | **BE-2.3** | Supabase Mock Seeding | Step 2.3 | ⏳ Pending | - Build database seed script containing initial hazards near MVP area<br/>- Execute seed script and verify in Supabase or Prisma Studio |
 | **BE-3.1** | Crowdsourced Reports API | Step 3.1 | ⏳ Pending | - Develop route `/api/reports` handler supporting GET (all verified reports) and POST (inserting user-submitted hazards to Supabase) |
-| **BE-3.2** | Cloud Vision Image Verification | Step 3.2 | ⏳ Pending | - Develop POST endpoint `/api/vision` accepting base64/file upload data<br/>- Forward image payload to Cloud Vision API client<br/>- Parse classification labels to verify reported hazard legitimacy |
+| **BE-3.2** | Hugging Face Image Verification | Step 3.2 | ⏳ Pending | - Develop POST endpoint `/api/vision` accepting base64/file upload data<br/>- Forward image payload to Hugging Face Inference API hosted model<br/>- Parse classification labels to verify reported hazard legitimacy |

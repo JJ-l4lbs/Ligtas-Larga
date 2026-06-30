@@ -19,8 +19,8 @@ Represents a crowdsourced hazard logged by a commuter.
 | `severity` | `String` | | Hazard severity level (`LOW`, `MEDIUM`, `HIGH`) |
 | `description` | `String` | | User-submitted details about the hazard |
 | `imageUrl` | `String?` | | URL/path of the uploaded verification image |
-| `isValidated` | `Boolean` | `@default(false)` | Flag indicating whether the report has been validated by Google Cloud Vision |
-| `visionLabels` | `String?` | | JSON string representing labels returned by Cloud Vision API |
+| `isValidated` | `Boolean` | `@default(false)` | Flag indicating whether the report has been validated by Hugging Face Inference API |
+| `visionLabels` | `String?` | | JSON string representing labels returned by Hugging Face API |
 | `reportedAt` | `DateTime` | `@default(now())` | Timestamp when the report was submitted |
 
 ---

@@ -6,7 +6,7 @@
 - **Database:** PostgreSQL (Supabase hosted relational database with transaction connection pooling for serverless execution).
 - **ORM:** Prisma ORM for type-safe database queries and migrations.
 - **Routing & Maps:** Google Maps JavaScript API (via `@react-google-maps/api`), Google Routes API, and Places API for autocomplete.
-- **Image Processing:** Google Cloud Vision API Client (`@google-cloud/vision`) for automated verification of hazard report photos.
+- **Image Processing:** Hugging Face Inference API (using hosted open-source vision models like ViT or CLIP) for automated verification of hazard report photos.
 
 ---
 
@@ -18,14 +18,14 @@ graph TD
     User[Commuter Mobile Browser] -->|Routes & Reports| FE[Next.js Client Components]
     FE -->|API Requests| BE[Next.js API Routes /app/api/*]
     BE -->|Query / Mutate| DB[(Supabase PostgreSQL via Prisma)]
-    BE -->|Validate Images| VisionAPI[Google Cloud Vision API]
+    BE -->|Validate Images| VisionAPI[Hugging Face Inference API]
     BE -->|Fetch Safe Routes| MapsAPI[Google Maps Routes & Places API]
 ```
 
 ### Key Modules & Directories
 - `/app`: Contains all pages, layout structures, and API route endpoints.
 - `/components`: Small, reusable interface components (e.g., Map, HazardModal, ProfileSelector, ReportButton).
-- `/lib`: Server-side libraries, client initializations (PrismaClient, Maps API loaders, Vision API clients).
+- `/lib`: Server-side libraries, client initializations (PrismaClient, Maps API loaders, Hugging Face API helper).
 - `/prisma`: Schema definition and migrations for the PostgreSQL/Supabase database.
 - `/styles`: Global CSS variables, reset templates, and modular stylesheet files.
 
@@ -62,7 +62,7 @@ graph TD
         
         %% Hazard verification api
         I -->|POST /api/reports| M[Process New Report & Image]
-        M -->|Analyze Image| N[Call Google Cloud Vision API]
+        M -->|Analyze Image| N[Call Hugging Face Inference API]
     end
 
     subgraph Database [Supabase PostgreSQL via Prisma]
@@ -72,7 +72,7 @@ graph TD
 
     subgraph External_Services [External Cloud APIs]
         L --> Q[Google Maps/Routes API]
-        N --> R[Google Cloud Vision API]
+        N --> R[Hugging Face Inference API]
     end
 
     %% Flow returns
@@ -147,7 +147,7 @@ C:\AI-Integrated-Coding\SPARKFEST
 | `globals.css` | `/styles/globals.css` | <100 | Design system CSS variables & glassmorphism utilities |
 | `page.tsx` | `/app/page.tsx` | <100 | Main layout page aggregating Map and UI drawers |
 | `route.ts` | `/app/api/reports/route.ts`| <80 | API for creating and querying crowdsourced hazard reports |
-| `route.ts` | `/app/api/vision/route.ts` | <60 | API route handler interfacing with Google Cloud Vision |
+| `route.ts` | `/app/api/vision/route.ts` | <60 | API route handler interfacing with Hugging Face Inference API |
 | `Map.tsx` | `/components/Map.tsx` | <120 | React component wrapping the Google Maps Canvas |
 | `ProfileSelector.tsx`| `/components/ProfileSelector.tsx` | <60 | Routing mode buttons (Accessibility, Student, Rain) |
-| `HazardModal.tsx` | `/components/HazardModal.tsx` | <100 | Visual upload form with Cloud Vision verification status |
+| `HazardModal.tsx` | `/components/HazardModal.tsx` | <100 | Visual upload form with Hugging Face verification status |

@@ -1,7 +1,7 @@
 # Contextual Memory Log: Ligtas-Lakbay
 
 ## Current Context
-We are standardizing all project `.md` files to target **Supabase PostgreSQL** exclusively (removing SQLite references) and documenting that the application utilizes a **mobile-first architecture** across design, blueprints, build steps, and rules.
+We are refactoring all project documentation (`.md` files) to replace Google Cloud Vision API with the **Hugging Face Inference API** (using open-source Vision models like ViT or CLIP) to ensure a completely free, lightweight cloud setup without credit card billing requirements for the AI verification stage.
 
 ---
 
@@ -18,8 +18,8 @@ We are standardizing all project `.md` files to target **Supabase PostgreSQL** e
 ---
 
 ## Immediate Next Objectives
-1. Replace all remaining SQLite references in `Architecture.md` and `memorycontext.md` with Supabase PostgreSQL references.
-2. Specify and document the mobile-first architecture constraint in all `.md` files (`PID.md`, `Design.md`, `Architecture.md`, `Build.md`, `Progress.md`, `Schema.md`, `README.md`, `GEMINI.md`, `AGENTS.md`).
+1. Replace all references to Google Cloud Vision API with Hugging Face Inference API across `PID.md`, `Design.md`, `Architecture.md`, `Build.md`, `Progress.md`, `Schema.md`, and `README.md`.
+2. Stage and commit the refactored documentation files to git.
 
 
 ---
