@@ -1,7 +1,7 @@
 # Database Schema: Ligtas-Lakbay
 
 ## 1. Database Paradigm
-Ligtas-Lakbay uses Supabase PostgreSQL as its relational data store, optimized for serverless execution on Vercel via connection pooling. The database schema is defined and generated using Prisma ORM.
+Ligtas-Lakbay uses Supabase PostgreSQL as its relational data store, optimized for serverless execution on Vercel via connection pooling to support its high-concurrency mobile-first architecture. The database schema is defined and generated using Prisma ORM.
 
 ---
 

@@ -11,7 +11,7 @@
 ---
 
 ## 2. System Architecture
-Ligtas-Lakbay uses a standard Next.js 3-tier architecture:
+Ligtas-Lakbay employs a dedicated **Mobile-First Architecture** where the client-side environment is designed specifically to optimize rendering and interactions for mobile browsers:
 
 ```mermaid
 graph TD
@@ -57,7 +57,7 @@ graph TD
     subgraph Next_Backend [Next.js API Routes]
         %% Route calculation api
         F -->|POST /api/routes| J[Compute Safe Path]
-        J -->|Fetch Hazards| K[Query SQLite Hazard Database]
+        J -->|Fetch Hazards| K[Query PostgreSQL Hazard Database]
         J -->|Request Routing Paths| L[Fetch Google Maps Routes]
         
         %% Hazard verification api
@@ -114,7 +114,7 @@ C:\AI-Integrated-Coding\SPARKFEST
 ├── PID.md                      # Project scope, MVP list, target audience definition
 ├── Progress.md                 # Ledger for tracking completed frontend & backend tasks
 ├── README.md                   # General workspace readme
-└── Schema.md                   # Prisma SQLite database schema definitions
+└── Schema.md                   # Prisma PostgreSQL database schema definitions
 ```
 
 ---

@@ -2,6 +2,7 @@
 
 ## 1. Design Philosophy
 - **Vibrant & Accessible (Inclusivity-First):** Ligtas-Lakbay uses a high-contrast, premium dark mode aesthetic combined with clear, color-blind-friendly highlight accents.
+- **Mobile-First Architecture:** Designs are built for touch interaction, single-handed use, and portrait orientations first. Scaling to larger viewports is secondary; layouts are structured using responsive variables to maintain a mobile-native feel on all devices.
 - **Glassmorphic Floating Panels:** Elements float above the map canvas using subtle backdrop blurs (`backdrop-filter: blur(12px)`) and semi-transparent borders to feel lightweight and modern.
 - **Micro-Animations & Transitions:** Smooth translations (`ease-out`, `300ms`) for sliding routing panels, pulsing indicators for active hazards, and interactive scale highlights on profile selectors.
 - **Visual Equality of Hazards:** Infrastructure issues (e.g., broken elevator) and environmental hazards (e.g., flooding) are represented with consistent severity indicators (Amber for warning, Red for blocked/severe).

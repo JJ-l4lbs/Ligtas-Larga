@@ -1,7 +1,7 @@
 # Contextual Memory Log: Ligtas-Lakbay
 
 ## Current Context
-We are initializing the project documentation structure for **Ligtas-Lakbay**, a dynamic and inclusive urban navigation application tailored for commuters, students, and vulnerable groups (PWDs, pregnant women, senior citizens). We have referenced `GEMINI.md` rules and are establishing the initial engineering blueprints sequentially.
+We are standardizing all project `.md` files to target **Supabase PostgreSQL** exclusively (removing SQLite references) and documenting that the application utilizes a **mobile-first architecture** across design, blueprints, build steps, and rules.
 
 ---
 
@@ -18,9 +18,8 @@ We are initializing the project documentation structure for **Ligtas-Lakbay**, a
 ---
 
 ## Immediate Next Objectives
-1. Configure SQLite database via Prisma ORM and generate schema client matching Phase 2, Step 2.1 in [Build.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Build.md).
-2. Develop backend API routes (`/api/reports` and `/api/vision`).
-3. Set up frontend components and page layouts.
+1. Replace all remaining SQLite references in `Architecture.md` and `memorycontext.md` with Supabase PostgreSQL references.
+2. Specify and document the mobile-first architecture constraint in all `.md` files (`PID.md`, `Design.md`, `Architecture.md`, `Build.md`, `Progress.md`, `Schema.md`, `README.md`, `GEMINI.md`, `AGENTS.md`).
 
 
 ---

@@ -1,6 +1,6 @@
 # Progress Ledger: Ligtas-Lakbay
 
-This ledger maps out the frontend and backend development tasks required to build the Ligtas-Lakbay web application. Use it to track the exact progress and steps during the development lifecycle. It is fully configured for deployment on Vercel using Supabase PostgreSQL.
+This ledger maps out the frontend and backend development tasks required to build the Ligtas-Lakbay web application, designed from the ground up as a mobile-first architecture. Use it to track the exact progress and steps during the development lifecycle. It is fully configured for deployment on Vercel using Supabase PostgreSQL.
 
 ---
 

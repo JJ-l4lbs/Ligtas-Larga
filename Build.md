@@ -1,6 +1,6 @@
 # Master Build Plan: Ligtas-Lakbay
 
-This document outlines the detailed, step-by-step master plan to build the Ligtas-Lakbay navigation web application. It specifies what APIs are needed, where they must be configured, and at which step they are injected. It is fully configured for deployment on Vercel using Supabase PostgreSQL.
+This document outlines the detailed, step-by-step master plan to build the Ligtas-Lakbay navigation web application. It specifies what APIs are needed, where they must be configured, and at which step they are injected. It is fully configured for deployment on Vercel using Supabase PostgreSQL, designed from the ground up as a mobile-first architecture.
 
 ---
 

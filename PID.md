@@ -44,4 +44,4 @@
 - **Data Integrity:** Prevention of spam or fake hazard reports via location validation and automated photo verification.
 - **API Quota Management:** Optimization of Google Maps Routes & Places API calls to remain cost-efficient.
 - **Next.js Conventions:** Adherence to strict Next.js conventions (according to local docs).
-- **Mobile-First Responsiveness:** The application must run perfectly on mobile browsers since it mimics a mobile navigation app.
+- **Mobile-First Architecture:** The application must be designed, structured, and implemented as a mobile-first architecture since it targets students and urban commuters accessing services via mobile browsers. All pages, layouts, and navigation drawers are optimized primarily for compact mobile touchscreens.
