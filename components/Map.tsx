@@ -729,15 +729,15 @@ export default function MapComponent() {
 
   return (
     <div className={`app-split-container ${isDarkMode ? "dark-theme" : ""} ${!isSidebarOpen ? "sidebar-collapsed" : ""}`}>
+      {showSplash && (
+        <SplashLoader currentStep={currentStep} />
+      )}
+
       {/* Left Panel: Directions & Controls */}
       <div className={`left-text-panel ${!isSidebarOpen ? "sidebar-collapsed" : ""}`} style={{ display: "flex", flexDirection: "column" }}>
         
         {!showSplash && (
           <BrandHeader isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} />
-        )}
-        
-        {showSplash && (
-          <SplashLoader currentStep={currentStep} />
         )}
 
         {/* Step 1: Input stage */}
