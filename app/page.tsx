@@ -1,7 +1,7 @@
 import React from "react";
 import MapComponent from "../components/Map";
 
-export const unstable_instant = { prefetch: "static" };
+export const unstable_instant = false;
 
 export default function Home() {
   return (
