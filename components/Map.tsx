@@ -202,6 +202,7 @@ export default function MapComponent() {
 
   // UI/UX Theme and Active Step Tracking states
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
 
   // Inline address editing states
@@ -263,7 +264,7 @@ export default function MapComponent() {
         }
       }, 600); // Wait for split panel animation
     }
-  }, [currentStep, mapInstance]);
+  }, [currentStep, isSidebarOpen, mapInstance]);
 
   // 1. Initialize Map Instance with desaturated accessibility map styles
   useEffect(() => {
@@ -848,9 +849,9 @@ export default function MapComponent() {
   };
 
   return (
-    <div className={`app-split-container ${isDarkMode ? "dark-theme" : ""}`}>
+    <div className={`app-split-container ${isDarkMode ? "dark-theme" : ""} ${!isSidebarOpen ? "sidebar-collapsed" : ""}`}>
       {/* Left Panel: Directions & Controls */}
-      <div className="left-text-panel" style={{ display: "flex", flexDirection: "column" }}>
+      <div className={`left-text-panel ${!isSidebarOpen ? "sidebar-collapsed" : ""}`} style={{ display: "flex", flexDirection: "column" }}>
         
         {/* Branding Header with Dark/Light Toggle */}
         {!showSplash && (
@@ -1503,9 +1504,37 @@ export default function MapComponent() {
         )}
       </div>
 
-      {/* Right Panel: Live Map (Width: 60% locked) */}
       <div className="right-map-panel">
         <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+
+        {/* Sidebar Toggle Button */}
+        {!showSplash && (
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="btn-interactive"
+            title={isSidebarOpen ? "Collapse panel" : "Expand panel"}
+            style={{
+              position: "absolute",
+              left: "20px",
+              top: "20px",
+              zIndex: 20,
+              width: "40px",
+              height: "40px",
+              borderRadius: "10px",
+              border: "1.5px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-card)",
+              color: "var(--text-primary)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "16px",
+              cursor: "pointer",
+              boxShadow: "var(--shadow-glass)",
+            }}
+          >
+            {isSidebarOpen ? "◄" : "☰"}
+          </button>
+        )}
 
         {/* Floating Map Zoom Controls (Always visible in split container) */}
         {mapInstance && (

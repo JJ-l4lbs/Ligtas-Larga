@@ -26,6 +26,14 @@
   --text-primary: #0F172A;     /* Slate-900 (ultra contrast, highly readable) */
   --text-secondary: #475569;   /* Slate-600 for subheaders */
   --text-muted: #64748B;       /* Slate-500 for captions */
+
+  /* Text meant to sit directly on --bg-app-left / --bg-primary (the outer panel
+     background and chip backgrounds like Prev/Next buttons or unselected toggles).
+     In light mode this background is pale, so dark text works. In dark mode it
+     becomes near-black, so these flip to light text (see .dark-theme below). */
+  --text-on-app-left: var(--text-primary);
+  --text-on-app-left-secondary: var(--text-secondary);
+  --text-on-app-left-muted: var(--text-muted);
   
   /* Fallbacks for backward compatibility */
   --bg-primary: var(--bg-app-left);
@@ -53,7 +61,7 @@
 
 body {
   background-color: var(--bg-primary);
-  color: var(--text-primary);
+  color: var(--text-on-app-left);
   font-family: var(--font-primary);
   min-height: 100vh;
   overflow-x: hidden;
@@ -269,12 +277,27 @@ body {
   flex-direction: column;
   z-index: 10;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: height 0.35s ease, width 0.35s ease, opacity 0.25s ease, box-shadow 0.35s ease;
+}
+
+.left-text-panel.sidebar-collapsed {
+  height: 0;
+  min-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .right-map-panel {
   width: 100%;
   height: 45%;
   position: relative;
+  transition: height 0.35s ease, width 0.35s ease;
+}
+
+.app-split-container.sidebar-collapsed .right-map-panel {
+  height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -283,11 +306,21 @@ body {
   }
   .left-text-panel {
     width: 40%;
+    min-width: 40%;
     height: 100%;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
   }
+  .left-text-panel.sidebar-collapsed {
+    width: 0;
+    min-width: 0;
+    height: 100%;
+  }
   .right-map-panel {
     width: 60%;
+    height: 100%;
+  }
+  .app-split-container.sidebar-collapsed .right-map-panel {
+    width: 100%;
     height: 100%;
   }
 }
@@ -333,8 +366,25 @@ input[type="text"]::placeholder {
   --text-primary: #0F172A;
   --text-secondary: #475569;
   --text-muted: #64748B;
+  /* Text sitting directly on the now-dark --bg-app-left / --bg-primary
+     (panel headings, chip backgrounds, Prev/Next buttons, etc.) flips to light
+     so it stays readable against the dark navy background. */
+  --text-on-app-left: #F8FAFC;
+  --text-on-app-left-secondary: #CBD5E1;
+  --text-on-app-left-muted: #94A3B8;
   
   --shadow-glass: 0 10px 30px -5px rgba(0, 0, 0, 0.25);
+
+  /* Re-resolve the backward-compatibility aliases against the dark-mode values above.
+     Without this, components using --bg-primary/--bg-secondary/--border-glass/--accent-*
+     keep the light-theme colors baked in at :root and dark mode has no visible effect. */
+  --bg-primary: var(--bg-app-left);
+  --bg-secondary: var(--bg-card);
+  --border-glass: var(--border-subtle);
+
+  --accent-accessibility: var(--badge-accessible-text);
+  --accent-shade: var(--badge-shaded-text);
+  --accent-rain: var(--badge-flood-text);
 }
 
 .dark-theme .step-card:hover {
@@ -343,6 +393,9 @@ input[type="text"]::placeholder {
 
 .dark-theme .floating-control-btn:hover {
   background: rgba(30, 41, 59, 0.5) !important;
+}
+
+/* ===== Splash Screen Revamp (fullscreen intro overlay) ===== */
 /* Fluid Splash Screen Gradient Animation */
 @keyframes fluid-gradient {
   0% {

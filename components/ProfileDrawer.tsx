@@ -42,8 +42,8 @@ export default function ProfileDrawer({
       {routeInfo && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <span style={{ fontSize: "20px", fontWeight: 700 }}>{routeInfo.duration || "Calculating..."}</span>
-            <span style={{ fontSize: "14px", color: "var(--text-secondary)", marginLeft: "8px" }}>
+            <span style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-on-app-left)" }}>{routeInfo.duration || "Calculating..."}</span>
+            <span style={{ fontSize: "14px", color: "var(--text-on-app-left-secondary)", marginLeft: "8px" }}>
               ({routeInfo.distance || ""})
             </span>
           </div>
@@ -62,7 +62,7 @@ export default function ProfileDrawer({
               🛡️ Bypassed {avoidedCount} {avoidedCount === 1 ? "hazard" : "hazards"}
             </div>
           ) : (
-            <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+            <div style={{ fontSize: "12px", color: "var(--text-on-app-left-secondary)" }}>
               No hazard blockages detected
             </div>
           )}

@@ -13,7 +13,6 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **FE-5.1** | Interactive Map Canvas | Step 5.1 | ✅ Complete | - Use `@react-google-maps/api` hook to load maps canvas<br/>- Center viewport on target city coordinates<br/>- Fetch and render custom markers for hazard points |
 | **FE-6.1** | Initial Location Picker & Search | Step 6.1 | ✅ Complete | - Create landing/intro screen layout to solicit origin & destination<br/>- Attach Places API autocomplete to search inputs<br/>- Implement floating dashboard search overlay for on-the-fly route modifications |
 | **FE-6.2** | Routing Profile Drawer & Logic | Step 6.2 | ✅ Complete | - Create profile selector drawer (Accessibility, Student, Rain modes)<br/>- Integrate Directions Service path overlay on map canvas<br/>- Pass coordinates of severe hazards to bypass obstacles dynamically |
-| **FE-6.3** | POI Visibility Control & Start/Destination Markers | Step 6.3 | ✅ Complete | - Hide base map POI pins by default in Map view<br/>- Add dynamic floating action button to toggle visibility back<br/>- Render start/destination pins using custom SVGs |
 | **FE-7.1** | Smart Hazard Reporting Form | Step 7.1 | ✅ Complete | - Create reporting modal triggered from dashboard button<br/>- Build image upload picker interface with drag-and-drop support<br/>- Provide validation state loading indicators during Hugging Face checks |
 
 ---

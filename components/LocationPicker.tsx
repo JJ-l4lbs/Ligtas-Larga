@@ -275,14 +275,14 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       }}
     >
       <div style={{ textAlign: "center", marginBottom: "8px" }}>
-        <h2 style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.5px" }}>Where are you heading?</h2>
-        <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Plan a route bypassing active local hazards</p>
+        <h2 style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.5px", color: "var(--text-on-app-left)" }}>Where are you heading?</h2>
+        <p style={{ fontSize: "12px", color: "var(--text-on-app-left-secondary)" }}>Plan a route bypassing active local hazards</p>
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {/* Start Location Input */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
-          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>START LOCATION</label>
+          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-on-app-left-secondary)" }}>START LOCATION</label>
           <div style={{ position: "relative" }}>
             <input
               type="text"
@@ -425,7 +425,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
 
         {/* Destination Input */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
-          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>DESTINATION</label>
+          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-on-app-left-secondary)" }}>DESTINATION</label>
           <input
             type="text"
             placeholder="Search destination..."
@@ -507,7 +507,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
             marginTop: "8px",
             padding: "14px",
             borderRadius: "10px",
-            border: "none",
+            border: "1.5px solid var(--border-subtle)",
             background: isSubmitDisabled
               ? "rgba(255, 255, 255, 0.05)"
               : "linear-gradient(135deg, var(--accent-accessibility), var(--accent-rain))",
@@ -515,6 +515,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
             fontWeight: 700,
             fontSize: "14px",
             cursor: isSubmitDisabled ? "not-allowed" : "pointer",
+            boxShadow: "var(--shadow-glass)",
           }}
         >
           Calculate Safe Route
