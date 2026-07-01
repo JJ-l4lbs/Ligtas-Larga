@@ -104,6 +104,7 @@ export default function MapComponent() {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [activePolyline, setActivePolyline] = useState<google.maps.Polyline | null>(null);
   const [activeMarkers, setActiveMarkers] = useState<any[]>([]);
+  const [showAllPins, setShowAllPins] = useState(false);
 
   // Route state
   const [fromAddress, setFromAddress] = useState("");
@@ -142,14 +143,13 @@ export default function MapComponent() {
     }
   }, [currentStep]);
 
-  // 1. Initialize Map Instance (No legacy wrapper, no custom styles when mapId is present)
+  // 1. Initialize Map Instance (No mapId to allow client-side styling of POIs)
   useEffect(() => {
     if (!isLoaded || !mapRef.current || mapInstance) return;
 
     const map = new google.maps.Map(mapRef.current, {
       center: defaultCenter,
       zoom: 13,
-      mapId: "DEMO_MAP_ID", // Required for AdvancedMarkerElement
       disableDefaultUI: true,
       zoomControl: false,
     });
@@ -164,67 +164,136 @@ export default function MapComponent() {
     });
   }, [isLoaded, mapInstance]);
 
-  // 2. Render Hazard Pins via Places/Marker API (New AdvancedMarkerElement)
+  // 2. Render Hazard Pins via standard Marker API with custom SVGs
   useEffect(() => {
     if (!mapInstance || !hazards) return;
 
-    let active = true;
     const newMarkers: any[] = [];
 
-    const loadMarkers = async () => {
-      try {
-        const { AdvancedMarkerElement, PinElement } = (await google.maps.importLibrary(
-          "marker"
-        )) as google.maps.MarkerLibrary;
-
-        if (!active) return;
-
-        // Clear previous markers
-        activeMarkers.forEach((m) => {
-          m.map = null;
-        });
-
-        hazards.forEach((hazard) => {
-          let color = "#ef4444";
-          if (hazard.severity === "MEDIUM") {
-            color = "#f59e0b";
-          } else if (hazard.severity === "LOW") {
-            color = "#10b981";
-          }
-
-          const pin = new PinElement({
-            background: color,
-            borderColor: "#ffffff",
-            glyphColor: "#ffffff",
-          });
-
-          const marker = new AdvancedMarkerElement({
-            map: mapInstance,
-            position: { lat: hazard.latitude, lng: hazard.longitude },
-            content: pin,
-            title: `${hazard.category} (${hazard.severity}): ${hazard.description}`,
-          });
-
-          newMarkers.push(marker);
-        });
-
-        if (active) {
-          setActiveMarkers(newMarkers);
-        }
-      } catch (err) {
-        console.error("Error loading markers:", err);
+    hazards.forEach((hazard) => {
+      let color = "#ef4444";
+      if (hazard.severity === "MEDIUM") {
+        color = "#f59e0b";
+      } else if (hazard.severity === "LOW") {
+        color = "#10b981";
       }
-    };
 
-    loadMarkers();
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+        <defs>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+          </filter>
+        </defs>
+        <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
+        <circle cx="18" cy="18" r="6" fill="${color}"/>
+        <circle cx="18" cy="18" r="2" fill="#ffffff"/>
+      </svg>`;
+
+      const marker = new google.maps.Marker({
+        map: mapInstance,
+        position: { lat: hazard.latitude, lng: hazard.longitude },
+        icon: {
+          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+          anchor: new google.maps.Point(18, 18),
+        },
+        title: `${hazard.category} (${hazard.severity}): ${hazard.description}`,
+      });
+
+      newMarkers.push(marker);
+    });
 
     return () => {
-      active = false;
       newMarkers.forEach((m) => {
-        m.map = null;
+        m.setMap(null);
       });
     };
   }, [mapInstance, hazards]);
+
+  // 2b. Toggle base map pins (POIs) visibility based on user choice
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    const hideAllPinsStyles = [
+      {
+        featureType: "poi",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }],
+      },
+      {
+        featureType: "transit",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }],
+      },
+      {
+        featureType: "road",
+        elementType: "labels.icon",
+        stylers: [{ visibility: "off" }],
+      },
+    ];
+
+    mapInstance.setOptions({
+      styles: showAllPins ? [] : hideAllPinsStyles,
+    });
+  }, [mapInstance, showAllPins]);
+
+  // 2c. Render Start & Destination Pins (Origin & Destination)
+  useEffect(() => {
+    if (!mapInstance || !isLoaded) return;
+
+    let localFromMarker: any = null;
+    let localToMarker: any = null;
+
+    if (fromCoords) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
+        <defs>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
+          </filter>
+        </defs>
+        <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26c0-8.84-7.16-16-16-16zm0 24c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" 
+              fill="#10b981" stroke="#ffffff" stroke-width="1.5" filter="url(#shadow)"/>
+        <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+      </svg>`;
+
+      localFromMarker = new google.maps.Marker({
+        map: mapInstance,
+        position: fromCoords,
+        icon: {
+          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+          anchor: new google.maps.Point(16, 42),
+        },
+        title: `Start: ${fromAddress}`,
+      });
+    }
+
+    if (toCoords) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
+        <defs>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
+          </filter>
+        </defs>
+        <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26c0-8.84-7.16-16-16-16zm0 24c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" 
+              fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" filter="url(#shadow)"/>
+        <circle cx="16" cy="16" r="4" fill="#ffffff"/>
+      </svg>`;
+
+      localToMarker = new google.maps.Marker({
+        map: mapInstance,
+        position: toCoords,
+        icon: {
+          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+          anchor: new google.maps.Point(16, 42),
+        },
+        title: `Destination: ${toAddress}`,
+      });
+    }
+
+    return () => {
+      if (localFromMarker) localFromMarker.setMap(null);
+      if (localToMarker) localToMarker.setMap(null);
+    };
+  }, [mapInstance, fromCoords, toCoords, isLoaded, fromAddress, toAddress]);
 
   // 3. Compute and Render Safe Route using the modern Routes API
   useEffect(() => {
@@ -460,6 +529,33 @@ export default function MapComponent() {
       ) : (
         <>
           <SearchOverlay fromAddress={fromAddress} toAddress={toAddress} onReset={handleReset} />
+          
+          {/* Toggle Map base pins button */}
+          <button
+            onClick={() => setShowAllPins(!showAllPins)}
+            className="btn-interactive glass-panel"
+            style={{
+              position: "absolute",
+              bottom: "210px", // Floats beautifully above the bottom profile drawer
+              right: "20px",
+              zIndex: 110,
+              padding: "10px 14px",
+              border: "1px solid var(--border-glass)",
+              borderRadius: "20px",
+              color: "#ffffff",
+              fontSize: "12px",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer",
+              pointerEvents: "auto",
+            }}
+          >
+            <span>{showAllPins ? "👁️‍🗨️" : "👁️"}</span>
+            <span>{showAllPins ? "Hide Other Pins" : "Show All Pins"}</span>
+          </button>
+
           <ProfileDrawer
             selectedMode={travelMode}
             onModeChange={(mode) => setTravelMode(mode)}

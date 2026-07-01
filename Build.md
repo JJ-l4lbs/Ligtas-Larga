@@ -96,6 +96,10 @@ Before starting construction, ensure the following API credentials are set in yo
   - **Rain Mode:** Re-route to bypass coordinates with severe `FLOOD` category records.
 - **Verification:** Select different routing profile modes and confirm that the routing line shifts path to avoid nearby active hazard markers.
 
+#### Step 6.3: Implement Dynamic POI Visibility Control & Start/Destination Markers
+- **What to do:** Configure the map styles to remove all base points of interest (POIs), transit landmarks, and default pins by default on transition to dashboard view. Render the start and destination coordinates using custom high-fidelity SVG markers. Add a floating button to dynamically toggle base map POIs back.
+- **Verification:** Confirm that default Google pins are hidden on transition to the dashboard. Click the "Show All Pins" button and confirm POIs reappear and the button updates to "Hide Other Pins".
+
 ---
 
 ### Phase 7: Smart Hazard Reporting UI
