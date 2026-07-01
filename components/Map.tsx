@@ -177,12 +177,9 @@ export default function MapComponent() {
   const [activePolyline, setActivePolyline] = useState<google.maps.Polyline | null>(null);
   const [activeBypassedPolyline, setActiveBypassedPolyline] = useState<google.maps.Polyline | null>(null);
   const [activeMarkers, setActiveMarkers] = useState<any[]>([]);
-<<<<<<< HEAD
   const [showAllPins, setShowAllPins] = useState(false);
-=======
   const [activeWarningMarkers, setActiveWarningMarkers] = useState<any[]>([]);
   const startEndMarkersRef = useRef<any[]>([]);
->>>>>>> UI-Changes
 
   // Route state
   const [fromAddress, setFromAddress] = useState("");
@@ -243,9 +240,7 @@ export default function MapComponent() {
     }
   }, [currentStep]);
 
-<<<<<<< HEAD
   // 1. Initialize Map Instance (No mapId to allow client-side styling of POIs)
-=======
   useEffect(() => {
     if (currentStep > 0) {
       const timer = setTimeout(() => {
@@ -271,7 +266,6 @@ export default function MapComponent() {
   }, [currentStep, mapInstance]);
 
   // 1. Initialize Map Instance with desaturated accessibility map styles
->>>>>>> UI-Changes
   useEffect(() => {
     if (!isLoaded || !mapRef.current || mapInstance) return;
 
@@ -293,9 +287,7 @@ export default function MapComponent() {
     });
   }, [isLoaded, mapInstance]);
 
-<<<<<<< HEAD
   // 2. Render Hazard Pins via standard Marker API with custom SVGs
-=======
   // Update map style when theme changes dynamically
   useEffect(() => {
     if (mapInstance) {
@@ -306,7 +298,6 @@ export default function MapComponent() {
   }, [isDarkMode, mapInstance]);
 
   // 2. Render Hazard Pins via Places/Marker API
->>>>>>> UI-Changes
   useEffect(() => {
     if (!mapInstance || !hazards) return;
 
@@ -351,7 +342,6 @@ export default function MapComponent() {
     };
   }, [mapInstance, hazards]);
 
-<<<<<<< HEAD
   // 2b. Toggle base map pins (POIs) visibility based on user choice
   useEffect(() => {
     if (!mapInstance) return;
@@ -439,7 +429,6 @@ export default function MapComponent() {
   }, [mapInstance, fromCoords, toCoords, isLoaded, fromAddress, toAddress]);
 
   // 3. Compute and Render Safe Route using the modern Routes API
-=======
   // Speech synthesis speaker
   const speakText = (text: string) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -449,7 +438,6 @@ export default function MapComponent() {
   };
 
   // Speak directions steps when voice toggle or steps list changes
->>>>>>> UI-Changes
   useEffect(() => {
     if (isVoiceActive && routeSteps.length > 0 && routeSteps[activeStepIndex]) {
       const currentInstruction = routeSteps[activeStepIndex];
@@ -955,9 +943,99 @@ export default function MapComponent() {
               <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "12px" }}>
                 Hydrating route safety states...
               </p>
+    <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
+      {/* Native Map Div Container */}
+      <div ref={mapRef} style={mapContainerStyle} />
+
+      {!isLoaded && (
+        <div className="glass-panel" style={{ margin: "20px", padding: "20px", textAlign: "center", zIndex: 10 }}>
+          <h3>Loading Map System...</h3>
+        </div>
+      )}
+
+      {/* Overlay Screens */}
+      {currentStep === 0 ? (
+        <div
+          className="splash-liquid-bg"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 150,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            justifyContent: "flex-end",
+            padding: "8%",
+            pointerEvents: "auto",
+          }}
+        >
+          <div>
+            <h1 style={{ fontSize: "48px", fontWeight: 300, letterSpacing: "1px", color: "white" }}>Ligtas Larga</h1>
+          </div>
+          <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "5px" }}>
+            <p style={{ fontSize: "16px", color: "white", fontWeight: 500 }}>
+              Lalarga na...
+            </p>
+            <div style={{ width: '200px', height: '2px', backgroundColor: 'rgba(255,255,255,0.2)', position: 'relative', marginTop: '20px' }}>
+              {/* Destination Marker */}
+              <div className="marker-anim" style={{ position: 'absolute', right: '-8px', top: '-18px', color: 'rgba(255,255,255,0.9)' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+              </div>
+              
+              {/* Walking Person Sprite Animation */}
+              <div className="walking-progress-anim" style={{ position: 'absolute', left: '-12px', top: '-28px', width: '24px', height: '36px', overflow: 'hidden' }}>
+                <div className="walking-sprite" style={{ display: 'flex', color: 'white' }}>
+                  <svg width="120" height="36" viewBox="0 0 120 36" fill="white" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <g transform="translate(0, 0)">
+                       <circle cx="12" cy="7" r="3.5" stroke="none" />
+                       <path d="M12 12 L9 18" />
+                       <path d="M12 21 L8 27 L6 31" />
+                       <path d="M12 11 L12 21" />
+                       <path d="M12 21 L16 27 L16 32" />
+                       <path d="M12 12 L15 18" />
+                    </g>
+                    <g transform="translate(24, 0)">
+                       <circle cx="12" cy="7.5" r="3.5" stroke="none" />
+                       <path d="M12 12.5 L10 18" />
+                       <path d="M12 21.5 L9 26 L8 31" />
+                       <path d="M12 11.5 L12 21.5" />
+                       <path d="M12 21.5 L14 26 L14 32" />
+                       <path d="M12 12.5 L14 18" />
+                    </g>
+                    <g transform="translate(48, 0)">
+                       <circle cx="12" cy="6.5" r="3.5" stroke="none" />
+                       <path d="M12 11.5 L11 18" />
+                       <path d="M12 20.5 L12 26 L14 28" />
+                       <path d="M12 10.5 L12 20.5" />
+                       <path d="M12 20.5 L12 27 L12 33" />
+                       <path d="M12 11.5 L13 18" />
+                    </g>
+                    <g transform="translate(72, 0)">
+                       <circle cx="12" cy="6" r="3.5" stroke="none" />
+                       <path d="M12 11 L14 17" />
+                       <path d="M12 20 L15 25 L15 31" />
+                       <path d="M12 10 L12 20" />
+                       <path d="M12 20 L10 26 L8 28" />
+                       <path d="M12 11 L10 17" />
+                    </g>
+                    <g transform="translate(96, 0)">
+                       <circle cx="12" cy="7" r="3.5" stroke="none" />
+                       <path d="M12 12 L15 18" />
+                       <path d="M12 21 L16 27 L16 32" />
+                       <path d="M12 11 L12 21" />
+                       <path d="M12 21 L8 27 L6 31" />
+                       <path d="M12 12 L9 18" />
+                    </g>
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
-<<<<<<< HEAD
         </div>
       ) : currentStep === 1 ? (
         <LocationPicker isLoaded={isLoaded} onConfirmRoute={handleConfirmRoute} />
@@ -1000,7 +1078,6 @@ export default function MapComponent() {
           />
         </>
       )}
-=======
         )}
 
         {/* Step 1: Input stage */}
@@ -1477,7 +1554,6 @@ export default function MapComponent() {
           </div>
         )}
       </div>
->>>>>>> UI-Changes
 
       {/* Hazard Report Modal */}
       <HazardModal
