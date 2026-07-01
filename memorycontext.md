@@ -42,3 +42,4 @@ The project has successfully merged the collapsible sidebar features from the `U
 - *Attempt 3:* Merged `origin/UI-Sidebar` and resolved styling and file conflicts.
 - *Attempt 4:* Removed redundant HTML snippets causing build failures and resolved Next.js static prerender checks.
 - *Attempt 5:* Modularized Map utilities into `lib/maps-utils.ts` to reduce file bloat.
+- *Attempt 6:* Integrated workmate's revamped fullscreen liquid gradient splash loader with sprite animations from `splash-screen-revamp` branch into the modular `SplashLoader.tsx` component.
