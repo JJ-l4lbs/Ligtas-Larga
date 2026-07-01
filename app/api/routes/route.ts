@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
-    const response = await fetch("https://routes.googleapis.com/v2:computeRoutes", {
+    const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

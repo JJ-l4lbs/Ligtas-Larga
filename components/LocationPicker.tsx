@@ -23,144 +23,126 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
 
-  const fromContainerRef = useRef<HTMLDivElement | null>(null);
-  const toContainerRef = useRef<HTMLDivElement | null>(null);
+  const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (!isLoaded || !(window as any).google) return;
+  const sessionTokenRef = useRef<any>(null);
 
-    let fromEl: any = null;
-    let toEl: any = null;
-
-    const setupAutocomplete = async () => {
-      const { PlaceAutocompleteElement } = (await google.maps.importLibrary(
+  // Fetch suggestions for Start Location
+  const fetchFromSuggestions = async (val: string) => {
+    if (!val.trim() || !(window as any).google) {
+      setFromSuggestions([]);
+      return;
+    }
+    // If the input exactly matches the selected address, don't query
+    if (val === fromAddress) {
+      setFromSuggestions([]);
+      return;
+    }
+    try {
+      const { AutocompleteSessionToken, AutocompleteSuggestion } = (await google.maps.importLibrary(
         "places"
       )) as any;
-
-      // 1. Setup Start Autocomplete using the new Places API (New) Autocomplete element
-      fromEl = new PlaceAutocompleteElement();
-      fromEl.style.width = "100%";
-      fromEl.style.display = "block";
-      
-      const fromInput = document.createElement("input");
-      fromInput.setAttribute("slot", "input");
-      fromInput.placeholder = "Search start address...";
-      fromInput.style.width = "100%";
-      fromInput.style.borderRadius = "10px";
-      fromInput.style.border = "none";
-      fromInput.style.backgroundColor = "transparent";
-      fromInput.style.color = "#ffffff";
-      fromInput.style.padding = "12px 14px";
-      fromInput.style.outline = "none";
-      fromEl.appendChild(fromInput);
-      
-      if (fromContainerRef.current) {
-        fromContainerRef.current.innerHTML = "";
-        fromContainerRef.current.appendChild(fromEl);
+      if (!sessionTokenRef.current) {
+        sessionTokenRef.current = new AutocompleteSessionToken();
       }
-
-      fromEl.addEventListener("gmp-placeselect", async (e: any) => {
-        const place = e.place;
-        if (place) {
-          try {
-            await place.fetchFields({
-              fields: ["displayName", "formattedAddress", "location"],
-            });
-            if (place.location) {
-              const coords = {
-                lat: place.location.lat(),
-                lng: place.location.lng(),
-              };
-              setFromCoords(coords);
-              const addr = place.formattedAddress || place.displayName || "";
-              setFromAddress(addr);
-              setFromText(addr);
-            }
-          } catch (err) {
-            console.error("Error fetching start location place fields:", err);
-          }
-        }
+      const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input: val,
+        sessionToken: sessionTokenRef.current,
       });
+      setFromSuggestions(response.suggestions || []);
+    } catch (e) {
+      console.error("Error fetching start suggestions:", e);
+    }
+  };
 
-      // 2. Setup Destination Autocomplete using the new Places API (New) Autocomplete element
-      toEl = new PlaceAutocompleteElement();
-      toEl.style.width = "100%";
-      toEl.style.display = "block";
-
-      const toInput = document.createElement("input");
-      toInput.setAttribute("slot", "input");
-      toInput.placeholder = "Search destination...";
-      toInput.style.width = "100%";
-      toInput.style.borderRadius = "10px";
-      toInput.style.border = "none";
-      toInput.style.backgroundColor = "transparent";
-      toInput.style.color = "#ffffff";
-      toInput.style.padding = "12px 14px";
-      toInput.style.outline = "none";
-      toEl.appendChild(toInput);
-
-      if (toContainerRef.current) {
-        toContainerRef.current.innerHTML = "";
-        toContainerRef.current.appendChild(toEl);
+  // Fetch suggestions for Destination
+  const fetchToSuggestions = async (val: string) => {
+    if (!val.trim() || !(window as any).google) {
+      setToSuggestions([]);
+      return;
+    }
+    // If the input exactly matches the selected address, don't query
+    if (val === toAddress) {
+      setToSuggestions([]);
+      return;
+    }
+    try {
+      const { AutocompleteSessionToken, AutocompleteSuggestion } = (await google.maps.importLibrary(
+        "places"
+      )) as any;
+      if (!sessionTokenRef.current) {
+        sessionTokenRef.current = new AutocompleteSessionToken();
       }
-
-      toEl.addEventListener("gmp-placeselect", async (e: any) => {
-        const place = e.place;
-        if (place) {
-          try {
-            await place.fetchFields({
-              fields: ["displayName", "formattedAddress", "location"],
-            });
-            if (place.location) {
-              const coords = {
-                lat: place.location.lat(),
-                lng: place.location.lng(),
-              };
-              setToCoords(coords);
-              const addr = place.formattedAddress || place.displayName || "";
-              setToAddress(addr);
-              setToText(addr);
-            }
-          } catch (err) {
-            console.error("Error fetching destination location place fields:", err);
-          }
-        }
+      const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input: val,
+        sessionToken: sessionTokenRef.current,
       });
-    };
+      setToSuggestions(response.suggestions || []);
+    } catch (e) {
+      console.error("Error fetching destination suggestions:", e);
+    }
+  };
 
-    setupAutocomplete();
-  }, [isLoaded]);
-
-  // Listen to input text bubbling up from custom elements shadow DOM
+  // Debounced search trigger for start input
   useEffect(() => {
-    const handleFromInput = (e: any) => {
-      const val = e.target.value || "";
-      setFromText(val);
-      if (val !== fromAddress) {
-        setFromCoords(null);
+    const timer = setTimeout(() => {
+      fetchFromSuggestions(fromText);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [fromText]);
+
+  // Debounced search trigger for destination input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchToSuggestions(toText);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [toText]);
+
+  // Handle selecting start location suggestion
+  const handleSelectFrom = async (suggestion: any) => {
+    const text = suggestion.placePrediction.text.text;
+    setFromText(text);
+    setFromAddress(text);
+    setFromSuggestions([]);
+
+    try {
+      const place = suggestion.placePrediction.toPlace();
+      await place.fetchFields({ fields: ["location"] });
+      if (place.location) {
+        setFromCoords({
+          lat: place.location.lat(),
+          lng: place.location.lng(),
+        });
       }
-    };
+    } catch (e) {
+      console.error("Error fetching details for start location:", e);
+    }
+  };
 
-    const handleToInput = (e: any) => {
-      const val = e.target.value || "";
-      setToText(val);
-      if (val !== toAddress) {
-        setToCoords(null);
+  // Handle selecting destination suggestion
+  const handleSelectTo = async (suggestion: any) => {
+    const text = suggestion.placePrediction.text.text;
+    setToText(text);
+    setToAddress(text);
+    setToSuggestions([]);
+
+    try {
+      const place = suggestion.placePrediction.toPlace();
+      await place.fetchFields({ fields: ["location"] });
+      if (place.location) {
+        setToCoords({
+          lat: place.location.lat(),
+          lng: place.location.lng(),
+        });
       }
-    };
+    } catch (e) {
+      console.error("Error fetching details for destination:", e);
+    }
+  };
 
-    const fromDiv = fromContainerRef.current;
-    const toDiv = toContainerRef.current;
-
-    if (fromDiv) fromDiv.addEventListener("input", handleFromInput);
-    if (toDiv) toDiv.addEventListener("input", handleToInput);
-
-    return () => {
-      if (fromDiv) fromDiv.removeEventListener("input", handleFromInput);
-      if (toDiv) toDiv.removeEventListener("input", handleToInput);
-    };
-  }, [fromAddress, toAddress]);
-
+  // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!(window as any).google) return;
@@ -203,7 +185,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       }
     }
 
-    // local testing fallback
+    // Local testing fallback
     if (!finalFromCoords && fromText) {
       finalFromCoords = { lat: 14.5995, lng: 120.9842 }; // Manila City Hall
       finalFromAddress = fromText;
@@ -214,6 +196,8 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
     }
 
     if (finalFromCoords && finalToCoords) {
+      // Clear session token for the next route search
+      sessionTokenRef.current = null;
       onConfirmRoute(finalFromCoords, finalToCoords, finalFromAddress, finalToAddress);
     }
   };
@@ -243,37 +227,145 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
         <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Plan a route bypassing active local hazards</p>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Start Location Input */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
           <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>START LOCATION</label>
-          <div
-            ref={fromContainerRef}
-            className="autocomplete-container"
+          <input
+            type="text"
+            placeholder="Search start address..."
+            value={fromText}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFromText(val);
+              if (val !== fromAddress) {
+                setFromCoords(null);
+              }
+            }}
             style={{
+              width: "100%",
               borderRadius: "10px",
               border: "1px solid var(--border-glass)",
               backgroundColor: "rgba(11, 15, 25, 0.5)",
               color: "#ffffff",
+              padding: "12px 14px",
+              outline: "none",
               fontSize: "14px",
-              overflow: "hidden",
             }}
           />
+          {fromSuggestions.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                marginTop: "4px",
+                backgroundColor: "var(--bg-secondary)",
+                border: "1px solid var(--border-glass)",
+                borderRadius: "10px",
+                zIndex: 1000,
+                maxHeight: "180px",
+                overflowY: "auto",
+                boxShadow: "var(--shadow-glass)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+              }}
+            >
+              {fromSuggestions.map((s: any, idx: number) => (
+                <div
+                  key={idx}
+                  onClick={() => handleSelectFrom(s)}
+                  style={{
+                    padding: "10px 14px",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    color: "var(--text-primary)",
+                    borderBottom: idx === fromSuggestions.length - 1 ? "none" : "1px solid var(--border-glass)",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  {s.placePrediction.text.text}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        {/* Destination Input */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
           <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>DESTINATION</label>
-          <div
-            ref={toContainerRef}
-            className="autocomplete-container"
+          <input
+            type="text"
+            placeholder="Search destination..."
+            value={toText}
+            onChange={(e) => {
+              const val = e.target.value;
+              setToText(val);
+              if (val !== toAddress) {
+                setToCoords(null);
+              }
+            }}
             style={{
+              width: "100%",
               borderRadius: "10px",
               border: "1px solid var(--border-glass)",
               backgroundColor: "rgba(11, 15, 25, 0.5)",
               color: "#ffffff",
+              padding: "12px 14px",
+              outline: "none",
               fontSize: "14px",
-              overflow: "hidden",
             }}
           />
+          {toSuggestions.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                marginTop: "4px",
+                backgroundColor: "var(--bg-secondary)",
+                border: "1px solid var(--border-glass)",
+                borderRadius: "10px",
+                zIndex: 1000,
+                maxHeight: "180px",
+                overflowY: "auto",
+                boxShadow: "var(--shadow-glass)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+              }}
+            >
+              {toSuggestions.map((s: any, idx: number) => (
+                <div
+                  key={idx}
+                  onClick={() => handleSelectTo(s)}
+                  style={{
+                    padding: "10px 14px",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    color: "var(--text-primary)",
+                    borderBottom: idx === toSuggestions.length - 1 ? "none" : "1px solid var(--border-glass)",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  {s.placePrediction.text.text}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <button

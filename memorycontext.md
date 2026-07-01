@@ -125,4 +125,7 @@
 137: - *Attempt 38:* Resolved TypeScript window.google global type declaration error by casting window references to any.
 138: - *Attempt 39:* Added triple-slash references to google.maps types inside components using them, resolving namespace loading issues.
 139: - *Attempt 40:* Reverted PinElement.element back to PinElement directly to eliminate the Google Maps JS SDK deprecation warning.
-- *Attempt 41:* Updated GEMINI.md to add core engineering philosophy of relentless verification before completion using Playwright and closing the browser.
+140: - *Attempt 41:* Updated GEMINI.md to add core engineering philosophy of relentless verification before completion using Playwright and closing the browser.
+141: - *Attempt 42:* Refactored LocationPicker.tsx to use standard google.maps.places.Autocomplete on native React inputs to fix suggestion loading bugs.
+142: - *Attempt 43:* Restored Places API (New) PlaceAutocompleteElement (gmp-place-autocomplete) to resolve LegacyApiNotActivatedMapError, and fixed the suggestions dropdown clipping by setting overflow: visible on input containers.
+143: - *Attempt 44:* Corrected Google Routes API v2 endpoint path in app/api/routes/route.ts by adding /directions/, resolving the 404/502 route options fetch errors.
