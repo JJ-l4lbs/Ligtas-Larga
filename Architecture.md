@@ -144,10 +144,11 @@ C:\AI-Integrated-Coding\SPARKFEST
 | File Name | Location | Line Count (Est.) | Purpose |
 | :--- | :--- | :--- | :--- |
 | `schema.prisma` | `/prisma/schema.prisma` | <50 | Database schema definitions |
-| `globals.css` | `/styles/globals.css` | <100 | Design system CSS variables & glassmorphism utilities |
+| `globals.css` | `/styles/globals.css` | ~450 | Design system CSS variables & glassmorphism utilities |
 | `page.tsx` | `/app/page.tsx` | <100 | Main layout page aggregating Map and UI drawers |
 | `route.ts` | `/app/api/reports/route.ts`| <80 | API for creating and querying crowdsourced hazard reports |
 | `route.ts` | `/app/api/vision/route.ts` | <60 | API route handler interfacing with Hugging Face Inference API |
-| `Map.tsx` | `/components/Map.tsx` | <120 | React component wrapping the Google Maps Canvas |
-| `ProfileSelector.tsx`| `/components/ProfileSelector.tsx` | <60 | Routing mode buttons (Accessibility, Student, Rain) |
-| `HazardModal.tsx` | `/components/HazardModal.tsx` | <100 | Visual upload form with Hugging Face verification status |
+| `Map.tsx` | `/components/Map.tsx` | ~1300 | React component wrapping the Google Maps Canvas (with dynamic sidebar & POI toggle features) |
+| `maps-utils.ts` | `/lib/maps-utils.ts` | ~150 | Centralized maps loader, styles, and calculation helpers |
+| `ProfileDrawer.tsx`| `/components/ProfileDrawer.tsx` | ~100 | Sliding layout drawer containing travel modes and info parameters |
+| `HazardModal.tsx` | `/components/HazardModal.tsx` | ~300 | Visual upload form with Hugging Face verification status |
