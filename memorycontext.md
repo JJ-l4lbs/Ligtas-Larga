@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 63: # Contextual Memory Log: Ligtas-Lakbay
 64: 
 65: ## Current Context
@@ -57,10 +58,17 @@
 
 ## Current Context
 We are implementing the feature to filter out default map POI pins on the main dashboard Map view by default, showing only hazard pins and the start/destination pins. We are also adding a dynamic toggle button to show all map details back, and adding custom Advanced Markers for the start and destination coordinates.
+=======
+# Contextual Memory Log: Ligtas-Lakbay
+
+## Current Context
+The base Next.js application is initialized with App Router, TypeScript, and Vanilla CSS. We have installed all required dependencies including Google Maps API, Prisma ORM, and PostgreSQL adapter (`@prisma/adapter-pg` and `pg`). The development server is active, compiling cleanly, and serving the homepage at `http://localhost:3000`.
+>>>>>>> UI-Changes
 
 ---
 
 ## Accomplished Tasks
+<<<<<<< HEAD
 - Created [PID.md](file:///C:/AI-Integrated-Coding/SPARKFEST/PID.md) detailing project scope, audience, MVP features, objectives, success metrics, and constraints.
 - Created [Design.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Design.md) defining design philosophy, typography, interface layouts, and interaction blueprints, including a user-side page flow diagram.
 - Created [Architecture.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Architecture.md) defining tech stack, schema flows, database structure, testing setups, and code formats.
@@ -70,14 +78,43 @@ We are implementing the feature to filter out default map POI pins on the main d
 - Created [.gitignore](file:///C:/AI-Integrated-Coding/SPARKFEST/.gitignore) to exclude the `.agents/` folder and its files.
 - Updated [Architecture.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Architecture.md) with a high-fidelity Mermaid webapp flow diagram and the current workspace file structure.
 - Switched verification API references from Google Cloud Vision to Hugging Face Inference API across all markdown documentation files.
+=======
+- Created `PID.md` detailing project scope, audience, MVP features, objectives, success metrics, and constraints.
+- Created `Design.md` defining design philosophy, typography, interface layouts, and interaction blueprints, including a user-side page flow diagram.
+- Created `Architecture.md` defining tech stack, schema flows, database structure, testing setups, and code formats.
+- Created `Schema.md` outlining data tables, field metrics, and Prisma models.
+- Created `Build.md` mapping out step-by-step development phases and verification checkpoints.
+- Created `Progress.md` tracking charts for frontend and backend tasks.
+- Created `.gitignore` to exclude the `.agents/` folder and its files.
+- Updated `Architecture.md` with a high-fidelity Mermaid webapp flow diagram and the current workspace file structure.
+- Switched verification API references from Google Cloud Vision to Hugging Face Inference API.
+- Replaced experimental Places Web Components in `LocationPicker.tsx` with standard Google Places Autocomplete on native React inputs.
+- Created server-side Routes API proxy endpoint `/app/api/routes/route.ts` to call the modern Google Routes API (`/v2:computeRoutes`).
+- Rewrote `Map.tsx` and `LocationPicker.tsx` to use native Maps JS API (`AdvancedMarkerElement` and custom elements).
+- Replaced `@react-google-maps/api` custom loader in `Map.tsx` with a native singleton script loader hook (`useGoogleMapsLoader`).
+- Audited `Map.tsx` and resolved async race conditions in marker and route calculations.
+- Resolved TypeScript window.google global type declaration errors.
+- Added `@types/google.maps` devDependency and resolved type namespace loading issues.
+- Fixed suggestions dropdown clipping by setting `overflow: visible` on input containers in `LocationPicker.tsx`.
+- Corrected Google Routes API v2 endpoint path in `/app/api/routes/route.ts`.
+- Cleaned and reinstalled `node_modules` on Windows to resolve file lock conflicts (`ENOTEMPTY` / `EPERM`).
+- Installed `@prisma/adapter-pg` and `pg` dependencies along with `@types/pg` devDependency to resolve the runtime Prisma module resolution crash.
+- Created local binary shims for Next.js in `node_modules/.bin` and successfully booted the dev server.
+>>>>>>> UI-Changes
 
 ---
 
 ## Immediate Next Objectives
+<<<<<<< HEAD
 1. Implement start and destination markers on the map dashboard view.
 2. Default the map style to hide all base map POI/transit pins when transitioning to the dashboard view.
 3. Add a floating button to toggle the base map details/POIs visibility back on.
 4. Verify the build and functionality.
+=======
+1. Configure SQLite database via Prisma ORM and generate schema client matching Phase 2, Step 2.1 in `Build.md`.
+2. Develop backend API routes (`/api/reports` and `/api/vision`).
+3. Set up frontend components and page layouts.
+>>>>>>> UI-Changes
 
 ---
 
@@ -118,7 +155,11 @@ We are implementing the feature to filter out default map POI pins on the main d
 - *Attempt 34:* Replaced experimental Places Web Components in `LocationPicker.tsx` with standard Google Places Autocomplete on text inputs, and implemented a geocoder/mock fallback on submit so the "Calculate Safe Route" button is click-enabled.
 - *Attempt 35:* Created server-side Routes API proxy endpoint `/app/api/routes/route.ts` to call the modern Google Routes API (`/v2:computeRoutes`). Rewrote `Map.tsx` and `LocationPicker.tsx` to use native Maps JS API (`AdvancedMarkerElement` and custom elements) with no legacy wrappers.
 - *Attempt 36:* Replaced `@react-google-maps/api` custom loader in `Map.tsx` with a native singleton script loader hook (`useGoogleMapsLoader`) to completely eliminate all legacy API warning side effects. Removed Map container `styles` warnings by aligning with Map ID cloud styling.
+<<<<<<< HEAD
 - *Attempt 37:* Audited [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx) and resolved async race conditions in marker and route calculations using cleanup flags. Replaced direct custom element `PinElement` assignment with `PinElement.element` for correct HTML integration.
+=======
+- *Attempt 37:* Audited `Map.tsx` and resolved async race conditions in marker and route calculations using cleanup flags. Replaced direct custom element `PinElement` assignment with `PinElement.element` for correct HTML integration.
+>>>>>>> UI-Changes
 - *Attempt 38:* Resolved TypeScript window.google global type declaration error by casting window references to any.
 - *Attempt 39:* Added triple-slash references to google.maps types inside components using them, resolving namespace loading issues.
 - *Attempt 40:* Reverted PinElement.element back to PinElement directly to eliminate the Google Maps JS SDK deprecation warning.
@@ -126,5 +167,9 @@ We are implementing the feature to filter out default map POI pins on the main d
 - *Attempt 42:* Refactored LocationPicker.tsx to use standard google.maps.places.Autocomplete on native React inputs to fix suggestion loading bugs.
 - *Attempt 43:* Restored Places API (New) PlaceAutocompleteElement (gmp-place-autocomplete) to resolve LegacyApiNotActivatedMapError, and fixed the suggestions dropdown clipping by setting overflow: visible on input containers.
 - *Attempt 44:* Corrected Google Routes API v2 endpoint path in app/api/routes/route.ts by adding /directions/, resolving the 404/502 route options fetch errors.
+<<<<<<< HEAD
 - *Attempt 45:* Designed and wrote a Node.js seed script to populate specific hazard test cases along the Manila to DLSU route paths to demonstrate dynamic route shifting.
 - *Attempt 46:* Implementing dynamic base map pin visibility toggles alongside Advanced Markers for origin & destination points in components/Map.tsx, with styling filtering out default points of interest by default.
+=======
+- *Attempt 45:* Resolved Prisma adapter-pg build error by installing `@prisma/adapter-pg` and `pg` dependencies along with `@types/pg` devDependency, performed a clean node_modules reinstallation to bypass locked handles, and successfully restarted development server.
+>>>>>>> UI-Changes

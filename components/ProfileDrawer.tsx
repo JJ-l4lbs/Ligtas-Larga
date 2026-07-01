@@ -2,11 +2,13 @@
 
 import React from "react";
 
-export type TravelMode = "accessibility" | "student" | "rain";
-
 interface ProfileDrawerProps {
-  selectedMode: TravelMode;
-  onModeChange: (mode: TravelMode) => void;
+  isWheelchairEnabled: boolean;
+  isShadedEnabled: boolean;
+  isRainEnabled: boolean;
+  onToggleWheelchair: () => void;
+  onToggleShaded: () => void;
+  onToggleRain: () => void;
   onReportTrigger: () => void;
   avoidedCount: number;
   routeInfo?: {
@@ -16,28 +18,24 @@ interface ProfileDrawerProps {
 }
 
 export default function ProfileDrawer({
-  selectedMode,
-  onModeChange,
+  isWheelchairEnabled,
+  isShadedEnabled,
+  isRainEnabled,
+  onToggleWheelchair,
+  onToggleShaded,
+  onToggleRain,
   onReportTrigger,
   avoidedCount,
   routeInfo,
 }: ProfileDrawerProps) {
   return (
     <div
-      className="glass-panel"
       style={{
-        position: "absolute",
-        bottom: "0",
-        left: "0",
-        right: "0",
-        zIndex: 100,
-        padding: "20px 20px 30px 20px",
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
+        padding: "12px 24px 24px 24px",
         display: "flex",
         flexDirection: "column",
-        gap: "16px",
-        pointerEvents: "auto",
+        gap: "14px",
+        backgroundColor: "var(--bg-primary)",
       }}
     >
       {/* Route Info Stats */}
@@ -71,47 +69,72 @@ export default function ProfileDrawer({
         </div>
       )}
 
-      {/* Tabs / Mode Selector */}
-      <div style={{ display: "flex", borderRadius: "12px", backgroundColor: "rgba(11, 15, 25, 0.4)", padding: "4px" }}>
-        <button
-          onClick={() => onModeChange("accessibility")}
-          className="btn-interactive"
+      {/* Profile Section (Core Profile) */}
+      <div
+        onClick={onToggleWheelchair}
+        className={`btn-interactive ${isWheelchairEnabled ? "active-wheelchair" : ""}`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "16px",
+          borderRadius: "12px",
+          border: "1.5px solid var(--border-subtle)",
+          backgroundColor: "var(--bg-input-light)",
+          color: "var(--text-primary)",
+          cursor: "pointer",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "22px" }}>♿</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
+            <span style={{ fontSize: "14px", fontWeight: 700 }}>Wheelchair Accessibility Mode</span>
+            <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Enforce accessible paths & elevators</span>
+          </div>
+        </div>
+        <div
           style={{
-            flex: 1,
-            padding: "12px 6px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: selectedMode === "accessibility" ? "var(--bg-secondary)" : "transparent",
-            color: selectedMode === "accessibility" ? "var(--accent-accessibility)" : "var(--text-secondary)",
-            fontWeight: 700,
-            fontSize: "12px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "4px",
-            cursor: "pointer",
+            width: "36px",
+            height: "20px",
+            borderRadius: "10px",
+            backgroundColor: isWheelchairEnabled ? "var(--accent-accessibility)" : "rgba(0, 0, 0, 0.1)",
+            position: "relative",
+            transition: "background-color 0.2s",
           }}
         >
-          <span>♿</span>
-          <span>Wheelchair</span>
-        </button>
+          <div
+            style={{
+              width: "14px",
+              height: "14px",
+              borderRadius: "50%",
+              backgroundColor: "#ffffff",
+              position: "absolute",
+              top: "3px",
+              left: isWheelchairEnabled ? "19px" : "3px",
+              transition: "left 0.2s",
+            }}
+          />
+        </div>
+      </div>
 
+      {/* Environmental Modifiers (Secondary Chips) */}
+      <div style={{ display: "flex", gap: "10px" }}>
         <button
-          onClick={() => onModeChange("student")}
-          className="btn-interactive"
+          onClick={onToggleShaded}
+          className={`btn-interactive ${isShadedEnabled ? "active-shaded" : ""}`}
           style={{
             flex: 1,
-            padding: "12px 6px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: selectedMode === "student" ? "var(--bg-secondary)" : "transparent",
-            color: selectedMode === "student" ? "var(--accent-shade)" : "var(--text-secondary)",
-            fontWeight: 700,
+            padding: "12px 10px",
+            border: "1.5px solid var(--border-subtle)",
+            borderRadius: "12px",
+            backgroundColor: "var(--bg-input-light)",
+            color: isShadedEnabled ? "var(--accent-shade)" : "var(--text-secondary)",
+            fontWeight: 600,
             fontSize: "12px",
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            gap: "4px",
+            justifyContent: "center",
+            gap: "8px",
             cursor: "pointer",
           }}
         >
@@ -120,21 +143,21 @@ export default function ProfileDrawer({
         </button>
 
         <button
-          onClick={() => onModeChange("rain")}
-          className="btn-interactive"
+          onClick={onToggleRain}
+          className={`btn-interactive ${isRainEnabled ? "active-rain" : ""}`}
           style={{
             flex: 1,
-            padding: "12px 6px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: selectedMode === "rain" ? "var(--bg-secondary)" : "transparent",
-            color: selectedMode === "rain" ? "var(--accent-rain)" : "var(--text-secondary)",
-            fontWeight: 700,
+            padding: "12px 10px",
+            border: "1.5px solid var(--border-subtle)",
+            borderRadius: "12px",
+            backgroundColor: "var(--bg-input-light)",
+            color: isRainEnabled ? "var(--accent-rain)" : "var(--text-secondary)",
+            fontWeight: 600,
             fontSize: "12px",
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            gap: "4px",
+            justifyContent: "center",
+            gap: "8px",
             cursor: "pointer",
           }}
         >
@@ -151,8 +174,8 @@ export default function ProfileDrawer({
           width: "100%",
           padding: "14px",
           borderRadius: "10px",
-          border: "1px dashed var(--border-glass)",
-          backgroundColor: "rgba(239, 68, 68, 0.05)",
+          border: "1.5px dashed var(--severity-high)",
+          backgroundColor: "#FFE4E6",
           color: "var(--severity-high)",
           fontWeight: 700,
           fontSize: "14px",
