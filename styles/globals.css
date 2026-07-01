@@ -444,3 +444,65 @@ input[type="text"]::placeholder {
   width: 120px;
   animation: play-sprite 0.7s steps(5) infinite;
 }
+
+/* Google Maps InfoWindow Premium Customization */
+.gm-style-iw-c {
+  background-color: var(--bg-card, #ffffff) !important;
+  border: 1px solid var(--border-subtle, #e2e8f0) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  padding: 0 !important;
+}
+
+.dark-theme .gm-style-iw-c {
+  background-color: #0f172a !important; /* Elegant slate-900 for dark mode info window */
+  border-color: #334155 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+.gm-style-iw-d {
+  overflow: visible !important;
+  max-width: 280px !important;
+  padding: 0 !important;
+}
+
+.gm-style-iw-t::after {
+  background: var(--bg-card, #ffffff) !important;
+  box-shadow: -1px 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+.dark-theme .gm-style-iw-t::after {
+  background: #0f172a !important;
+  box-shadow: -1px 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+/* Close button styling */
+.gm-ui-hover-effect {
+  top: 6px !important;
+  right: 6px !important;
+  border-radius: 50% !important;
+  background-color: rgba(15, 23, 42, 0.08) !important;
+  width: 22px !important;
+  height: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background-color 0.2s ease;
+}
+
+.gm-ui-hover-effect:hover {
+  background-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+.dark-theme .gm-ui-hover-effect {
+  background-color: rgba(248, 250, 252, 0.15) !important;
+}
+
+.dark-theme .gm-ui-hover-effect:hover {
+  background-color: rgba(248, 250, 252, 0.25) !important;
+}
+
+.dark-theme .gm-ui-hover-effect > span {
+  background-color: #ffffff !important;
+}
+

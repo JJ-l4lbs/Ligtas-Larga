@@ -148,7 +148,10 @@ C:\AI-Integrated-Coding\SPARKFEST
 | `page.tsx` | `/app/page.tsx` | <100 | Main layout page aggregating Map and UI drawers |
 | `route.ts` | `/app/api/reports/route.ts`| <80 | API for creating and querying crowdsourced hazard reports |
 | `route.ts` | `/app/api/vision/route.ts` | <60 | API route handler interfacing with Hugging Face Inference API |
-| `Map.tsx` | `/components/Map.tsx` | ~1000 | Core React page managing layout coordinate states, routes computation, and maps lifecycle |
+| `Map.tsx` | `/components/Map.tsx` | <350 | Core React page coordinating map setup, layout containers, and subcontrollers |
+| `ActiveRoutePanel.tsx` | `/components/ActiveRoutePanel.tsx` | ~250 | Step 2 travel direction detail drawer layout |
+| `useHazardMarkers.ts` | `/components/useHazardMarkers.ts` | ~160 | Custom hook managing interactive hazard pins rendering and overlay events |
+| `useRouteCalculator.ts` | `/components/useRouteCalculator.ts` | ~300 | Custom hook managing Routes API queries, local route scoring, and polyline drawing |
 | `maps-utils.ts` | `/lib/maps-utils.ts` | ~150 | Centralized maps loader, styles, and calculation helpers |
 | `BrandHeader.tsx` | `/components/BrandHeader.tsx` | <50 | Modular application branding and theme toggle switch |
 | `SplashLoader.tsx` | `/components/SplashLoader.tsx` | <60 | Splash screen intro loader overlay shown during initialization |

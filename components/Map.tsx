@@ -3,19 +3,19 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import LocationPicker from "./LocationPicker";
-import SearchOverlay from "./SearchOverlay";
 import ProfileDrawer from "./ProfileDrawer";
 import HazardModal from "./HazardModal";
 import BrandHeader from "./BrandHeader";
 import SplashLoader from "./SplashLoader";
-import ImmediateActionCard from "./ImmediateActionCard";
 import MapControls from "./MapControls";
+import ActiveRoutePanel from "./ActiveRoutePanel";
+
+import useHazardMarkers from "./useHazardMarkers";
+import useRouteCalculator from "./useRouteCalculator";
 
 import {
   defaultCenter,
   useGoogleMapsLoader,
-  getDistanceKm,
-  formatDuration,
   lightMapStyle,
   darkMapStyle,
 } from "../lib/maps-utils";
@@ -28,18 +28,8 @@ interface HazardReport {
   severity: string;
   description: string;
   isValidated: boolean;
+  imageUrl?: string | null;
 }
-
-interface RouteStep {
-  instruction: string;
-  distance: string;
-  maneuver?: string;
-  warnings?: string[];
-  surfaceInfo?: string;
-  startLocation: google.maps.LatLngLiteral;
-}
-
-
 
 export default function MapComponent() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -53,12 +43,7 @@ export default function MapComponent() {
   
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [activePolyline, setActivePolyline] = useState<google.maps.Polyline | null>(null);
-  const [activeBypassedPolyline, setActiveBypassedPolyline] = useState<google.maps.Polyline | null>(null);
-  const [activeMarkers, setActiveMarkers] = useState<any[]>([]);
   const [showAllPins, setShowAllPins] = useState(false);
-  const [activeWarningMarkers, setActiveWarningMarkers] = useState<any[]>([]);
-  const startEndMarkersRef = useRef<any[]>([]);
 
   // Route state
   const [fromAddress, setFromAddress] = useState("");
@@ -71,18 +56,9 @@ export default function MapComponent() {
   const [isShadedEnabled, setIsShadedEnabled] = useState(false);
   const [isRainEnabled, setIsRainEnabled] = useState(false);
 
-  // Parsed steps list for high-contrast feed
-  const [routeSteps, setRouteSteps] = useState<RouteStep[]>([]);
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
-
-  // Route display info
-  const [routeInfo, setRouteInfo] = useState<{ distance?: string; duration?: string }>({});
-  const [avoidedCount, setAvoidedCount] = useState(0);
-
-  // UI/UX Theme and Active Step Tracking states
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Navigation steps state
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
 
   // Inline address editing states
   const [isEditingAddresses, setIsEditingAddresses] = useState(false);
@@ -90,9 +66,9 @@ export default function MapComponent() {
   const [tempToAddress, setTempToAddress] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
 
-  // Cached Google routes data for sub-millisecond local scoring optimization
-  const [cachedRoutesData, setCachedRoutesData] = useState<any>(null);
-  const [lastRouteCoords, setLastRouteCoords] = useState<{ from: google.maps.LatLngLiteral; to: google.maps.LatLngLiteral } | null>(null);
+  // UI/UX Theme and Active Step Tracking states
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Fetch hazards on load
   const fetchHazards = async () => {
@@ -120,7 +96,6 @@ export default function MapComponent() {
     }
   }, [currentStep]);
 
-  // 1. Initialize Map Instance (No mapId to allow client-side styling of POIs)
   useEffect(() => {
     if (currentStep > 0) {
       const timer = setTimeout(() => {
@@ -143,9 +118,9 @@ export default function MapComponent() {
         }
       }, 600); // Wait for split panel animation
     }
-  }, [currentStep, isSidebarOpen, mapInstance]);
+  }, [currentStep, isSidebarOpen, mapInstance, fromCoords, toCoords]);
 
-  // 1. Initialize Map Instance with desaturated accessibility map styles
+  // Initialize Map Instance with desaturated accessibility map styles
   useEffect(() => {
     if (!isLoaded || !mapRef.current || mapInstance) return;
 
@@ -165,9 +140,8 @@ export default function MapComponent() {
         setMapCenter({ lat: center.lat(), lng: center.lng() });
       }
     });
-  }, [isLoaded, mapInstance]);
+  }, [isLoaded, mapInstance, isDarkMode]);
 
-  // 2. Render Hazard Pins via standard Marker API with custom SVGs
   // Update map style when theme changes dynamically
   useEffect(() => {
     if (mapInstance) {
@@ -177,52 +151,7 @@ export default function MapComponent() {
     }
   }, [isDarkMode, mapInstance]);
 
-  // 2. Render Hazard Pins via Places/Marker API
-  useEffect(() => {
-    if (!mapInstance || !hazards) return;
-
-    const newMarkers: any[] = [];
-
-    hazards.forEach((hazard) => {
-      let color = "#ef4444";
-      if (hazard.severity === "MEDIUM") {
-        color = "#f59e0b";
-      } else if (hazard.severity === "LOW") {
-        color = "#10b981";
-      }
-
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-        <defs>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
-          </filter>
-        </defs>
-        <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
-        <circle cx="18" cy="18" r="6" fill="${color}"/>
-        <circle cx="18" cy="18" r="2" fill="#ffffff"/>
-      </svg>`;
-
-      const marker = new google.maps.Marker({
-        map: mapInstance,
-        position: { lat: hazard.latitude, lng: hazard.longitude },
-        icon: {
-          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-          anchor: new google.maps.Point(18, 18),
-        },
-        title: `${hazard.category} (${hazard.severity}): ${hazard.description}`,
-      });
-
-      newMarkers.push(marker);
-    });
-
-    return () => {
-      newMarkers.forEach((m) => {
-        m.setMap(null);
-      });
-    };
-  }, [mapInstance, hazards]);
-
-  // 2b. Toggle base map pins (POIs) visibility based on user choice
+  // Toggle base map pins (POIs) visibility based on user choice
   useEffect(() => {
     if (!mapInstance) return;
 
@@ -249,395 +178,30 @@ export default function MapComponent() {
     });
   }, [mapInstance, showAllPins]);
 
-  // 2c. Render Start & Destination Pins (Origin & Destination)
-  useEffect(() => {
-    if (!mapInstance || !isLoaded) return;
+  // Render Hazard Pins custom overlay controller hook
+  useHazardMarkers(mapInstance, hazards);
 
-    let localFromMarker: any = null;
-    let localToMarker: any = null;
-
-    if (fromCoords) {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
-        <defs>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
-          </filter>
-        </defs>
-        <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26c0-8.84-7.16-16-16-16zm0 24c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" 
-              fill="#10b981" stroke="#ffffff" stroke-width="1.5" filter="url(#shadow)"/>
-        <circle cx="16" cy="16" r="4" fill="#ffffff"/>
-      </svg>`;
-
-      localFromMarker = new google.maps.Marker({
-        map: mapInstance,
-        position: fromCoords,
-        icon: {
-          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-          anchor: new google.maps.Point(16, 42),
-        },
-        title: `Start: ${fromAddress}`,
-      });
-    }
-
-    if (toCoords) {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
-        <defs>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
-          </filter>
-        </defs>
-        <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26c0-8.84-7.16-16-16-16zm0 24c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" 
-              fill="#3b82f6" stroke="#ffffff" stroke-width="1.5" filter="url(#shadow)"/>
-        <circle cx="16" cy="16" r="4" fill="#ffffff"/>
-      </svg>`;
-
-      localToMarker = new google.maps.Marker({
-        map: mapInstance,
-        position: toCoords,
-        icon: {
-          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-          anchor: new google.maps.Point(16, 42),
-        },
-        title: `Destination: ${toAddress}`,
-      });
-    }
-
-    return () => {
-      if (localFromMarker) localFromMarker.setMap(null);
-      if (localToMarker) localToMarker.setMap(null);
-    };
-  }, [mapInstance, fromCoords, toCoords, isLoaded, fromAddress, toAddress]);
-
-  // 3. Compute and Render Safe Route using the modern Routes API
-  // Speech synthesis speaker
-  const speakText = (text: string) => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
-  };
-
-  // Speak directions steps when voice toggle or steps list changes
-  useEffect(() => {
-    if (isVoiceActive && routeSteps.length > 0 && routeSteps[activeStepIndex]) {
-      const currentInstruction = routeSteps[activeStepIndex];
-      const safetyWarning = currentInstruction.warnings && currentInstruction.warnings.length > 0
-        ? `. Look out for: ${currentInstruction.warnings.join(". ")}`
-        : "";
-      speakText(
-        `Next step. ${currentInstruction.instruction} in ${currentInstruction.distance}. ${currentInstruction.surfaceInfo}${safetyWarning}`
-      );
-    } else {
-      if (typeof window !== "undefined" && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-    }
-  }, [isVoiceActive, routeSteps, activeStepIndex]);
-
-  // 3. Compute and Cache raw Route data when origin or destination changes (Optimized to save API quotas)
-  useEffect(() => {
-    if (!isLoaded || !fromCoords || !toCoords) return;
-
-    // Skip if we already have the route coordinates cached
-    if (
-      lastRouteCoords &&
-      lastRouteCoords.from.lat === fromCoords.lat &&
-      lastRouteCoords.from.lng === fromCoords.lng &&
-      lastRouteCoords.to.lat === toCoords.lat &&
-      lastRouteCoords.to.lng === toCoords.lng &&
-      cachedRoutesData
-    ) {
-      return;
-    }
-
-    let active = true;
-
-    const fetchRoute = async () => {
-      try {
-        const response = await fetch("/api/routes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ origin: fromCoords, destination: toCoords }),
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch route options");
-        const data = await response.json();
-
-        if (active) {
-          setCachedRoutesData(data);
-          setLastRouteCoords({ from: fromCoords, to: toCoords });
-        }
-      } catch (err) {
-        console.error("Error calculating safe route:", err);
-      }
-    };
-
-    fetchRoute();
-
-    return () => {
-      active = false;
-    };
-  }, [isLoaded, fromCoords, toCoords, lastRouteCoords, cachedRoutesData]);
-
-  // 4. Sub-millisecond Local Routing Scoring & Map Overlay rendering
-  useEffect(() => {
-    if (!mapInstance || !cachedRoutesData || !fromCoords || !toCoords) return;
-
-    const data = cachedRoutesData;
-    if (!data.routes || data.routes.length === 0) return;
-
-    // Filter active database hazards based on user profile settings
-    const relevantHazards = hazards.filter((h) => {
-      if (isWheelchairEnabled && (h.category === "ELEVATOR_BROKEN" || h.category === "RAMP_BLOCKED")) {
-        return true;
-      }
-      if (isRainEnabled && h.category === "FLOOD") {
-        return true;
-      }
-      return false;
-    });
-
-    let bestRouteIndex = 0;
-    let minViolations = Infinity;
-    let maxMinDistanceToHazard = -1;
-    const decodedPaths: google.maps.LatLng[][] = [];
-
-    // Evaluate alternative routes returned by Routes API locally in memory
-    data.routes.forEach((route: any, index: number) => {
-      const encodedPolyline = route.polyline.encodedPolyline;
-      const decodedPath = google.maps.geometry.encoding.decodePath(encodedPolyline);
-      decodedPaths.push(decodedPath);
-
-      let violations = 0;
-      let minDistanceForThisRoute = Infinity;
-
-      decodedPath.forEach((point) => {
-        const ptLat = point.lat();
-        const ptLng = point.lng();
-
-        relevantHazards.forEach((hazard) => {
-          const dist = getDistanceKm(ptLat, ptLng, hazard.latitude, hazard.longitude);
-          if (dist < minDistanceForThisRoute) {
-            minDistanceForThisRoute = dist;
-          }
-          if (dist < 0.05) { // Within 50 meters
-            violations++;
-          }
-        });
-      });
-
-      if (violations < minViolations) {
-        minViolations = violations;
-        bestRouteIndex = index;
-        maxMinDistanceToHazard = minDistanceForThisRoute;
-      } else if (violations === minViolations && minDistanceForThisRoute > maxMinDistanceToHazard) {
-        bestRouteIndex = index;
-        maxMinDistanceToHazard = minDistanceForThisRoute;
-      }
-    });
-
-    const chosenRoute = data.routes[bestRouteIndex];
-    const chosenPath = decodedPaths[bestRouteIndex];
-
-    // Reset previous polylines & markers from map
-    if (activePolyline) {
-      activePolyline.setMap(null);
-    }
-    if (activeBypassedPolyline) {
-      activeBypassedPolyline.setMap(null);
-    }
-    activeWarningMarkers.forEach((m) => {
-      m.map = null;
-    });
-
-    // Draw active safe route
-    let strokeColor = "#cbd5e1";
-    if (isWheelchairEnabled) {
-      strokeColor = "#00f0ff";
-    } else if (isRainEnabled) {
-      strokeColor = "#3b82f6";
-    } else if (isShadedEnabled) {
-      strokeColor = "#ff9f00";
-    }
-
-    const polyline = new google.maps.Polyline({
-      path: chosenPath,
-      geodesic: true,
-      strokeColor: strokeColor,
-      strokeOpacity: 0.9,
-      strokeWeight: 6,
-      map: mapInstance,
-    });
-    setActivePolyline(polyline);
-
-    // Draw origin/destination markers
-    startEndMarkersRef.current.forEach((m) => (m.map = null));
-    startEndMarkersRef.current = [];
-
-    if (fromCoords) {
-      const startMarker = new google.maps.Marker({
-        position: fromCoords,
-        map: mapInstance,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: "#2ECC71",
-          fillOpacity: 1,
-          strokeColor: "#FFFFFF",
-          strokeWeight: 3,
-        },
-        title: `Start: ${fromAddress}`
-      });
-      startEndMarkersRef.current.push(startMarker);
-    }
-
-    if (toCoords) {
-      const endMarker = new google.maps.Marker({
-        position: toCoords,
-        map: mapInstance,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: "#E74C3C",
-          fillOpacity: 1,
-          strokeColor: "#FFFFFF",
-          strokeWeight: 3,
-        },
-        title: `Destination: ${toAddress}`
-      });
-      startEndMarkersRef.current.push(endMarker);
-    }
-
-    // Highlight bypassed route if chosen route has bypassed barriers
-    if (bestRouteIndex !== 0) {
-      const defaultPath = decodedPaths[0];
-
-      const bypassedPolyline = new google.maps.Polyline({
-        path: defaultPath,
-        geodesic: true,
-        strokeColor: "#94a3b8",
-        strokeOpacity: 0.35,
-        strokeWeight: 5,
-        map: mapInstance,
-        icons: [
-          {
-            icon: { path: "M 0,-1 0,1", strokeOpacity: 0.5, scale: 3 },
-            offset: "0",
-            repeat: "15px",
-          },
-        ],
-      });
-      setActiveBypassedPolyline(bypassedPolyline);
-
-      // Render avoided obstacle pins asynchronously
-      const loadObstacles = async () => {
-        const { AdvancedMarkerElement } = (await google.maps.importLibrary("marker")) as any;
-        const newWarnings: any[] = [];
-
-        relevantHazards.forEach((hazard) => {
-          let nearDefault = false;
-          defaultPath.forEach((pt) => {
-            if (getDistanceKm(pt.lat(), pt.lng(), hazard.latitude, hazard.longitude) < 0.05) {
-              nearDefault = true;
-            }
-          });
-
-          let nearSafe = false;
-          chosenPath.forEach((pt) => {
-            if (getDistanceKm(pt.lat(), pt.lng(), hazard.latitude, hazard.longitude) < 0.05) {
-              nearSafe = true;
-            }
-          });
-
-          if (nearDefault && !nearSafe) {
-            const warningEl = document.createElement("div");
-            warningEl.innerHTML = `
-              <div class="pulse-hazard" style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 32px;
-                height: 32px;
-                background-color: var(--severity-high);
-                border: 2px solid #ffffff;
-                border-radius: 50%;
-                font-size: 16px;
-                color: #ffffff;
-                font-weight: bold;
-              ">🚫</div>
-            `;
-
-            const marker = new AdvancedMarkerElement({
-              map: mapInstance,
-              position: { lat: hazard.latitude, lng: hazard.longitude },
-              content: warningEl,
-              title: `Avoided Barrier: ${hazard.description}`,
-            });
-            newWarnings.push(marker);
-          }
-        });
-        setActiveWarningMarkers(newWarnings);
-      };
-      loadObstacles();
-    } else {
-      setActiveWarningMarkers([]);
-    }
-
-    // Compile travel steps directions
-    const parsedSteps: RouteStep[] = [];
-    if (chosenRoute.legs?.[0]?.steps) {
-      chosenRoute.legs[0].steps.forEach((step: any) => {
-        const instruction = step.navigationInstruction?.instruction || "Go straight";
-        const distanceVal = step.distanceMeters ? `${step.distanceMeters} m` : "";
-        const lat = step.startLocation?.latLng?.latitude;
-        const lng = step.startLocation?.latLng?.longitude;
-        const stepCoords = lat && lng ? { lat, lng } : defaultCenter;
-
-        const stepWarnings: string[] = [];
-        relevantHazards.forEach((hazard) => {
-          const dist = getDistanceKm(stepCoords.lat, stepCoords.lng, hazard.latitude, hazard.longitude);
-          if (dist < 0.05) {
-            stepWarnings.push(`⚠️ ${hazard.category.replace("_", " ")}: ${hazard.description}`);
-          }
-        });
-
-        let surfaceInfo = "Smooth concrete, clear walkway.";
-        if (isWheelchairEnabled) {
-          if (stepWarnings.length > 0) {
-            surfaceInfo = "Low sidewalk curb or elevator issues reported near this block.";
-          } else {
-            surfaceInfo = "Curb cuts available, standard slope incline.";
-          }
-        } else if (isRainEnabled) {
-          surfaceInfo = "Well-drained surface. Damp, flood-free path.";
-        }
-
-        parsedSteps.push({
-          instruction,
-          distance: distanceVal,
-          maneuver: step.navigationInstruction?.maneuver,
-          warnings: stepWarnings,
-          surfaceInfo,
-          startLocation: stepCoords,
-        });
-      });
-    }
-    setRouteSteps(parsedSteps);
-
-    const leg = chosenRoute.legs?.[0];
-    setRouteInfo({
-      distance: leg ? `${(chosenRoute.distanceMeters / 1000).toFixed(1)} km` : undefined,
-      duration: chosenRoute.duration ? formatDuration(chosenRoute.duration) : undefined,
-    });
-
-    setAvoidedCount(relevantHazards.length - minViolations);
-
-    // Pan map to focus start direction
-    if (fromCoords) {
-      mapInstance.setCenter(fromCoords);
-      mapInstance.setZoom(16);
-    }
-  }, [cachedRoutesData, mapInstance, hazards, isWheelchairEnabled, isShadedEnabled, isRainEnabled, fromCoords, toCoords]);
+  // Compute and Render Safe Route custom controller hook
+  const {
+    routeSteps,
+    routeInfo,
+    avoidedCount,
+    resetRoute,
+  } = useRouteCalculator({
+    isLoaded,
+    mapInstance,
+    fromCoords,
+    toCoords,
+    fromAddress,
+    toAddress,
+    hazards,
+    isWheelchairEnabled,
+    isShadedEnabled,
+    isRainEnabled,
+    isVoiceActive,
+    activeStepIndex,
+    setActiveStepIndex,
+  });
 
   const handleConfirmRoute = (
     fromC: google.maps.LatLngLiteral,
@@ -702,28 +266,10 @@ export default function MapComponent() {
   const handleReset = () => {
     setFromCoords(null);
     setToCoords(null);
-    setCachedRoutesData(null);
-    setLastRouteCoords(null);
     setActiveStepIndex(0);
     setIsEditingAddresses(false);
-    if (activePolyline) {
-      activePolyline.setMap(null);
-    }
-    if (activeBypassedPolyline) {
-      activeBypassedPolyline.setMap(null);
-    }
-    activeWarningMarkers.forEach((m) => {
-      m.map = null;
-    });
-    startEndMarkersRef.current.forEach((m) => {
-      m.map = null;
-    });
-    setActivePolyline(null);
-    setActiveBypassedPolyline(null);
-    setActiveWarningMarkers([]);
-    startEndMarkersRef.current = [];
-    setRouteSteps([]);
     setIsVoiceActive(false);
+    resetRoute();
     setCurrentStep(1);
   };
 
@@ -760,294 +306,32 @@ export default function MapComponent() {
 
         {/* Step 2: High-contrast split turn-by-turn feed */}
         {!showSplash && currentStep === 2 && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              padding: "24px",
-              height: "100%",
-              backgroundColor: "var(--bg-primary)",
-              pointerEvents: "auto",
-            }}
-          >
-            {/* High-Contrast Route Header */}
-            <div className="nav-header-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <span style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-primary)" }}>
-                    {routeInfo.duration || "Calculating..."}
-                  </span>
-                  <span style={{ fontSize: "14px", color: "var(--text-secondary)", marginLeft: "8px" }}>
-                    ({routeInfo.distance || ""})
-                  </span>
-                </div>
-                <button
-                  onClick={() => setIsVoiceActive(!isVoiceActive)}
-                  className="btn-interactive"
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: "20px",
-                    border: "none",
-                    backgroundColor: isVoiceActive ? "rgba(30, 81, 63, 0.1)" : "rgba(0, 0, 0, 0.05)",
-                    color: isVoiceActive ? "var(--accent-accessibility)" : "var(--text-primary)",
-                    fontWeight: 700,
-                    fontSize: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span>{isVoiceActive ? "🔊 Voice On" : "🔇 Voice Off"}</span>
-                </button>
-              </div>
-
-              {/* Start & Destination Addresses Info (Emphasized Inset block) */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                  backgroundColor: "var(--bg-app-left)",
-                  border: "1.5px solid var(--border-subtle)",
-                  borderRadius: "12px",
-                  padding: "14px 16px",
-                  margin: "6px 0",
-                }}
-              >
-                {!isEditingAddresses ? (
-                  <>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.5px" }}>
-                        ACTIVE ROUTE
-                      </span>
-                      <button
-                        onClick={() => {
-                          setTempFromAddress(fromAddress);
-                          setTempToAddress(toAddress);
-                          setIsEditingAddresses(true);
-                        }}
-                        className="btn-interactive"
-                        style={{
-                          border: "none",
-                          background: "none",
-                          color: "var(--accent-accessibility)",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          padding: "2px 6px",
-                        }}
-                      >
-                        ✏️ Edit
-                      </button>
-                    </div>
-
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#2ECC71", flexShrink: 0 }} />
-                      <div style={{ fontSize: "12px", color: "var(--text-secondary)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
-                        <strong style={{ color: "var(--text-primary)" }}>From: </strong>{fromAddress || "PUP Manila"}
-                      </div>
-                    </div>
-                    
-                    {/* Visual Connector Line */}
-                    <div style={{ height: "1px", backgroundColor: "var(--border-subtle)", marginLeft: "18px" }} />
-
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#E74C3C", flexShrink: 0 }} />
-                      <div style={{ fontSize: "12px", color: "var(--text-secondary)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
-                        <strong style={{ color: "var(--text-primary)" }}>To: </strong>{toAddress || "Master Buffalo"}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#2ECC71", flexShrink: 0 }} />
-                      <input
-                        type="text"
-                        value={tempFromAddress}
-                        onChange={(e) => setTempFromAddress(e.target.value)}
-                        placeholder="Starting address"
-                        style={{
-                          flex: 1,
-                          padding: "8px 12px",
-                          borderRadius: "8px",
-                          border: "1.5px solid var(--border-subtle)",
-                          backgroundColor: "var(--bg-card)",
-                          color: "var(--text-primary)",
-                          fontSize: "12px",
-                          outline: "none",
-                        }}
-                      />
-                    </div>
-                    
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#E74C3C", flexShrink: 0 }} />
-                      <input
-                        type="text"
-                        value={tempToAddress}
-                        onChange={(e) => setTempToAddress(e.target.value)}
-                        placeholder="Destination address"
-                        style={{
-                          flex: 1,
-                          padding: "8px 12px",
-                          borderRadius: "8px",
-                          border: "1.5px solid var(--border-subtle)",
-                          backgroundColor: "var(--bg-card)",
-                          color: "var(--text-primary)",
-                          fontSize: "12px",
-                          outline: "none",
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Action buttons row */}
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" }}>
-                      <button
-                        disabled={isGeocoding}
-                        onClick={() => setIsEditingAddresses(false)}
-                        className="btn-interactive"
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: "6px",
-                          border: "1.5px solid var(--border-subtle)",
-                          backgroundColor: "var(--bg-card)",
-                          color: "var(--text-primary)",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        disabled={isGeocoding || !tempFromAddress.trim() || !tempToAddress.trim()}
-                        onClick={handleSaveEditedAddresses}
-                        className="btn-interactive"
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: "6px",
-                          border: "none",
-                          backgroundColor: "var(--accent-accessibility)",
-                          color: "#FFFFFF",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {isGeocoding ? "Saving..." : "Save"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Balanced, equally-sized travel mode toggles */}
-              <div style={{ display: "flex", gap: "8px", width: "100%" }}>
-                <button
-                  onClick={() => setIsWheelchairEnabled(!isWheelchairEnabled)}
-                  className={`btn-interactive badge-pill ${isWheelchairEnabled ? 'active-wheelchair' : ''}`}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "1.5px solid var(--border-subtle)",
-                    backgroundColor: isWheelchairEnabled ? "var(--badge-accessible-bg)" : "var(--bg-app-left)",
-                    color: isWheelchairEnabled ? "var(--badge-accessible-text)" : "var(--text-secondary)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    padding: "10px 4px",
-                    borderRadius: "10px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  ♿ {isWheelchairEnabled ? "Accessible" : "Standard"}
-                </button>
-                <button
-                  onClick={() => setIsShadedEnabled(!isShadedEnabled)}
-                  className={`btn-interactive badge-pill ${isShadedEnabled ? 'active-shaded' : ''}`}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "1.5px solid var(--border-subtle)",
-                    backgroundColor: isShadedEnabled ? "var(--badge-shaded-bg)" : "var(--bg-app-left)",
-                    color: isShadedEnabled ? "var(--badge-shaded-text)" : "var(--text-secondary)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    padding: "10px 4px",
-                    borderRadius: "10px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  ☀️ Shaded
-                </button>
-                <button
-                  onClick={() => setIsRainEnabled(!isRainEnabled)}
-                  className={`btn-interactive badge-pill ${isRainEnabled ? 'active-rain' : ''}`}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "1.5px solid var(--border-subtle)",
-                    backgroundColor: isRainEnabled ? "var(--badge-flood-bg)" : "var(--bg-app-left)",
-                    color: isRainEnabled ? "var(--badge-flood-text)" : "var(--text-secondary)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    padding: "10px 4px",
-                    borderRadius: "10px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  🌧️ Flood-Free
-                </button>
-              </div>
-            </div>
-
-            {/* Immediate Next Turn Card with interactive pagination to utilize empty panel white space */}
-            {routeSteps.length > 0 && routeSteps[activeStepIndex] && (
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: "20px 0",
-                }}
-              >
-                <ImmediateActionCard
-                  routeSteps={routeSteps}
-                  activeStepIndex={activeStepIndex}
-                  onStepChange={(idx) => setActiveStepIndex(idx)}
-                  mapInstance={mapInstance}
-                />
-              </div>
-            )}
-
-            {/* Reset button */}
-            <button
-              onClick={handleReset}
-              className="btn-interactive"
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "10px",
-                border: "1px solid var(--border-glass)",
-                backgroundColor: "var(--bg-secondary)",
-                color: "var(--text-primary)",
-                fontWeight: 600,
-                fontSize: "13px",
-                cursor: "pointer",
-                boxShadow: "var(--shadow-glass)",
-              }}
-            >
-              ◄ Back to Route Planning
-            </button>
-          </div>
+          <ActiveRoutePanel
+            routeInfo={routeInfo}
+            isVoiceActive={isVoiceActive}
+            setIsVoiceActive={setIsVoiceActive}
+            fromAddress={fromAddress}
+            toAddress={toAddress}
+            isEditingAddresses={isEditingAddresses}
+            setIsEditingAddresses={setIsEditingAddresses}
+            tempFromAddress={tempFromAddress}
+            setTempFromAddress={setTempFromAddress}
+            tempToAddress={tempToAddress}
+            setTempToAddress={setTempToAddress}
+            isGeocoding={isGeocoding}
+            handleSaveEditedAddresses={handleSaveEditedAddresses}
+            isWheelchairEnabled={isWheelchairEnabled}
+            setIsWheelchairEnabled={setIsWheelchairEnabled}
+            isShadedEnabled={isShadedEnabled}
+            setIsShadedEnabled={setIsShadedEnabled}
+            isRainEnabled={isRainEnabled}
+            setIsRainEnabled={setIsRainEnabled}
+            routeSteps={routeSteps}
+            activeStepIndex={activeStepIndex}
+            setActiveStepIndex={setActiveStepIndex}
+            mapInstance={mapInstance}
+            handleReset={handleReset}
+          />
         )}
       </div>
 
@@ -1088,10 +372,12 @@ export default function MapComponent() {
           mapInstance={mapInstance}
           fromCoords={fromCoords}
           defaultCenter={defaultCenter}
+          showAllPins={showAllPins}
+          setShowAllPins={setShowAllPins}
         />
 
         {!isLoaded && (
-          <div className="glass-panel" style={{ position: "absolute", top: "20px", left: "20px", padding: "12px 20px", zIndex: 10 }}>
+          <div className="glass-panel" style={{ position: "absolute", top: "20px", left: "20px", zIndex: 10, padding: "12px 20px" }}>
             <h3>Loading Map...</h3>
           </div>
         )}

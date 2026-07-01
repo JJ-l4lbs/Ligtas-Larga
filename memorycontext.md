@@ -1,7 +1,11 @@
 # Contextual Memory Log: Ligtas-Larga
 
 ## Current Context
-We have designed and planned a role-based session management system (Option A: unified app with `/admin` partition) mapping capabilities for Anonymous commuter sessions, Registered user sessions, and Administrators. We updated all documentation specifications (`GEMINI.md`, `Features.md`, `Build.md`, `Progress.md`, `Schema.md`, and `PID.md`) to reflect the new feature roadmap.
+We are refining the visual stacking of hazard overlays on the map. The user requested that the currently hovered hazard marker and its tooltip must *always* be on top of all other markers and popups, even if there are permanently open ones. 
+To achieve this:
+1. Clicking/permanently opening a marker assigns it and its `InfoWindow` a `zIndex` of `highestZIndex` (incrementing on every click).
+2. Hovering over a marker dynamically assigns the hovered marker and the `hoverInfoWindow` a temporary `zIndex` of `highestZIndex + 100`.
+3. Unhovering resets the marker back to its default state.
 
 ---
 
@@ -32,6 +36,9 @@ We have designed and planned a role-based session management system (Option A: u
   - Created **[Features.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Features.md)** outlining all planned, implemented, and salvaged features.
   - Updated **[GEMINI.md](file:///C:/AI-Integrated-Coding/SPARKFEST/GEMINI.md)**, **[Build.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Build.md)**, **[Progress.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Progress.md)**, **[Schema.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Schema.md)**, and **[PID.md](file:///C:/AI-Integrated-Coding/SPARKFEST/PID.md)** to include User/Admin sessions.
 
+- **Map Hazard Marker Layering Stacking Fix:**
+  - Configured a dynamic zIndex priority scheme in [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx) to keep the last selected hazard popup on top of all others.
+
 ---
 
 ## Immediate Next Objectives
@@ -50,3 +57,5 @@ We have designed and planned a role-based session management system (Option A: u
 - *Attempt 5:* Modularized Map utilities into `lib/maps-utils.ts` to reduce file bloat.
 - *Attempt 6:* Integrated workmate's revamped fullscreen liquid gradient splash loader with sprite animations from `splash-screen-revamp` branch into the modular `SplashLoader.tsx` component.
 - *Attempt 7:* Completed the planning specification updates for Role-Based Session Management features.
+- *Attempt 8:* Resolved the floating UI blocking issue for hazard markers by introducing a progressive zIndex system on markers and InfoWindows.
+- *Attempt 9:* Enhanced the hover trigger to dynamically bump the hovered marker and tooltip above all permanently opened markers (`highestZIndex + 100`).
