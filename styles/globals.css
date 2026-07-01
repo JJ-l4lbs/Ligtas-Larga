@@ -86,3 +86,51 @@ body {
   }
 }
 
+/* Fluid Splash Screen Gradient Animation */
+@keyframes fluid-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.splash-liquid-bg {
+  background: linear-gradient(135deg, #030b20, #0a2463, #3b82f6, #00d4ff, #030b20);
+  background-size: 300% 300%;
+  animation: fluid-gradient 10s ease infinite;
+}
+
+/* Walking Progress Animation */
+@keyframes walk-to-destination {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(180px); }
+}
+
+.walking-progress-anim {
+  animation: walk-to-destination 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes bounce-marker {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.marker-anim {
+  animation: bounce-marker 1.5s ease-in-out infinite;
+}
+
+/* Sprite Animation */
+@keyframes play-sprite {
+  from { transform: translateX(0); }
+  to { transform: translateX(-120px); }
+}
+
+.walking-sprite {
+  width: 120px;
+  animation: play-sprite 0.7s steps(5) infinite;
+}
