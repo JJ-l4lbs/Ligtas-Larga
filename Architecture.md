@@ -148,7 +148,11 @@ C:\AI-Integrated-Coding\SPARKFEST
 | `page.tsx` | `/app/page.tsx` | <100 | Main layout page aggregating Map and UI drawers |
 | `route.ts` | `/app/api/reports/route.ts`| <80 | API for creating and querying crowdsourced hazard reports |
 | `route.ts` | `/app/api/vision/route.ts` | <60 | API route handler interfacing with Hugging Face Inference API |
-| `Map.tsx` | `/components/Map.tsx` | ~1300 | React component wrapping the Google Maps Canvas (with dynamic sidebar & POI toggle features) |
+| `Map.tsx` | `/components/Map.tsx` | ~1000 | Core React page managing layout coordinate states, routes computation, and maps lifecycle |
 | `maps-utils.ts` | `/lib/maps-utils.ts` | ~150 | Centralized maps loader, styles, and calculation helpers |
+| `BrandHeader.tsx` | `/components/BrandHeader.tsx` | <50 | Modular application branding and theme toggle switch |
+| `SplashLoader.tsx` | `/components/SplashLoader.tsx` | <60 | Splash screen intro loader overlay shown during initialization |
+| `ImmediateActionCard.tsx` | `/components/ImmediateActionCard.tsx` | ~130 | Step-by-step direction feed pagination panel |
+| `MapControls.tsx` | `/components/MapControls.tsx` | <50 | Floating zoom in/out and pan recenter controllers |
 | `ProfileDrawer.tsx`| `/components/ProfileDrawer.tsx` | ~100 | Sliding layout drawer containing travel modes and info parameters |
 | `HazardModal.tsx` | `/components/HazardModal.tsx` | ~300 | Visual upload form with Hugging Face verification status |

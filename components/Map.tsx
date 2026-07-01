@@ -6,6 +6,10 @@ import LocationPicker from "./LocationPicker";
 import SearchOverlay from "./SearchOverlay";
 import ProfileDrawer from "./ProfileDrawer";
 import HazardModal from "./HazardModal";
+import BrandHeader from "./BrandHeader";
+import SplashLoader from "./SplashLoader";
+import ImmediateActionCard from "./ImmediateActionCard";
+import MapControls from "./MapControls";
 
 import {
   defaultCenter,
@@ -728,99 +732,12 @@ export default function MapComponent() {
       {/* Left Panel: Directions & Controls */}
       <div className={`left-text-panel ${!isSidebarOpen ? "sidebar-collapsed" : ""}`} style={{ display: "flex", flexDirection: "column" }}>
         
-        {/* Branding Header with Dark/Light Toggle */}
         {!showSplash && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "16px 24px",
-              borderBottom: "1.5px solid var(--border-subtle)",
-              backgroundColor: "var(--bg-card)",
-              zIndex: 10,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "20px" }}>🚀</span>
-              <span style={{ fontWeight: 800, fontSize: "16px", color: "var(--text-primary)" }}>Ligtas-Larga</span>
-            </div>
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className="btn-interactive"
-              style={{
-                padding: "6px 12px",
-                borderRadius: "20px",
-                border: "1.5px solid var(--border-subtle)",
-                backgroundColor: "var(--bg-app-left)",
-                color: "var(--text-primary)",
-                fontWeight: 700,
-                fontSize: "11px",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                cursor: "pointer",
-              }}
-            >
-              <span>{isDarkMode ? "☀️ Light" : "🌙 Dark"}</span>
-            </button>
-          </div>
+          <BrandHeader isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)} />
         )}
         
-        {/* Splash screen overlay inside Left Panel */}
         {showSplash && (
-          <div
-            style={{
-              padding: "40px 30px",
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "20px",
-              flex: 1,
-              opacity: currentStep === 0 ? 1 : 0,
-              transition: "opacity 0.6s ease-in-out",
-            }}
-          >
-            <div
-              style={{
-                width: "70px",
-                height: "70px",
-                borderRadius: "20px",
-                background: "linear-gradient(135deg, #1E513F, #0369A1)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "32px",
-                boxShadow: "0 0 20px rgba(30, 81, 63, 0.2)",
-              }}
-            >
-              🚀
-            </div>
-            <div>
-              <h1 style={{ fontSize: "28px", fontWeight: 800, letterSpacing: "-1px", color: "var(--text-primary)" }}>Ligtas-Larga</h1>
-              <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                Accessible Commuter Navigator
-              </p>
-            </div>
-            <div style={{ marginTop: "10px" }}>
-              <div
-                style={{
-                  width: "24px",
-                  height: "24px",
-                  borderRadius: "50%",
-                  border: "2px solid var(--accent-accessibility)",
-                  borderTopColor: "transparent",
-                  animation: "spin 1s linear infinite",
-                  margin: "0 auto",
-                }}
-              />
-              <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "12px" }}>
-                Hydrating route safety states...
-              </p>
-            </div>
-          </div>
+          <SplashLoader currentStep={currentStep} />
         )}
 
         {/* Step 1: Input stage */}
@@ -1102,124 +1019,12 @@ export default function MapComponent() {
                   padding: "20px 0",
                 }}
               >
-                <div
-                  className="glass-panel"
-                  style={{
-                    width: "100%",
-                    padding: "24px",
-                    border: "1.5px solid var(--border-subtle)",
-                    boxShadow: "var(--shadow-glass)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "16px",
-                    backgroundColor: "var(--bg-card)",
-                    borderRadius: "16px",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "1px", color: "var(--accent-accessibility)" }}>
-                      IMMEDIATE ACTION
-                    </span>
-                    <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-muted)" }}>
-                      Step {activeStepIndex + 1} of {routeSteps.length}
-                    </span>
-                  </div>
-                  
-                  <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                    <div
-                      style={{
-                        width: "56px",
-                        height: "56px",
-                        borderRadius: "12px",
-                        backgroundColor: "#EDF2FF",
-                        border: "1.5px solid rgba(30, 144, 255, 0.12)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "28px",
-                        color: "var(--accent-accessibility)",
-                      }}
-                    >
-                      {(() => {
-                        const step = routeSteps[activeStepIndex];
-                        let arrow = "➜";
-                        if (step.maneuver?.includes("LEFT")) arrow = "◄";
-                        if (step.maneuver?.includes("RIGHT")) arrow = "►";
-                        if (step.maneuver?.includes("UTURN")) arrow = "⟲";
-                        return arrow;
-                      })()}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.3 }}>
-                        {routeSteps[activeStepIndex].instruction}
-                      </div>
-                      <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                        In {routeSteps[activeStepIndex].distance}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ fontSize: "13px", color: "var(--text-secondary)", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-                      <span style={{ fontSize: "14px" }}>🚶</span>
-                      <span>{routeSteps[activeStepIndex].surfaceInfo}</span>
-                    </div>
-                    {routeSteps[activeStepIndex].warnings && routeSteps[activeStepIndex].warnings.map((w, wIdx) => (
-                      <div key={wIdx} className="warning-pill" style={{ marginTop: "4px", alignSelf: "flex-start" }}>
-                        {w}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* UI/UX Step Pagination Navigation Controls */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", borderTop: "1.5px solid var(--border-subtle)", paddingTop: "12px" }}>
-                    <button
-                      disabled={activeStepIndex === 0}
-                      onClick={() => {
-                        const nextIdx = activeStepIndex - 1;
-                        setActiveStepIndex(nextIdx);
-                        mapInstance?.panTo(routeSteps[nextIdx].startLocation);
-                      }}
-                      className="btn-interactive"
-                      style={{
-                        padding: "8px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid var(--border-subtle)",
-                        backgroundColor: "var(--bg-app-left)",
-                        color: activeStepIndex === 0 ? "var(--text-muted)" : "var(--text-primary)",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        cursor: activeStepIndex === 0 ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      ◄ Prev
-                    </button>
-                    <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>
-                      Step {activeStepIndex + 1} of {routeSteps.length}
-                    </span>
-                    <button
-                      disabled={activeStepIndex === routeSteps.length - 1}
-                      onClick={() => {
-                        const nextIdx = activeStepIndex + 1;
-                        setActiveStepIndex(nextIdx);
-                        mapInstance?.panTo(routeSteps[nextIdx].startLocation);
-                      }}
-                      className="btn-interactive"
-                      style={{
-                        padding: "8px 16px",
-                        borderRadius: "8px",
-                        border: "1.5px solid var(--border-subtle)",
-                        backgroundColor: "var(--bg-app-left)",
-                        color: activeStepIndex === routeSteps.length - 1 ? "var(--text-muted)" : "var(--text-primary)",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        cursor: activeStepIndex === routeSteps.length - 1 ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      Next ►
-                    </button>
-                  </div>
-                </div>
+                <ImmediateActionCard
+                  routeSteps={routeSteps}
+                  activeStepIndex={activeStepIndex}
+                  onStepChange={(idx) => setActiveStepIndex(idx)}
+                  mapInstance={mapInstance}
+                />
               </div>
             )}
 
@@ -1279,45 +1084,11 @@ export default function MapComponent() {
         )}
 
         {/* Floating Map Zoom Controls (Always visible in split container) */}
-        {mapInstance && (
-          <div
-            style={{
-              position: "absolute",
-              right: "20px",
-              top: "20px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              zIndex: 100,
-              pointerEvents: "auto",
-            }}
-          >
-            <button
-              onClick={() => mapInstance.setZoom((mapInstance.getZoom() || 13) + 1)}
-              className="floating-control-btn btn-interactive"
-              title="Zoom In"
-            >
-              +
-            </button>
-            <button
-              onClick={() => mapInstance.setZoom((mapInstance.getZoom() || 13) - 1)}
-              className="floating-control-btn btn-interactive"
-              title="Zoom Out"
-            >
-              -
-            </button>
-            <button
-              onClick={() => {
-                mapInstance.panTo(fromCoords || defaultCenter);
-                mapInstance.setZoom(15);
-              }}
-              className="floating-control-btn btn-interactive"
-              title="Recenter Map"
-            >
-              🎯
-            </button>
-          </div>
-        )}
+        <MapControls
+          mapInstance={mapInstance}
+          fromCoords={fromCoords}
+          defaultCenter={defaultCenter}
+        />
 
         {!isLoaded && (
           <div className="glass-panel" style={{ position: "absolute", top: "20px", left: "20px", padding: "12px 20px", zIndex: 10 }}>

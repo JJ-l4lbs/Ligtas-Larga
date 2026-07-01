@@ -21,7 +21,12 @@ The project has successfully merged the collapsible sidebar features from the `U
 
 - **Refactoring & Code Bloat Reduction:**
   - Created a centralized utility file **[maps-utils.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/lib/maps-utils.ts)** to hold Google Maps loading singleton hook, map style JSON configs, distance formulas, and formatting functions.
-  - Removed duplicate declarations in `components/Map.tsx` to follow the "No Bloated Code" philosophy.
+  - Extracted inline layout subcomponents from **[Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx)** into dedicated files:
+    - **[BrandHeader.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/BrandHeader.tsx):** Logo header and dark theme switch controls.
+    - **[SplashLoader.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/SplashLoader.tsx):** Hydration loading loader screen.
+    - **[ImmediateActionCard.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ImmediateActionCard.tsx):** Step direction pagination overlay layout.
+    - **[MapControls.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/MapControls.tsx):** Zoom in/out and panning controllers.
+  - Shaved off over 450 lines of code inside `components/Map.tsx` (bringing it under 1000 lines) to strictly follow the "No Bloated Code" philosophy.
 
 ---
 
