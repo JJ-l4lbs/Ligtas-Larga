@@ -1,0 +1,20 @@
+datasource db {
+  provider  = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model HazardReport {
+  id           String   @id @default(uuid())
+  latitude     Float
+  longitude    Float
+  category     String
+  severity     String
+  description  String
+  imageUrl     String?
+  isValidated  Boolean  @default(false)
+  visionLabels String?  // Stored as JSON string
+  reportedAt   DateTime @default(now())
+}
