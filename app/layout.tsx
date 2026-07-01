@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ligtas-Lakbay | Accessible Commuter Navigator",
+  title: "Ligtas-Larga | Accessible Commuter Navigator",
   description: "Crowdsourced hazard mapping and safe routing navigator for commuter inclusivity.",
 };
 
