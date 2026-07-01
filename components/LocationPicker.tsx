@@ -26,6 +26,8 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
 
+  const [isLocating, setIsLocating] = useState(false);
+
   const sessionTokenRef = useRef<any>(null);
 
   // Fetch suggestions for Start Location
@@ -34,7 +36,6 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       setFromSuggestions([]);
       return;
     }
-    // If the input exactly matches the selected address, don't query
     if (val === fromAddress) {
       setFromSuggestions([]);
       return;
@@ -62,7 +63,6 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       setToSuggestions([]);
       return;
     }
-    // If the input exactly matches the selected address, don't query
     if (val === toAddress) {
       setToSuggestions([]);
       return;
@@ -142,6 +142,66 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
     }
   };
 
+  // HTML5 Geolocation logic
+  const handleLocateMe = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setFromCoords({ lat, lng });
+
+        if ((window as any).google) {
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === "OK" && results && results[0]) {
+              const address = results[0].formatted_address;
+              setFromText(address);
+              setFromAddress(address);
+            } else {
+              const simpleAddress = `My Position (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+              setFromText(simpleAddress);
+              setFromAddress(simpleAddress);
+            }
+            setIsLocating(false);
+          });
+        } else {
+          const simpleAddress = `My Position (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+          setFromText(simpleAddress);
+          setFromAddress(simpleAddress);
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Unable to retrieve your location. Please type it manually.");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  };
+
+  // Swap locations logic
+  const handleSwap = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const tempText = fromText;
+    const tempAddress = fromAddress;
+    const tempCoords = fromCoords;
+
+    setFromText(toText);
+    setFromAddress(toAddress);
+    setFromCoords(toCoords);
+
+    setToText(tempText);
+    setToAddress(tempAddress);
+    setToCoords(tempCoords);
+  };
+
   // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,18 +245,16 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       }
     }
 
-    // Local testing fallback
     if (!finalFromCoords && fromText) {
-      finalFromCoords = { lat: 14.5995, lng: 120.9842 }; // Manila City Hall
+      finalFromCoords = { lat: 14.5995, lng: 120.9842 }; // Manila City Hall fallback
       finalFromAddress = fromText;
     }
     if (!finalToCoords && toText) {
-      finalToCoords = { lat: 14.5674, lng: 120.9932 }; // DLSU Taft
+      finalToCoords = { lat: 14.5674, lng: 120.9932 }; // DLSU Taft fallback
       finalToAddress = toText;
     }
 
     if (finalFromCoords && finalToCoords) {
-      // Clear session token for the next route search
       sessionTokenRef.current = null;
       onConfirmRoute(finalFromCoords, finalToCoords, finalFromAddress, finalToAddress);
     }
@@ -208,51 +266,85 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
 
   return (
     <div
-      className="glass-panel"
       style={{
-        position: "absolute",
-        top: "10%",
-        left: "5%",
-        right: "5%",
-        zIndex: 100,
-        padding: "24px",
+        padding: "24px 24px 12px 24px",
         display: "flex",
         flexDirection: "column",
         gap: "16px",
-        pointerEvents: "auto",
+        backgroundColor: "var(--bg-primary)",
       }}
     >
       <div style={{ textAlign: "center", marginBottom: "8px" }}>
-        <h2 style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.5px" }}>Where are you heading?</h2>
-        <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Plan a route bypassing active local hazards</p>
+        <h2 style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.5px", color: "var(--text-on-app-left)" }}>Where are you heading?</h2>
+        <p style={{ fontSize: "12px", color: "var(--text-on-app-left-secondary)" }}>Plan a route bypassing active local hazards</p>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {/* Start Location Input */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
-          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>START LOCATION</label>
-          <input
-            type="text"
-            placeholder="Search start address..."
-            value={fromText}
-            onChange={(e) => {
-              const val = e.target.value;
-              setFromText(val);
-              if (val !== fromAddress) {
-                setFromCoords(null);
-              }
-            }}
-            style={{
-              width: "100%",
-              borderRadius: "10px",
-              border: "1px solid var(--border-glass)",
-              backgroundColor: "rgba(11, 15, 25, 0.5)",
-              color: "#ffffff",
-              padding: "12px 14px",
-              outline: "none",
-              fontSize: "14px",
-            }}
-          />
+          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-on-app-left-secondary)" }}>START LOCATION</label>
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              placeholder="Search start address..."
+              value={fromText}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFromText(val);
+                if (val !== fromAddress) {
+                  setFromCoords(null);
+                }
+              }}
+              style={{
+                width: "100%",
+                borderRadius: "10px",
+                border: "1.5px solid var(--border-subtle)",
+                backgroundColor: "var(--bg-input-light)",
+                color: "var(--text-input-typed)",
+                padding: "12px 42px 12px 14px",
+                outline: "none",
+                fontSize: "14px",
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleLocateMe}
+              className="btn-interactive"
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                color: isLocating ? "var(--accent-accessibility)" : "var(--text-secondary)",
+                fontSize: "18px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "28px",
+                height: "28px",
+              }}
+              title="Use current location"
+              disabled={isLocating}
+            >
+              {isLocating ? (
+                <div
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    borderRadius: "50%",
+                    border: "2px solid var(--accent-accessibility)",
+                    borderTopColor: "transparent",
+                    animation: "spin 0.6s linear infinite",
+                  }}
+                />
+              ) : (
+                "🎯"
+              )}
+            </button>
+          </div>
           {fromSuggestions.length > 0 && (
             <div
               style={{
@@ -277,12 +369,15 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
                   key={idx}
                   onClick={() => handleSelectFrom(s)}
                   style={{
-                    padding: "10px 14px",
+                    padding: "12px 14px",
                     cursor: "pointer",
                     fontSize: "13px",
                     color: "var(--text-primary)",
                     borderBottom: idx === fromSuggestions.length - 1 ? "none" : "1px solid var(--border-glass)",
                     transition: "background-color 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
@@ -291,16 +386,46 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
-                  {s.placePrediction.text.text}
+                  <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>📍</span>
+                  <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                    {s.placePrediction.text.text}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
+        {/* Floating Swap Button Row */}
+        <div style={{ display: "flex", justifyContent: "center", margin: "-6px 0" }}>
+          <button
+            type="button"
+            onClick={handleSwap}
+            className="btn-interactive"
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              border: "1.5px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-input-light)",
+              color: "var(--accent-accessibility)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "var(--shadow-glass)",
+              fontSize: "16px",
+              zIndex: 5,
+            }}
+            title="Swap locations"
+          >
+            ⇅
+          </button>
+        </div>
+
         {/* Destination Input */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
-          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>DESTINATION</label>
+          <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-on-app-left-secondary)" }}>DESTINATION</label>
           <input
             type="text"
             placeholder="Search destination..."
@@ -315,9 +440,9 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
             style={{
               width: "100%",
               borderRadius: "10px",
-              border: "1px solid var(--border-glass)",
-              backgroundColor: "rgba(11, 15, 25, 0.5)",
-              color: "#ffffff",
+              border: "1.5px solid var(--border-subtle)",
+              backgroundColor: "var(--bg-input-light)",
+              color: "var(--text-input-typed)",
               padding: "12px 14px",
               outline: "none",
               fontSize: "14px",
@@ -347,12 +472,15 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
                   key={idx}
                   onClick={() => handleSelectTo(s)}
                   style={{
-                    padding: "10px 14px",
+                    padding: "12px 14px",
                     cursor: "pointer",
                     fontSize: "13px",
                     color: "var(--text-primary)",
                     borderBottom: idx === toSuggestions.length - 1 ? "none" : "1px solid var(--border-glass)",
                     transition: "background-color 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
@@ -361,7 +489,10 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
-                  {s.placePrediction.text.text}
+                  <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>📍</span>
+                  <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                    {s.placePrediction.text.text}
+                  </span>
                 </div>
               ))}
             </div>
@@ -376,7 +507,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
             marginTop: "8px",
             padding: "14px",
             borderRadius: "10px",
-            border: "none",
+            border: "1.5px solid var(--border-subtle)",
             background: isSubmitDisabled
               ? "rgba(255, 255, 255, 0.05)"
               : "linear-gradient(135deg, var(--accent-accessibility), var(--accent-rain))",
@@ -384,6 +515,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
             fontWeight: 700,
             fontSize: "14px",
             cursor: isSubmitDisabled ? "not-allowed" : "pointer",
+            boxShadow: "var(--shadow-glass)",
           }}
         >
           Calculate Safe Route
@@ -391,4 +523,5 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       </form>
     </div>
   );
+
 }
