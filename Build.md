@@ -106,3 +106,24 @@ Before starting construction, ensure the following API credentials are set in yo
   - Select/snap verification photos.
   - Submit the record. Submitting must call `/api/vision` first to verify the image via Hugging Face API, then call `/api/reports` to save to Supabase database.
 - **Verification:** Trigger the reporting flow, select a location, upload an image, and submit. Verify that a verification loading screen displays, and a new validated pin is instantly added to the map.
+
+---
+
+### Phase 8: Role-Based Session Management & Admin Validation Panel
+#### Step 8.1: Supabase Auth & Session Integration
+- **What to do:** Integrate Supabase Auth client helpers. Build a `/login` page for administrator and registered user sessions. Configure a database profile check or user metadata mapping to distinguish `Role: USER | ADMIN`. Unauthenticated sessions fall back to the default "Anonymous" role (read-only navigation & queue-restricted reporting).
+- **Verification:** Navigate to `/login` and verify form elements render. Attempt access with incorrect credentials and confirm error indicators.
+
+#### Step 8.2: Next.js Security Middleware & Route Protection
+- **What to do:** Create `middleware.ts` in the project root. Configure it to intercept all admin routes under `/admin/*` and admin API handlers under `/api/admin/*`. Inspect session cookies or JWT role metadata, redirecting unauthenticated or non-admin users to `/login`.
+- **Verification:** Attempt to navigate to `/admin` while unauthenticated and confirm immediate redirection to `/login`.
+
+#### Step 8.3: Admin Verification Dashboard Layout
+- **What to do:** Create page layout under `/app/admin/page.tsx`. Build a glassmorphic dashboard queue displaying all reports, highlighting `isValidated` status. Provide quick action buttons: "Approve / Verify", "Edit Description", and "Delete / Archive".
+- **Verification:** Access `/admin` as an administrator and verify listing of all active and pending reports.
+
+#### Step 8.4: Admin Review API Handlers
+- **What to do:** Develop API routes under `/app/api/admin/reports/route.ts` supporting:
+  - `PUT`: Allows updating a hazard report's status (e.g. toggling `isValidated`) or editing category/description.
+  - `DELETE`: Allows removing resolved or false-alarm reports from Supabase.
+- **Verification:** Verify that clicking "Approve" updates the database flag and renders the pin on the public map. Verify that "Delete" removes the report from the DB and map.

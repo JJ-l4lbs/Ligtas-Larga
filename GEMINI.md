@@ -58,6 +58,8 @@
   * The `memorycontext.md` file acts as a living operational log containing: current context of the work, what was previously accomplished, immediate next objectives, detailed records of where executions failed, where they succeeded, alternative approaches already attempted, and finalized tasks.
   * **Imperative Constraint:** Always update this document before writing, building, or generating any new code.
 
+* **Step 9 - Feature Ledger (`Features.md` Check & Sync):** Maintain a comprehensive register of all application features, including planned, implemented (marked if updated), and salvaged items. Every feature must have a brief description of its function and status. You must update this document whenever a new feature is planned, completed, or salvaged.
+
 ---
 
 ## 3. Antigravity Asynchronous Subagents (Multi-Agent Directory Framework)

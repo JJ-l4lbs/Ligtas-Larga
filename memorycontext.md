@@ -1,7 +1,7 @@
 # Contextual Memory Log: Ligtas-Larga
 
 ## Current Context
-The project has successfully merged the collapsible sidebar features from the `UI-Sidebar` branch into `Dev-Branch`. We resolved conflicts and verified the entire codebase under a unified build. We also refactored the map component `components/Map.tsx` to reduce file bloat and centralize utility methods under `lib/maps-utils.ts`.
+We have designed and planned a role-based session management system (Option A: unified app with `/admin` partition) mapping capabilities for Anonymous commuter sessions, Registered user sessions, and Administrators. We updated all documentation specifications (`GEMINI.md`, `Features.md`, `Build.md`, `Progress.md`, `Schema.md`, and `PID.md`) to reflect the new feature roadmap.
 
 ---
 
@@ -28,11 +28,17 @@ The project has successfully merged the collapsible sidebar features from the `U
     - **[MapControls.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/MapControls.tsx):** Zoom in/out and panning controllers.
   - Shaved off over 450 lines of code inside `components/Map.tsx` (bringing it under 1000 lines) to strictly follow the "No Bloated Code" philosophy.
 
+- **Documentation & Plan Integration:**
+  - Created **[Features.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Features.md)** outlining all planned, implemented, and salvaged features.
+  - Updated **[GEMINI.md](file:///C:/AI-Integrated-Coding/SPARKFEST/GEMINI.md)**, **[Build.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Build.md)**, **[Progress.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Progress.md)**, **[Schema.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Schema.md)**, and **[PID.md](file:///C:/AI-Integrated-Coding/SPARKFEST/PID.md)** to include User/Admin sessions.
+
 ---
 
 ## Immediate Next Objectives
-1. Perform dynamic interaction tests on the map dashboard view.
-2. Verify visual styling layouts on mobile viewports.
+1. Implement the database enum `Role` and profile model `UserProfile` inside `prisma/schema.prisma` and run migration scripts.
+2. Integrate Supabase Auth client wrapper functions.
+3. Build the `/login` route form view.
+4. Establish middleware protection for `/admin` pages and api routes.
 
 ---
 
@@ -43,3 +49,4 @@ The project has successfully merged the collapsible sidebar features from the `U
 - *Attempt 4:* Removed redundant HTML snippets causing build failures and resolved Next.js static prerender checks.
 - *Attempt 5:* Modularized Map utilities into `lib/maps-utils.ts` to reduce file bloat.
 - *Attempt 6:* Integrated workmate's revamped fullscreen liquid gradient splash loader with sprite animations from `splash-screen-revamp` branch into the modular `SplashLoader.tsx` component.
+- *Attempt 7:* Completed the planning specification updates for Role-Based Session Management features.

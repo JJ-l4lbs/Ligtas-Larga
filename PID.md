@@ -28,6 +28,8 @@
   - **Interactive Report Form:** Simple photo capture and description interface for reporting issues (e.g., blocked sidewalks, high floods, broken elevators).
   - **Hugging Face Inference API Verification:** Verifies uploaded image content using hosted open-source vision models (like ViT) to classify hazard types and gauge severity.
   - **Dynamic Map Annotations:** Custom map markers displaying user reports with verified statuses.
+  - **Role-Based Session Management:** Secure login and session handling via Supabase Auth distinguishing Anonymous commuter sessions, Registered user sessions, and Administrator dashboards.
+  - **Admin Validation Queue:** A dedicated administration review dashboard at `/admin` to verify, override, edit, or reject submitted reports.
 - **Interactive Map Dashboard:** A responsive mobile-first map interface displaying custom navigation routes, current weather-related overlays, and crowd-reported hazards.
 
 ---

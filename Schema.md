@@ -23,6 +23,16 @@ Represents a crowdsourced hazard logged by a commuter.
 | `visionLabels` | `String?` | | JSON string representing labels returned by Hugging Face API |
 | `reportedAt` | `DateTime` | `@default(now())` | Timestamp when the report was submitted |
 
+### Model: `UserProfile`
+Represents role configuration details for logged-in sessions.
+
+| Field Name | Type | Attributes | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `String` | `@id` | Primary key, matches the Supabase Auth user ID |
+| `email` | `String` | `@unique` | Email address of the registered commuter |
+| `role` | `Role` | `@default(USER)` | System permission level (`USER` or `ADMIN`) |
+| `createdAt` | `DateTime` | `@default(now())` | Timestamp when user was created |
+
 ---
 
 ## 3. Prisma Schema Layout (`prisma/schema.prisma`)
@@ -37,6 +47,18 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model UserProfile {
+  id        String   @id
+  email     String   @unique
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
 }
 
 model HazardReport {
