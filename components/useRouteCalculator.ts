@@ -223,8 +223,17 @@ export default function useRouteCalculator({
     connectingLinesRef.current.forEach((line) => line.setMap(null));
     connectingLinesRef.current = [];
 
-    // Draw active safe route
-    const strokeColor = "#00f0ff";
+    // Color route line dynamically based on travel mode
+    let strokeColor = "#00f0ff"; // Default to neon blue/cyan for walk
+    if (activeMode === "commute") {
+      strokeColor = "#0d9488"; // Teal
+    } else if (activeMode === "bicycle") {
+      strokeColor = "#22c55e"; // Green
+    } else if (activeMode === "motorcycle") {
+      strokeColor = "#a855f7"; // Purple
+    } else if (activeMode === "car") {
+      strokeColor = "#64748b"; // Slate
+    }
 
     const polyline = new google.maps.Polyline({
       path: chosenPath,

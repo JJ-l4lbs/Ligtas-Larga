@@ -173,6 +173,94 @@ export async function POST(request: NextRequest) {
           route.totalDiscountedFare = routeDiscountedFare;
         });
       }
+    } else if (travelMode === "bicycle") {
+      let fallbackNeeded = false;
+      try {
+        const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": fieldMask,
+          },
+          body: JSON.stringify({
+            origin: {
+              location: {
+                latLng: {
+                  latitude: origin.lat,
+                  longitude: origin.lng,
+                },
+              },
+            },
+            destination: {
+              location: {
+                latLng: {
+                  latitude: destination.lat,
+                  longitude: destination.lng,
+                },
+              },
+            },
+            travelMode: "BICYCLE",
+            computeAlternativeRoutes: true,
+          }),
+        });
+
+        if (response.ok) {
+          data = await response.json();
+          if (!data.routes || data.routes.length === 0) {
+            fallbackNeeded = true;
+          }
+        } else {
+          fallbackNeeded = true;
+        }
+      } catch (err) {
+        console.error("Bicycle route calculation failed, seeking walk fallback:", err);
+        fallbackNeeded = true;
+      }
+
+      if (fallbackNeeded) {
+        const fallbackResponse = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": fieldMask,
+          },
+          body: JSON.stringify({
+            origin: {
+              location: {
+                latLng: {
+                  latitude: origin.lat,
+                  longitude: origin.lng,
+                },
+              },
+            },
+            destination: {
+              location: {
+                latLng: {
+                  latitude: destination.lat,
+                  longitude: destination.lng,
+                },
+              },
+            },
+            travelMode: "WALK",
+            computeAlternativeRoutes: true,
+          }),
+        });
+
+        if (fallbackResponse.ok) {
+          data = await fallbackResponse.json();
+          if (data.routes) {
+            data.routes.forEach((route: any) => {
+              route.warning = "Cycling routes are not supported in this region. Displaying walking path as estimate.";
+            });
+          }
+        } else {
+          const errText = await fallbackResponse.text();
+          console.error("Google Routes API bicycle fallback returned error:", errText);
+          return Response.json({ error: "Failed to fetch routes from Google" }, { status: 502 });
+        }
+      }
     } else {
       const response = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
         method: "POST",
