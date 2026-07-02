@@ -106,6 +106,8 @@ The "Expiring Hazard Timers & Real-Time Countdowns" functionality is complete. A
 - *Attempt 32:* Refactored autocomplete callback status checks in `components/LocationPicker.tsx` to compare directly with the `"OK"` string literal rather than reading the legacy `PlacesServiceStatus.OK` enum from the dynamic import response, resolving autocomplete suggestion rendering failures.
 - *Attempt 33:* Restored new Google Places API AutocompleteSuggestion queries and location fetchFields selectors in `components/LocationPicker.tsx` to align with Google Cloud projects created after March 2025 that reject legacy AutocompleteService.
 - *Attempt 34:* Added `mapId: "DEMO_MAP_ID"` to the Map initialization parameters in `components/Map.tsx`, resolving the console error and dynamic key validation warning overlays triggered by the use of AdvancedMarkerElement.
+- *Attempt 35:* Refactored avoided obstacle markers in `components/useRouteCalculator.ts` to use standard `google.maps.Marker` instances with a custom SVG data URI, allowing the removal of `mapId` from `components/Map.tsx`. This restores client-side custom map styling compatibility so that the "Show map icons" button works properly without any key validation warning overlays.
+
 
 
 

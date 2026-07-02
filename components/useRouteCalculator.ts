@@ -354,56 +354,44 @@ export default function useRouteCalculator({
       });
       setActiveBypassedPolyline(bypassedPolyline);
 
-      // Render avoided obstacle pins asynchronously
-      const loadObstacles = async () => {
-        const { AdvancedMarkerElement } = (await google.maps.importLibrary("marker")) as any;
-        const newWarnings: any[] = [];
+      // Render avoided obstacle pins
+      const newWarnings: any[] = [];
 
-        relevantHazards.forEach((hazard) => {
-          let nearDefault = false;
-          defaultPath.forEach((pt) => {
-            if (getDistanceKm(pt.lat(), pt.lng(), hazard.latitude, hazard.longitude) < 0.05) {
-              nearDefault = true;
-            }
-          });
-
-          let nearSafe = false;
-          chosenPath.forEach((pt) => {
-            if (getDistanceKm(pt.lat(), pt.lng(), hazard.latitude, hazard.longitude) < 0.05) {
-              nearSafe = true;
-            }
-          });
-
-          if (nearDefault && !nearSafe) {
-            const warningEl = document.createElement("div");
-            warningEl.innerHTML = `
-              <div class="pulse-hazard" style="
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 32px;
-                height: 32px;
-                background-color: var(--severity-high);
-                border: 2px solid #ffffff;
-                border-radius: 50%;
-                font-size: 16px;
-                color: #ffffff;
-                font-weight: bold;
-              ">🚫</div>
-            `;
-
-            const marker = new AdvancedMarkerElement({
-              map: mapInstance,
-              position: { lat: hazard.latitude, lng: hazard.longitude },
-              content: warningEl,
-              title: `Avoided Barrier: ${hazard.description}`,
-            });
-            newWarnings.push(marker);
+      relevantHazards.forEach((hazard) => {
+        let nearDefault = false;
+        defaultPath.forEach((pt) => {
+          if (getDistanceKm(pt.lat(), pt.lng(), hazard.latitude, hazard.longitude) < 0.05) {
+            nearDefault = true;
           }
         });
-        setActiveWarningMarkers(newWarnings);
-      };
-      loadObstacles();
+
+        let nearSafe = false;
+        chosenPath.forEach((pt) => {
+          if (getDistanceKm(pt.lat(), pt.lng(), hazard.latitude, hazard.longitude) < 0.05) {
+            nearSafe = true;
+          }
+        });
+
+        if (nearDefault && !nearSafe) {
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="14" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+            <text x="16" y="21.5" font-family="'Segoe UI', Roboto, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">🚫</text>
+          </svg>`;
+
+          const marker = new google.maps.Marker({
+            map: mapInstance,
+            position: { lat: hazard.latitude, lng: hazard.longitude },
+            icon: {
+              url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+              scaledSize: new google.maps.Size(32, 32),
+              anchor: new google.maps.Point(16, 16),
+            },
+            title: `Avoided Barrier: ${hazard.description}`,
+          });
+          newWarnings.push(marker);
+        }
+      });
+      setActiveWarningMarkers(newWarnings);
     } else {
       setActiveWarningMarkers([]);
     }

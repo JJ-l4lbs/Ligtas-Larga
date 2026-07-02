@@ -228,7 +228,6 @@ export default function MapComponent() {
       center: defaultCenter,
       zoom: 13,
       minZoom: 5,
-      mapId: "DEMO_MAP_ID",
       restriction: {
         latLngBounds: {
           north: 21.2,
