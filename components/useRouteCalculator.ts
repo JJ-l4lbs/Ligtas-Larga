@@ -461,12 +461,18 @@ export default function useRouteCalculator({
     setRouteSteps(parsedSteps);
 
     const leg = chosenRoute.legs?.[0];
+    let routeWarning = chosenRoute.warning;
+    if (activeMode === "walk" && isShadedEnabled && chosenRoute.distanceMeters > 1000) {
+      const shadeRecommendation = "☀️ Walking distance is over 1 km. We recommend switching to Commute mode (covered trains/buses) to avoid direct sun exposure.";
+      routeWarning = routeWarning ? `${routeWarning} ${shadeRecommendation}` : shadeRecommendation;
+    }
+
     setRouteInfo({
       distance: leg ? `${(chosenRoute.distanceMeters / 1000).toFixed(1)} km` : undefined,
       duration: chosenRoute.duration ? formatDuration(chosenRoute.duration) : undefined,
       totalFare: chosenRoute.totalFare,
       totalDiscountedFare: chosenRoute.totalDiscountedFare,
-      warning: chosenRoute.warning,
+      warning: routeWarning,
     });
 
     setAvoidedCount(relevantHazards.length - minViolations);

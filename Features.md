@@ -112,3 +112,6 @@ This document serves as the master record of all planned, implemented, and salva
 
 ## 2. Planned Features
 
+### ☀️ Crowdsourced Shade Warnings & Heat Bypass Routing
+* **Status:** Planned
+* **Description:** Add a new hazard category in `schema.prisma` (e.g., `NO_SHADE` or `UNSHELTERED_STREET`). When a user reports an unsheltered street under extreme heat conditions, the `useRouteCalculator.ts` hook will score alternative paths to select routes that minimize exposure to direct sunlight.
