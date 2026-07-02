@@ -143,19 +143,24 @@ C:\AI-Integrated-Coding\SPARKFEST
 
 | File Name | Location | Line Count (Est.) | Purpose |
 | :--- | :--- | :--- | :--- |
-| `schema.prisma` | `/prisma/schema.prisma` | <50 | Database schema definitions |
+| `schema.prisma` | `/prisma/schema.prisma` | <100 | Database schema definitions including SavedPlace & SavedRoute |
 | `globals.css` | `/styles/globals.css` | ~450 | Design system CSS variables & glassmorphism utilities |
 | `page.tsx` | `/app/page.tsx` | <100 | Main layout page aggregating Map and UI drawers |
 | `route.ts` | `/app/api/reports/route.ts`| <80 | API for creating and querying crowdsourced hazard reports |
 | `route.ts` | `/app/api/vision/route.ts` | <60 | API route handler interfacing with Hugging Face Inference API |
-| `Map.tsx` | `/components/Map.tsx` | <350 | Core React page coordinating map setup, layout containers, and subcontrollers |
-| `ActiveRoutePanel.tsx` | `/components/ActiveRoutePanel.tsx` | ~250 | Step 2 travel direction detail drawer layout |
+| `Map.tsx` | `/components/Map.tsx` | <600 | Core React page coordinating map setup, custom toasts, confirm modals, and dashboard overlays |
+| `ActiveRoutePanel.tsx` | `/components/ActiveRoutePanel.tsx` | ~450 | Step 2 travel direction detail drawer layout supporting route saving |
 | `useHazardMarkers.ts` | `/components/useHazardMarkers.ts` | ~160 | Custom hook managing interactive hazard pins rendering and overlay events |
 | `useRouteCalculator.ts` | `/components/useRouteCalculator.ts` | ~300 | Custom hook managing Routes API queries, local route scoring, and polyline drawing |
 | `maps-utils.ts` | `/lib/maps-utils.ts` | ~150 | Centralized maps loader, styles, and calculation helpers |
-| `BrandHeader.tsx` | `/components/BrandHeader.tsx` | <50 | Modular application branding and theme toggle switch |
+| `auth-utils.ts` | `/lib/auth-utils.ts` | ~40 | Centralized session helpers and automatic DB profile sync |
+| `BrandHeader.tsx` | `/components/BrandHeader.tsx` | ~160 | Modular application branding, dark-mode toggle, and profile dashboard triggers |
 | `SplashLoader.tsx` | `/components/SplashLoader.tsx` | <60 | Splash screen intro loader overlay shown during initialization |
 | `ImmediateActionCard.tsx` | `/components/ImmediateActionCard.tsx` | ~130 | Step-by-step direction feed pagination panel |
 | `MapControls.tsx` | `/components/MapControls.tsx` | <50 | Floating zoom in/out and pan recenter controllers |
 | `ProfileDrawer.tsx`| `/components/ProfileDrawer.tsx` | ~100 | Sliding layout drawer containing travel modes and info parameters |
-| `HazardModal.tsx` | `/components/HazardModal.tsx` | ~300 | Visual upload form with Hugging Face verification status |
+| `HazardModal.tsx` | `/components/HazardModal.tsx` | ~400 | Visual upload form with Hugging Face verification status and session check warnings |
+| `UserProfileDashboard.tsx` | `/components/UserProfileDashboard.tsx` | ~410 | Commuter profile statistics, saved places quick actions, and route list manager |
+| `route.ts` | `/app/api/saved-places/route.ts` | ~90 | CRUD endpoint for user saved locations |
+| `route.ts` | `/app/api/saved-routes/route.ts` | ~100 | CRUD endpoint for user saved routing parameters |
+| `route.ts` | `/app/api/auth/me/route.ts` | ~90 | Handles active user session query and raw superuser SQL account deletion |

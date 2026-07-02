@@ -4,6 +4,9 @@ import { prisma } from "../../../lib/prisma";
 export async function GET() {
   try {
     const reports = await prisma.hazardReport.findMany({
+      where: {
+        isValidated: true,
+      },
       orderBy: {
         reportedAt: "desc",
       },

@@ -9,9 +9,10 @@ interface HazardModalProps {
   onClose: () => void;
   mapCenter: google.maps.LatLngLiteral;
   onReportAdded: () => void;
+  user: { email: string; role: string } | null;
 }
 
-export default function HazardModal({ isOpen, onClose, mapCenter, onReportAdded }: HazardModalProps) {
+export default function HazardModal({ isOpen, onClose, mapCenter, onReportAdded, user }: HazardModalProps) {
   const [category, setCategory] = useState("FLOOD");
   const [severity, setSeverity] = useState("MEDIUM");
   const [description, setDescription] = useState("");
@@ -37,38 +38,50 @@ export default function HazardModal({ isOpen, onClose, mapCenter, onReportAdded 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!base64Image) {
+    const isAdmin = user?.role === "ADMIN";
+    if (!base64Image && !isAdmin) {
       setErrorMessage("Please select or snap a photo for verification.");
       setStep(4);
       return;
     }
 
     setStep(2);
-    setLoadingMessage("Verifying photo with Hugging Face Inference API...");
+    setLoadingMessage(base64Image ? "Verifying photo with Hugging Face Inference API..." : "Initializing direct placement...");
 
     try {
-      // 1. Verify photo via Vision route
-      const visionRes = await fetch("/api/vision", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64Image, category }),
-      });
+      let isValidated = user ? true : false;
+      let visionLabels = "[]";
 
-      if (!visionRes.ok) {
-        throw new Error("AI Verification service returned an error. Please try again.");
-      }
+      if (base64Image) {
+        // 1. Verify photo via Vision route
+        const visionRes = await fetch("/api/vision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64Image, category }),
+        });
 
-      const visionData = await visionRes.json();
+        if (!visionRes.ok) {
+          throw new Error("AI Verification service returned an error. Please try again.");
+        }
 
-      if (!visionData.isValidated) {
-        setErrorMessage("Verification Failed: AI labels do not match selected category.");
-        setStep(4);
-        return;
+        const visionData = await visionRes.json();
+
+        if (!visionData.isValidated && !isAdmin) {
+          setErrorMessage("Verification Failed: AI labels do not match selected category.");
+          setStep(4);
+          return;
+        }
+
+        isValidated = isAdmin || visionData.isValidated;
+        visionLabels = JSON.stringify(visionData.labels);
+      } else {
+        isValidated = true;
+        visionLabels = JSON.stringify(["admin_placed_directly"]);
       }
 
       setLoadingMessage("Saving hazard report to database...");
 
-      // 2. Submit validated report
+      // 2. Submit report (validated instantly only if user is logged in)
       const reportRes = await fetch("/api/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,9 +91,9 @@ export default function HazardModal({ isOpen, onClose, mapCenter, onReportAdded 
           category,
           severity,
           description,
-          imageUrl: base64Image, // Local storage mockup
-          isValidated: true,
-          visionLabels: JSON.stringify(visionData.labels),
+          imageUrl: base64Image || "/placeholder-hazard.png", // fallback image url for direct admin placement
+          isValidated,
+          visionLabels,
         }),
       });
 
@@ -135,11 +148,55 @@ export default function HazardModal({ isOpen, onClose, mapCenter, onReportAdded 
       >
         {step === 1 && (
           <>
-            <div>
-              <h2 style={{ fontSize: "20px", fontWeight: 700 }}>Report Local Hazard</h2>
-              <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                Report will be plotted at coordinates: {mapCenter.lat.toFixed(5)}, {mapCenter.lng.toFixed(5)}
-              </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+              <div>
+                <h2 style={{ fontSize: "20px", fontWeight: 700 }}>Report Local Hazard</h2>
+                <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
+                  Report will be plotted at coordinates: {mapCenter.lat.toFixed(5)}, {mapCenter.lng.toFixed(5)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-interactive"
+                style={{
+                  border: "none",
+                  background: "none",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  color: "var(--text-secondary)",
+                  padding: "4px 8px",
+                  lineHeight: 1,
+                }}
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Session Queue Warning Indicator */}
+            <div
+              style={{
+                padding: "10px 14px",
+                borderRadius: "8px",
+                fontSize: "11px",
+                lineHeight: "1.4",
+                fontWeight: 600,
+                backgroundColor: user ? "#DCFCE7" : "#FEF3C7",
+                color: user ? "#15803D" : "#B45309",
+                border: `1px solid ${user ? "rgba(21,128,61,0.2)" : "rgba(180,83,9,0.2)"}`,
+              }}
+            >
+              {user ? (
+                <span>
+                  ✅ Posting as <strong>{user.email}</strong>. Your report will be instantly published if verified by the AI.
+                </span>
+              ) : (
+                <span>
+                  ℹ️ You are posting anonymously. Your report will go into the review queue and won't appear on the map until approved by an admin.
+                </span>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -295,9 +352,9 @@ export default function HazardModal({ isOpen, onClose, mapCenter, onReportAdded 
                 width: "60px",
                 height: "60px",
                 borderRadius: "50%",
-                backgroundColor: "rgba(16, 185, 129, 0.2)",
-                color: "#10b981",
-                border: "2px solid #10b981",
+                backgroundColor: user ? "rgba(16, 185, 129, 0.2)" : "rgba(30, 144, 255, 0.2)",
+                color: user ? "#10b981" : "#1e90ff",
+                border: `2px solid ${user ? "#10b981" : "#1e90ff"}`,
                 margin: "0 auto 24px auto",
                 display: "flex",
                 alignItems: "center",
@@ -305,11 +362,14 @@ export default function HazardModal({ isOpen, onClose, mapCenter, onReportAdded 
                 fontSize: "24px",
               }}
             >
-              ✓
+              {user ? "✓" : "📥"}
             </div>
-            <h3>Validated & Plotted!</h3>
+            <h3>{user ? "Validated & Plotted!" : "Submitted for Review!"}</h3>
             <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginTop: "8px" }}>
-              The report successfully passed AI verification and is now active.
+              {user 
+                ? "The report successfully passed AI verification and is now active on the map."
+                : "Your report passed AI verification and is queued for admin moderation before going live."
+              }
             </p>
             <button
               onClick={onClose}

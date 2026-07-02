@@ -1,61 +1,53 @@
 # Contextual Memory Log: Ligtas-Larga
 
 ## Current Context
-We are refining the visual stacking of hazard overlays on the map. The user requested that the currently hovered hazard marker and its tooltip must *always* be on top of all other markers and popups, even if there are permanently open ones. 
-To achieve this:
-1. Clicking/permanently opening a marker assigns it and its `InfoWindow` a `zIndex` of `highestZIndex` (incrementing on every click).
-2. Hovering over a marker dynamically assigns the hovered marker and the `hoverInfoWindow` a temporary `zIndex` of `highestZIndex + 100`.
-3. Unhovering resets the marker back to its default state.
+The "Saved Places & Routes" functionality for registered users is fully completed and successfully verified.
 
 ---
 
 ## Accomplished Tasks
-- **Branch Merging & Conflict Resolution:**
-  - Created a local integration branch `dev-sidebar-merge` tracking `origin/Dev-Branch`.
-  - Merged `origin/UI-Sidebar` into the branch.
-  - Resolved conflicts in:
-    - **[LocationPicker.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/LocationPicker.tsx):** Set label text color to standard panel-scoped variable `var(--text-on-app-left-secondary)`.
-    - **[Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx):** Retained circular custom SVG hazard pins, POI visibility toggles, start/destination pins, and voice synthesizer from `Dev-Branch`, while incorporating layout class triggers and the floating Sidebar Toggle Button (`◄` / `☰`).
-    - **[globals.css](file:///C:/AI-Integrated-Coding/SPARKFEST/styles/globals.css):** Maintained the pastel theme details while merging CSS transition rules and dynamic sidebar width styling.
-  - Kept **[memorycontext.md](file:///C:/AI-Integrated-Coding/SPARKFEST/memorycontext.md)** intact.
+- **Database Schema Sync & Migrations:**
+  - Added the `Role` enum and `UserProfile` table to `prisma/schema.prisma`.
+  - Added the `SavedPlace` and `SavedRoute` models with relations to `UserProfile` to `prisma/schema.prisma` and applied the database schema update directly on Supabase via `npx prisma db push`.
+  - Re-seeded the database successfully with MVP hazard reports using `npm run seed-test`.
+  - Generated client types via `npx prisma generate`.
 
-- **Syntax & Compilation Fixes:**
-  - Removed an accidental/redundant fullscreen map HTML paste from inside the left directions panel in `components/Map.tsx` that was causing syntax errors.
-  - Set `unstable_instant = false` in `app/page.tsx` to opt out of instant navigation metadata pre-render check, resolving compile-time blocks since `cacheComponents` is enabled.
+- **Supabase Authentication API & Client Integration:**
+  - Created authentication endpoints under `/api/auth` supporting secure HTTP-only cookies and dynamic role assignment.
+  - Resolved unique constraint error on `email` field during login/signup by checking for existing profiles and matching IDs.
+  - Linked session state checking to map mount and header user indicators.
 
-- **Refactoring & Code Bloat Reduction:**
-  - Created a centralized utility file **[maps-utils.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/lib/maps-utils.ts)** to hold Google Maps loading singleton hook, map style JSON configs, distance formulas, and formatting functions.
-  - Extracted inline layout subcomponents from **[Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx)** into dedicated files:
-    - **[BrandHeader.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/BrandHeader.tsx):** Logo header and dark theme switch controls.
-    - **[SplashLoader.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/SplashLoader.tsx):** Hydration loading loader screen.
-    - **[ImmediateActionCard.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ImmediateActionCard.tsx):** Step direction pagination overlay layout.
-    - **[MapControls.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/MapControls.tsx):** Zoom in/out and panning controllers.
-  - Shaved off over 450 lines of code inside `components/Map.tsx` (bringing it under 1000 lines) to strictly follow the "No Bloated Code" philosophy.
+- **Saved Places & Saved Routes APIs:**
+  - Created `/api/saved-places` supporting GET, POST, and DELETE requests (secured via session token validation).
+  - Created `/api/saved-routes` supporting GET, POST, and DELETE requests.
+  - Resolved `Cannot read properties of undefined (reading 'create')` caching warning: The Next.js dev server has old client caches; restarting the dev server (`npm run dev`) loads the generated Prisma models.
 
-- **Documentation & Plan Integration:**
-  - Created **[Features.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Features.md)** outlining all planned, implemented, and salvaged features.
-  - Updated **[GEMINI.md](file:///C:/AI-Integrated-Coding/SPARKFEST/GEMINI.md)**, **[Build.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Build.md)**, **[Progress.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Progress.md)**, **[Schema.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Schema.md)**, and **[PID.md](file:///C:/AI-Integrated-Coding/SPARKFEST/PID.md)** to include User/Admin sessions.
+- **Frontend User Panel Capabilities:**
+  - Separated public reports (`/api/reports` GET returns only validated) from admin reports (`/api/admin/reports` GET returns all).
+  - Added user warning and conditional validation logic in `HazardModal.tsx` (auto-validate if logged in, queue if anonymous).
+  - Integrated saved place creation widgets and quick-select buttons in `LocationPicker.tsx`.
+  - Integrated saved route creation widgets and quick-select buttons in `ActiveRoutePanel.tsx` and `LocationPicker.tsx`.
+  - Developed the glassmorphic `UserProfileDashboard.tsx` mini-dashboard to manage saved places/routes and view profiles.
+  - Implemented the **Delete Account** handler in `api/auth/me` and added a double-confirmation trigger button inside `UserProfileDashboard`.
+  - Replaced native browser dialogs (`alert()`, `confirm()`) with a custom **floating Toast container** and a **glassmorphic Confirmation Modal** globally.
+  - Developed toggleable **Admin Direct Pinning Mode** (toggled via controls panel), including a top status banner and immediate "Exit" buttons.
 
-- **Map Hazard Marker Layering Stacking Fix:**
-  - Configured a dynamic zIndex priority scheme in [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx) to keep the last selected hazard popup on top of all others.
+- **Security Gateways & Proxy Route Protection:**
+  - Created `proxy.ts` to protect admin partitions and APIs.
+  - Implemented case-sensitive duplicate label validation in the saved places API POST handler to prevent multiple places with identical names (e.g. "Home" duplicate blocked, but "HOME" allowed).
+
+- **Verification & Build:**
+  - Resolved deprecated `middleware.ts` warning in Next.js 16 by implementing `proxy.ts`.
+  - Verified a clean build with `npm run build`.
 
 ---
 
 ## Immediate Next Objectives
-1. Implement the database enum `Role` and profile model `UserProfile` inside `prisma/schema.prisma` and run migration scripts.
-2. Integrate Supabase Auth client wrapper functions.
-3. Build the `/login` route form view.
-4. Establish middleware protection for `/admin` pages and api routes.
+1. Summarize custom toasts, custom confirm dialogs, and case-sensitive saved place validations.
+2. Confirm if the USER is satisfied with the results.
 
 ---
 
 ## Execution Logs & Attempts
-- *Attempt 1:* Successfully created all requested `.md` specifications based on the user's project descriptions.
-- *Attempt 2:* Diagnosed and fixed API key warnings and initial load screens.
-- *Attempt 3:* Merged `origin/UI-Sidebar` and resolved styling and file conflicts.
-- *Attempt 4:* Removed redundant HTML snippets causing build failures and resolved Next.js static prerender checks.
-- *Attempt 5:* Modularized Map utilities into `lib/maps-utils.ts` to reduce file bloat.
-- *Attempt 6:* Integrated workmate's revamped fullscreen liquid gradient splash loader with sprite animations from `splash-screen-revamp` branch into the modular `SplashLoader.tsx` component.
-- *Attempt 7:* Completed the planning specification updates for Role-Based Session Management features.
-- *Attempt 8:* Resolved the floating UI blocking issue for hazard markers by introducing a progressive zIndex system on markers and InfoWindows.
-- *Attempt 9:* Enhanced the hover trigger to dynamically bump the hovered marker and tooltip above all permanently opened markers (`highestZIndex + 100`).
+- *Attempt 1:* Successfully updated schema, starting database migration steps for Phase 8.
+

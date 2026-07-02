@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import ImmediateActionCard from "./ImmediateActionCard";
 
 interface RouteStep {
@@ -37,6 +37,12 @@ interface ActiveRoutePanelProps {
   setActiveStepIndex: (idx: number) => void;
   mapInstance: google.maps.Map | null;
   handleReset: () => void;
+  
+  // New props for saving routes
+  user: { email: string; role: string } | null;
+  fromCoords: google.maps.LatLngLiteral | null;
+  toCoords: google.maps.LatLngLiteral | null;
+  showToast: (message: string, type: "success" | "error" | "info" | "warning") => void;
 }
 
 export default function ActiveRoutePanel({
@@ -64,7 +70,56 @@ export default function ActiveRoutePanel({
   setActiveStepIndex,
   mapInstance,
   handleReset,
+  user,
+  fromCoords,
+  toCoords,
+  showToast,
 }: ActiveRoutePanelProps) {
+  // Saved route state
+  const [isSavingRoute, setIsSavingRoute] = useState(false);
+  const [routeLabel, setRouteLabel] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSaveRoute = async () => {
+    if (!routeLabel.trim() || !fromCoords || !toCoords) return;
+    try {
+      const mode = [
+        isWheelchairEnabled ? "wheelchair" : "",
+        isShadedEnabled ? "shaded" : "",
+        isRainEnabled ? "rain" : "",
+      ].filter(Boolean).join(",") || "standard";
+
+      const res = await fetch("/api/saved-routes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: routeLabel,
+          fromAddress,
+          toAddress,
+          fromLatitude: fromCoords.lat,
+          fromLongitude: fromCoords.lng,
+          toLatitude: toCoords.lat,
+          toLongitude: toCoords.lng,
+          travelMode: mode,
+        }),
+      });
+
+      if (res.ok) {
+        showToast(`Route "${routeLabel}" successfully saved!`, "success");
+        setSaveSuccess(true);
+        setRouteLabel("");
+        setIsSavingRoute(false);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        const errData = await res.json();
+        showToast(errData.error || "Failed to save route.", "error");
+      }
+    } catch (e: any) {
+      console.error("Failed to save route:", e);
+      showToast(`Error saving route: ${e.message}`, "error");
+    }
+  };
+
   return (
     <div
       style={{
@@ -88,25 +143,106 @@ export default function ActiveRoutePanel({
               ({routeInfo.distance || ""})
             </span>
           </div>
+        </div>
+
+        {/* Action Row: Voice & Save Route */}
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
           <button
             onClick={() => setIsVoiceActive(!isVoiceActive)}
             className="btn-interactive"
             style={{
-              padding: "8px 16px",
+              flex: 1,
+              padding: "8px 12px",
               borderRadius: "20px",
               border: "none",
               backgroundColor: isVoiceActive ? "rgba(30, 81, 63, 0.1)" : "rgba(0, 0, 0, 0.05)",
               color: isVoiceActive ? "var(--accent-accessibility)" : "var(--text-primary)",
               fontWeight: 700,
-              fontSize: "12px",
+              fontSize: "11px",
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: "6px",
             }}
           >
             <span>{isVoiceActive ? "🔊 Voice On" : "🔇 Voice Off"}</span>
           </button>
+
+          {user && (
+            <button
+              onClick={() => setIsSavingRoute(!isSavingRoute)}
+              className="btn-interactive"
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                borderRadius: "20px",
+                border: "none",
+                backgroundColor: saveSuccess ? "#DCFCE7" : "rgba(30, 144, 255, 0.1)",
+                color: saveSuccess ? "#15803D" : "var(--accent-rain)",
+                fontWeight: 700,
+                fontSize: "11px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+              }}
+            >
+              <span>{saveSuccess ? "✓ Saved!" : "⭐ Save Route"}</span>
+            </button>
+          )}
         </div>
+
+        {/* Naming Input Widget for Saving Route */}
+        {isSavingRoute && (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center", backgroundColor: "var(--bg-app-left)", padding: "10px", borderRadius: "10px", border: "1.5px solid var(--border-subtle)" }}>
+            <input
+              type="text"
+              placeholder="e.g. My Commute"
+              value={routeLabel}
+              onChange={(e) => setRouteLabel(e.target.value)}
+              style={{
+                flex: 1,
+                padding: "6px 10px",
+                borderRadius: "6px",
+                border: "1.5px solid var(--border-subtle)",
+                fontSize: "11px",
+                backgroundColor: "var(--bg-input-light)",
+                color: "var(--text-input-typed)",
+                outline: "none",
+              }}
+            />
+            <button
+              onClick={handleSaveRoute}
+              style={{
+                padding: "6px 10px",
+                backgroundColor: "var(--accent-accessibility)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setIsSavingRoute(false)}
+              style={{
+                padding: "6px 10px",
+                backgroundColor: "rgba(0,0,0,0.05)",
+                color: "var(--text-secondary)",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
 
         {/* Start & Destination Addresses Info (Emphasized Inset block) */}
         <div

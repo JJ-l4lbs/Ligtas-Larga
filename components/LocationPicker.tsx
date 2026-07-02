@@ -1,7 +1,6 @@
 /// <reference types="google.maps" />
 "use client";
 
-
 import React, { useState, useEffect, useRef } from "react";
 
 interface LocationPickerProps {
@@ -12,9 +11,30 @@ interface LocationPickerProps {
     fromAddress: string,
     toAddress: string
   ) => void;
+  user: { email: string; role: string } | null;
+  onConfirmSavedRoute?: (
+    fromCoords: google.maps.LatLngLiteral,
+    toCoords: google.maps.LatLngLiteral,
+    fromAddress: string,
+    toAddress: string,
+    travelMode: string
+  ) => void;
+  selectedStartPlace?: { lat: number; lng: number; address: string } | null;
+  selectedDestPlace?: { lat: number; lng: number; address: string } | null;
+  showToast: (message: string, type: "success" | "error" | "info" | "warning") => void;
+  showConfirm: (title: string, message: string, onConfirm: () => void) => void;
 }
 
-export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPickerProps) {
+export default function LocationPicker({
+  isLoaded,
+  onConfirmRoute,
+  user,
+  onConfirmSavedRoute,
+  selectedStartPlace,
+  selectedDestPlace,
+  showToast,
+  showConfirm,
+}: LocationPickerProps) {
   const [fromAddress, setFromAddress] = useState("");
   const [toAddress, setToAddress] = useState("");
   const [fromCoords, setFromCoords] = useState<google.maps.LatLngLiteral | null>(null);
@@ -23,12 +43,66 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
   const [fromText, setFromText] = useState("");
   const [toText, setToText] = useState("");
 
+  useEffect(() => {
+    if (selectedStartPlace) {
+      setFromText(selectedStartPlace.address);
+      setFromAddress(selectedStartPlace.address);
+      setFromCoords({ lat: selectedStartPlace.lat, lng: selectedStartPlace.lng });
+    }
+  }, [selectedStartPlace]);
+
+  useEffect(() => {
+    if (selectedDestPlace) {
+      setToText(selectedDestPlace.address);
+      setToAddress(selectedDestPlace.address);
+      setToCoords({ lat: selectedDestPlace.lat, lng: selectedDestPlace.lng });
+    }
+  }, [selectedDestPlace]);
+
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
 
   const [isLocating, setIsLocating] = useState(false);
 
+  // Saved places and routes states
+  const [savedPlaces, setSavedPlaces] = useState<any[]>([]);
+  const [savedRoutes, setSavedRoutes] = useState<any[]>([]);
+
+  // Inline saving states
+  const [isSavingFrom, setIsSavingFrom] = useState(false);
+  const [isSavingTo, setIsSavingTo] = useState(false);
+  const [saveLabelFrom, setSaveLabelFrom] = useState("");
+  const [saveLabelTo, setSaveLabelTo] = useState("");
+
   const sessionTokenRef = useRef<any>(null);
+
+  const fetchSavedData = async () => {
+    if (!user) return;
+    try {
+      const placesRes = await fetch("/api/saved-places");
+      if (placesRes.ok) {
+        const placesData = await placesRes.json();
+        setSavedPlaces(placesData);
+      }
+
+      const routesRes = await fetch("/api/saved-routes");
+      if (routesRes.ok) {
+        const routesData = await routesRes.json();
+        setSavedRoutes(routesData);
+      }
+    } catch (e) {
+      console.error("Failed to load saved places/routes:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchSavedData();
+    } else {
+      setSavedPlaces([]);
+      setSavedRoutes([]);
+    }
+  }, [user]);
 
   // Fetch suggestions for Start Location
   const fetchFromSuggestions = async (val: string) => {
@@ -146,7 +220,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
   const handleLocateMe = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+      showToast("Geolocation is not supported by your browser.", "error");
       return;
     }
     setIsLocating(true);
@@ -179,7 +253,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       },
       (error) => {
         console.error("Error getting location:", error);
-        alert("Unable to retrieve your location. Please type it manually.");
+        showToast("Unable to retrieve your location. Please type it manually.", "warning");
         setIsLocating(false);
       },
       { enableHighAccuracy: true, timeout: 5000 }
@@ -345,6 +419,107 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
               )}
             </button>
           </div>
+
+          {/* Inline Save Place widget for origin */}
+          {fromCoords && user && (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "2px" }}>
+              {!isSavingFrom ? (
+                <button
+                  type="button"
+                  onClick={() => setIsSavingFrom(true)}
+                  className="btn-interactive"
+                  style={{
+                    border: "none",
+                    background: "none",
+                    color: "var(--accent-accessibility)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    padding: "2px 0",
+                  }}
+                >
+                  ⭐ Save this location to profile
+                </button>
+              ) : (
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", width: "100%" }}>
+                  <input
+                    type="text"
+                    placeholder="e.g. Home, School"
+                    value={saveLabelFrom}
+                    onChange={(e) => setSaveLabelFrom(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "1.5px solid var(--border-subtle)",
+                      fontSize: "11px",
+                      backgroundColor: "var(--bg-input-light)",
+                      color: "var(--text-input-typed)",
+                      flex: 1,
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!saveLabelFrom.trim()) return;
+                      try {
+                        const res = await fetch("/api/saved-places", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            label: saveLabelFrom,
+                            address: fromText,
+                            latitude: fromCoords.lat,
+                            longitude: fromCoords.lng,
+                          }),
+                        });
+                        if (res.ok) {
+                          showToast(`Location "${saveLabelFrom}" successfully saved!`, "success");
+                          setSaveLabelFrom("");
+                          setIsSavingFrom(false);
+                          fetchSavedData();
+                        } else {
+                          const errData = await res.json();
+                          showToast(errData.error || "Failed to save location.", "error");
+                        }
+                      } catch (err: any) {
+                        showToast(`Error saving location: ${err.message}`, "error");
+                      }
+                    }}
+                    style={{
+                      padding: "6px 10px",
+                      backgroundColor: "var(--accent-accessibility)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsSavingFrom(false)}
+                    style={{
+                      padding: "6px 10px",
+                      backgroundColor: "rgba(0,0,0,0.05)",
+                      color: "var(--text-secondary)",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {fromSuggestions.length > 0 && (
             <div
               style={{
@@ -448,6 +623,107 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
               fontSize: "14px",
             }}
           />
+
+          {/* Inline Save Place widget for destination */}
+          {toCoords && user && (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "2px" }}>
+              {!isSavingTo ? (
+                <button
+                  type="button"
+                  onClick={() => setIsSavingTo(true)}
+                  className="btn-interactive"
+                  style={{
+                    border: "none",
+                    background: "none",
+                    color: "var(--accent-accessibility)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    padding: "2px 0",
+                  }}
+                >
+                  ⭐ Save this destination to profile
+                </button>
+              ) : (
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", width: "100%" }}>
+                  <input
+                    type="text"
+                    placeholder="e.g. Work, Gym"
+                    value={saveLabelTo}
+                    onChange={(e) => setSaveLabelTo(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "1.5px solid var(--border-subtle)",
+                      fontSize: "11px",
+                      backgroundColor: "var(--bg-input-light)",
+                      color: "var(--text-input-typed)",
+                      flex: 1,
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!saveLabelTo.trim()) return;
+                      try {
+                        const res = await fetch("/api/saved-places", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            label: saveLabelTo,
+                            address: toText,
+                            latitude: toCoords.lat,
+                            longitude: toCoords.lng,
+                          }),
+                        });
+                        if (res.ok) {
+                          showToast(`Destination "${saveLabelTo}" successfully saved!`, "success");
+                          setSaveLabelTo("");
+                          setIsSavingTo(false);
+                          fetchSavedData();
+                        } else {
+                          const errData = await res.json();
+                          showToast(errData.error || "Failed to save destination.", "error");
+                        }
+                      } catch (err: any) {
+                        showToast(`Error saving destination: ${err.message}`, "error");
+                      }
+                    }}
+                    style={{
+                      padding: "6px 10px",
+                      backgroundColor: "var(--accent-accessibility)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsSavingTo(false)}
+                    style={{
+                      padding: "6px 10px",
+                      backgroundColor: "rgba(0,0,0,0.05)",
+                      color: "var(--text-secondary)",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {toSuggestions.length > 0 && (
             <div
               style={{
@@ -499,6 +775,192 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
           )}
         </div>
 
+        {/* Saved Places Quick Actions Row */}
+        {user && savedPlaces.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
+            <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-on-app-left-secondary)" }}>SAVED PLACES</label>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              {savedPlaces.map((place) => (
+                <div
+                  key={place.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    backgroundColor: "var(--bg-input-light)",
+                    border: "1.5px solid var(--border-subtle)",
+                    borderRadius: "8px",
+                    padding: "4px 8px",
+                  }}
+                >
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-primary)" }}>
+                    📍 {place.label}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFromText(place.address);
+                      setFromAddress(place.address);
+                      setFromCoords({ lat: place.latitude, lng: place.longitude });
+                    }}
+                    style={{
+                      border: "none",
+                      backgroundColor: "rgba(21, 128, 61, 0.1)",
+                      color: "#15803D",
+                      fontSize: "9px",
+                      fontWeight: 800,
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Start
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setToText(place.address);
+                      setToAddress(place.address);
+                      setToCoords({ lat: place.latitude, lng: place.longitude });
+                    }}
+                    style={{
+                      border: "none",
+                      backgroundColor: "rgba(239, 68, 68, 0.1)",
+                      color: "#EF4444",
+                      fontSize: "9px",
+                      fontWeight: 800,
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Dest
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      showConfirm(
+                        "Delete Saved Place",
+                        `Are you sure you want to remove your saved place "${place.label}"?`,
+                        async () => {
+                          try {
+                            const res = await fetch(`/api/saved-places?id=${place.id}`, { method: "DELETE" });
+                            if (res.ok) {
+                              showToast(`Removed saved place "${place.label}".`, "info");
+                              fetchSavedData();
+                            } else {
+                              showToast("Failed to delete place.", "error");
+                            }
+                          } catch (err: any) {
+                            showToast(err.message, "error");
+                          }
+                        }
+                      );
+                    }}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "var(--text-muted)",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      padding: "0 2px",
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Saved Routes Section */}
+        {user && savedRoutes.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
+            <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-on-app-left-secondary)" }}>SAVED ROUTES</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {savedRoutes.map((route) => (
+                <div
+                  key={route.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    backgroundColor: "var(--bg-input-light)",
+                    border: "1.5px solid var(--border-subtle)",
+                    borderRadius: "10px",
+                    padding: "10px 12px",
+                  }}
+                >
+                  <div
+                    onClick={() => {
+                      if (onConfirmSavedRoute) {
+                        onConfirmSavedRoute(
+                          { lat: route.fromLatitude, lng: route.fromLongitude },
+                          { lat: route.toLatitude, lng: route.toLongitude },
+                          route.fromAddress,
+                          route.toAddress,
+                          route.travelMode
+                        );
+                      } else {
+                        setFromText(route.fromAddress);
+                        setFromAddress(route.fromAddress);
+                        setFromCoords({ lat: route.fromLatitude, lng: route.fromLongitude });
+                        setToText(route.toAddress);
+                        setToAddress(route.toAddress);
+                        setToCoords({ lat: route.toLatitude, lng: route.toLongitude });
+                      }
+                    }}
+                    style={{ cursor: "pointer", flex: 1, overflow: "hidden" }}
+                  >
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>
+                      ⭐ {route.label}
+                    </span>
+                    <span style={{ fontSize: "10px", color: "var(--text-secondary)", display: "block", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                      {route.fromAddress.split(",")[0]} → {route.toAddress.split(",")[0]}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showConfirm(
+                        "Delete Saved Route",
+                        `Are you sure you want to remove your saved route "${route.label}"?`,
+                        async () => {
+                          try {
+                            const res = await fetch(`/api/saved-routes?id=${route.id}`, { method: "DELETE" });
+                            if (res.ok) {
+                              showToast(`Removed saved route "${route.label}".`, "info");
+                              fetchSavedData();
+                            } else {
+                              showToast("Failed to delete route.", "error");
+                            }
+                          } catch (err: any) {
+                            showToast(err.message, "error");
+                          }
+                        }
+                      );
+                    }}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "var(--text-muted)",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      padding: "0 6px",
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={isSubmitDisabled}
@@ -507,7 +969,7 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
             marginTop: "8px",
             padding: "14px",
             borderRadius: "10px",
-            border: "1.5px solid var(--border-subtle)",
+            border: "none",
             background: isSubmitDisabled
               ? "rgba(255, 255, 255, 0.05)"
               : "linear-gradient(135deg, var(--accent-accessibility), var(--accent-rain))",
@@ -523,5 +985,4 @@ export default function LocationPicker({ isLoaded, onConfirmRoute }: LocationPic
       </form>
     </div>
   );
-
 }

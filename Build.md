@@ -127,3 +127,22 @@ Before starting construction, ensure the following API credentials are set in yo
   - `PUT`: Allows updating a hazard report's status (e.g. toggling `isValidated`) or editing category/description.
   - `DELETE`: Allows removing resolved or false-alarm reports from Supabase.
 - **Verification:** Verify that clicking "Approve" updates the database flag and renders the pin on the public map. Verify that "Delete" removes the report from the DB and map.
+
+#### Step 8.5: Commuter Personalization, Profile Dashboard, Account Deletion, & Custom Dialogs
+- **What to do:**
+  - **Database Models:** Define `SavedPlace` and `SavedRoute` schema tables with Cascade-on-Delete relations to `UserProfile` inside `prisma/schema.prisma` and sync using `npx prisma db push`.
+  - **API Endpoints:** Build `/api/saved-places` and `/api/saved-routes` route handlers for GET, POST, and DELETE actions. Integrate a database auto-sync helper inside `lib/auth-utils.ts` to generate missing profiles on session check.
+  - **Personalization UI:** Design the sliding glassmorphic `UserProfileDashboard.tsx` displaying user credentials, saved place coordinates (with quick Start/Dest routing buttons), and saved routes (with instant travel profile filter recall).
+  - **Duplicate Prevention:** Add strict case-sensitive unique label verification checks on saved place creation (rejecting duplicates of same case like "Home", but allowing variations like "HOME").
+  - **Account Deletion:** Add a `DELETE` endpoint to `/api/auth/me` that deletes the PostgreSQL user profile, runs raw superuser SQL to delete from Supabase Auth (`auth.users`), clears session cookies, and redirects.
+  - **Custom Toast & Modal Confirmations:** Implement React state-driven floating Toast notifications and custom Confirmation Modals in `Map.tsx` to replace browser `alert()` and `confirm()` globally.
+- **Verification:** Restart Next.js dev server, sign in, save places/routes, verify successful/error custom toast notifications trigger, select saved route to verify filter recall, and verify account deletion deletes both Postgres profile and Supabase Auth records. Ensure `npm run build` compiles successfully.
+
+#### Step 8.6: Admin Map Direct Pinning Controls
+- **What to do:**
+  - **Map Toggle Controls:** Integrate a toggle button (`🔨`) inside `MapControls.tsx` visible only to admins that switches to `✕` when active.
+  - **Banner Overlay Indicator:** Render a status warning banner centered at the top of the map when active, prompting the admin that map click pinning is active and providing an "Exit" action.
+  - **Auto-Exit Form Logic:** Modify `HazardModal.tsx` header to add a top-right `✕` exit button. When the modal closes (via successful submission or cancel/exit actions), automatically turn off active pinning mode state (`isAdminPinning`).
+  - **Bypassed AI Verification:** Allow admins to skip photo attachments in `HazardModal.tsx` and instantly validate reports (`isValidated: true`) without calling the Hugging Face vision classifier route.
+- **Verification:** Log in as administrator, toggle pinning mode, verify the red banner overlay displays at the top center, click on the map to open the reporting form pre-filled with the clicked coordinates, exit the form and verify pinning mode is disabled. Confirm direct placement without photo goes live on the map instantly.
+

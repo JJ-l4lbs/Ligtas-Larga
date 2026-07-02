@@ -7,6 +7,9 @@ interface MapControlsProps {
   defaultCenter: google.maps.LatLngLiteral;
   showAllPins: boolean;
   setShowAllPins: (show: boolean) => void;
+  isAdmin: boolean;
+  isAdminPinning: boolean;
+  setIsAdminPinning: (pinning: boolean) => void;
 }
 
 export default function MapControls({
@@ -15,6 +18,9 @@ export default function MapControls({
   defaultCenter,
   showAllPins,
   setShowAllPins,
+  isAdmin,
+  isAdminPinning,
+  setIsAdminPinning,
 }: MapControlsProps) {
   if (!mapInstance) return null;
 
@@ -67,7 +73,20 @@ export default function MapControls({
       >
         📍
       </button>
+      {isAdmin && (
+        <button
+          onClick={() => setIsAdminPinning(!isAdminPinning)}
+          className="floating-control-btn btn-interactive"
+          style={{
+            border: isAdminPinning ? "1.5px solid #EF4444" : "1px solid var(--border-glass)",
+            backgroundColor: isAdminPinning ? "rgba(239, 68, 68, 0.2)" : "var(--bg-secondary)",
+            color: isAdminPinning ? "#EF4444" : "var(--text-primary)",
+          }}
+          title={isAdminPinning ? "Exit Direct Pinning Mode" : "Enable Direct Pinning Mode"}
+        >
+          {isAdminPinning ? "✕" : "🔨"}
+        </button>
+      )}
     </div>
   );
 }
-
