@@ -119,7 +119,7 @@ export default function LocationPicker({
       return;
     }
     try {
-      const { AutocompleteService, PlacesServiceStatus } = (await google.maps.importLibrary("places")) as any;
+      const { AutocompleteService } = (await google.maps.importLibrary("places")) as any;
       const service = new AutocompleteService();
       service.getPlacePredictions(
         {
@@ -127,7 +127,7 @@ export default function LocationPicker({
           componentRestrictions: { country: "PH" },
         },
         (predictions: any, status: any) => {
-          if (status === PlacesServiceStatus.OK && predictions) {
+          if (status === "OK" && predictions) {
             setFromSuggestions(predictions);
           } else {
             setFromSuggestions([]);
@@ -150,7 +150,7 @@ export default function LocationPicker({
       return;
     }
     try {
-      const { AutocompleteService, PlacesServiceStatus } = (await google.maps.importLibrary("places")) as any;
+      const { AutocompleteService } = (await google.maps.importLibrary("places")) as any;
       const service = new AutocompleteService();
       service.getPlacePredictions(
         {
@@ -158,7 +158,7 @@ export default function LocationPicker({
           componentRestrictions: { country: "PH" },
         },
         (predictions: any, status: any) => {
-          if (status === PlacesServiceStatus.OK && predictions) {
+          if (status === "OK" && predictions) {
             setToSuggestions(predictions);
           } else {
             setToSuggestions([]);
