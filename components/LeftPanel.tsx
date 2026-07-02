@@ -54,6 +54,10 @@ interface LeftPanelProps {
   handleReset: () => void;
   fromCoords: google.maps.LatLngLiteral | null;
   toCoords: google.maps.LatLngLiteral | null;
+  activeMode: "walk" | "commute" | "bicycle" | "motorcycle" | "car";
+  setActiveMode: (mode: "walk" | "commute" | "bicycle" | "motorcycle" | "car") => void;
+  isDiscounted: boolean;
+  setIsDiscounted: (val: boolean) => void;
 }
 
 export default function LeftPanel({
@@ -102,6 +106,10 @@ export default function LeftPanel({
   handleReset,
   fromCoords,
   toCoords,
+  activeMode,
+  setActiveMode,
+  isDiscounted,
+  setIsDiscounted,
 }: LeftPanelProps) {
   return (
     <div
@@ -163,6 +171,8 @@ export default function LeftPanel({
                 selectedDestPlace={selectedDestPlace}
                 showToast={addToast}
                 showConfirm={showConfirm}
+                activeMode={activeMode}
+                setActiveMode={setActiveMode}
               />
               <ProfileDrawer
                 isWheelchairEnabled={isWheelchairEnabled}
@@ -174,6 +184,7 @@ export default function LeftPanel({
                 onReportTrigger={() => setIsReportModalOpen(true)}
                 avoidedCount={avoidedCount}
                 routeInfo={undefined}
+                activeMode={activeMode}
               />
             </>
           )}
@@ -209,6 +220,10 @@ export default function LeftPanel({
               fromCoords={fromCoords}
               toCoords={toCoords}
               showToast={addToast}
+              activeMode={activeMode}
+              setActiveMode={setActiveMode}
+              isDiscounted={isDiscounted}
+              setIsDiscounted={setIsDiscounted}
             />
           )}
         </>

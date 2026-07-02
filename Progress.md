@@ -19,6 +19,9 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **FE-8.5** | Saved Places, Routes & Profile Dashboard | Step 8.5 | ✅ Complete | - Build UserProfileDashboard overlay manager in sidebar<br/>- Render saved places quick-shortcuts and route calculators<br/>- Integrate custom toast and confirmation overlays |
 | **FE-8.6** | Admin Direct Map Pinning UI | Step 8.6 | ✅ Complete | - Add toggle button inside MapControls.tsx<br/>- Implement top status banner overlay with exit controls<br/>- Add header close button to HazardModal.tsx |
 | **FE-8.7** | Seamless Login Page Transition | UX Enhancement | ✅ Complete | - Add full-screen animated gradient overlay on Log In click<br/>- Implement staggered routing delay for smooth visual transition<br/>- Add slide-up and fade-in keyframes to login card container |
+| **FE-9.3** | Travel Mode UI Selectors | Step 9.3 | ✅ Complete | - Add horizontal sliding mode selector bar in LocationPicker.tsx and LeftPanel.tsx<br/>- Implement hover, active states, and icons for Walk, Commute, Cycle, Motorcycle, and Car |
+| **FE-9.4** | Routing Hook Update | Step 9.4 | ✅ Complete | - Integrate selected travelMode state in useRouteCalculator.ts<br/>- Handle path color updates per mode and trigger commute fare engine |
+| **FE-9.5** | Active Route UI Panel Update | Step 9.5 | ✅ Complete | - Display total commute cost and segment cost labels inside ActiveRoutePanel.tsx |
 
 ---
 
@@ -35,3 +38,5 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **BE-8.4** | Admin Action API Handlers | Step 8.4 | ✅ Complete | - Develop API route `/api/admin/reports` supporting PUT (update verification status / edit detail strings) and DELETE (delete reports) |
 | **BE-8.5** | Saved places, routes & account API | Step 8.5 | ✅ Complete | - Create /api/saved-places and /api/saved-routes handlers supporting GET, POST, DELETE<br/>- Implement Postgres superuser raw SQL query to delete auth users |
 | **BE-8.6** | Admin Direct Placement Logic | Step 8.6 | ✅ Complete | - Bypass vision image requirement for admin submissions in HazardModal.tsx<br/>- Auto-exit pinning mode when form closes |
+| **BE-9.1** | Commute Fare Calculator | Step 9.1 | ✅ Complete | - Create lib/commute-calculator.ts parser utility for fares CSV matrices<br/>- Implement lookup algorithms and fuzzy station name matching |
+| **BE-9.2** | Route API Update | Step 9.2 | ✅ Complete | - Modify app/api/routes/route.ts to accept travelMode and request transit details from Google |

@@ -49,14 +49,25 @@ The "Saved Places & Routes" functionality for registered users is fully complete
   - The [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx) component now focuses primarily on the right-hand Google Maps canvas, global layout state orchestration, and map overlays.
   - Passed all necessary callbacks, state controls, and variables (e.g. location picker, active routing info, profile drawers) down to [LeftPanel.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/LeftPanel.tsx) to maintain clean separation of concerns and reduce component bloat.
 
+- **Phase 9: Travel Modes & Fare Calculation (Completed):**
+  - Designed and implemented [commute-calculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/lib/commute-calculator.ts) to parse transit CSV matrices for LRT-1, LRT-2, MRT-3, PNR, PUJs (jeepney), and public buses with fuzzy station name matching.
+  - Enhanced `/api/routes` endpoint to parse `travelMode` parameters (walk, commute, bicycle, motorcycle, car) and fetch `transitDetails` from Google computeRoutes.
+  - Added sliding horizontal travel mode selector tabs in [LocationPicker.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/LocationPicker.tsx) and [ActiveRoutePanel.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ActiveRoutePanel.tsx).
+  - Updated [useRouteCalculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useRouteCalculator.ts) to forward travelMode and render distinct polyline colors per mode (e.g. Teal for Commute, Slate for Car).
+  - Built student/PWD/senior discount checkbox toggle and total fare badge in ActiveRoutePanel.
+  - Integrated transit details, vehicle icons, and segment fares in [ImmediateActionCard.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ImmediateActionCard.tsx).
+  - Verified compilation via `npx tsc --noEmit` and production build optimization via `npm run build` (both succeeded with zero errors!).
+
 ---
 
 ## Immediate Next Objectives
-1. Verify the project compiles correctly and check for any syntax/type errors.
-2. Confirm if the USER is satisfied with the results.
+1. Ask the user if they'd like to test the travel modes locally or make further refinements.
+2. If satisfied, ask if they would like to commit and push changes to the remote branch.
 
 ---
 
 ## Execution Logs & Attempts
 - *Attempt 1:* Refactored Map.tsx and created LeftPanel.tsx. Ran TypeScript compiler verification check.
+- *Attempt 2:* Updated Build.md and Progress.md, initiated Step 9.1 (fare calculator engine design).
+- *Attempt 3:* Implemented all frontend & backend components for Phase 9. Ran local dry-runs and verified type safety and successful Next.js builds.
 

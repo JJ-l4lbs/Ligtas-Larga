@@ -117,6 +117,8 @@ export default function MapComponent() {
   // UI/UX Theme and Active Step Tracking states
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeMode, setActiveMode] = useState<"walk" | "commute" | "bicycle" | "motorcycle" | "car">("walk");
+  const [isDiscounted, setIsDiscounted] = useState(false);
 
   // Fetch session
   const fetchSession = async () => {
@@ -303,6 +305,7 @@ export default function MapComponent() {
     isVoiceActive,
     activeStepIndex,
     setActiveStepIndex,
+    activeMode,
   });
 
   const handleConfirmRoute = (
@@ -428,6 +431,10 @@ export default function MapComponent() {
         handleReset={handleReset}
         fromCoords={fromCoords}
         toCoords={toCoords}
+        activeMode={activeMode}
+        setActiveMode={setActiveMode}
+        isDiscounted={isDiscounted}
+        setIsDiscounted={setIsDiscounted}
       />
 
       <div className="right-map-panel">

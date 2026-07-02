@@ -10,10 +10,19 @@ interface RouteStep {
   warnings?: string[];
   surfaceInfo?: string;
   startLocation: google.maps.LatLngLiteral;
+  transitDetails?: {
+    arrivalStop: string;
+    departureStop: string;
+    lineName: string;
+    lineShortName: string;
+    vehicleType: string;
+    numStops: number;
+  };
+  fare?: number;
 }
 
 interface ActiveRoutePanelProps {
-  routeInfo: { distance?: string; duration?: string };
+  routeInfo: { distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number };
   isVoiceActive: boolean;
   setIsVoiceActive: (active: boolean) => void;
   fromAddress: string;
@@ -43,6 +52,11 @@ interface ActiveRoutePanelProps {
   fromCoords: google.maps.LatLngLiteral | null;
   toCoords: google.maps.LatLngLiteral | null;
   showToast: (message: string, type: "success" | "error" | "info" | "warning") => void;
+
+  activeMode: "walk" | "commute" | "bicycle" | "motorcycle" | "car";
+  setActiveMode: (mode: "walk" | "commute" | "bicycle" | "motorcycle" | "car") => void;
+  isDiscounted: boolean;
+  setIsDiscounted: (val: boolean) => void;
 }
 
 export default function ActiveRoutePanel({
@@ -74,6 +88,10 @@ export default function ActiveRoutePanel({
   fromCoords,
   toCoords,
   showToast,
+  activeMode,
+  setActiveMode,
+  isDiscounted,
+  setIsDiscounted,
 }: ActiveRoutePanelProps) {
   // Saved route state
   const [isSavingRoute, setIsSavingRoute] = useState(false);
@@ -83,7 +101,7 @@ export default function ActiveRoutePanel({
   const handleSaveRoute = async () => {
     if (!routeLabel.trim() || !fromCoords || !toCoords) return;
     try {
-      const mode = [
+      const mode = activeMode !== "walk" ? activeMode : [
         isWheelchairEnabled ? "wheelchair" : "",
         isShadedEnabled ? "shaded" : "",
         isRainEnabled ? "rain" : "",
@@ -132,16 +150,83 @@ export default function ActiveRoutePanel({
         pointerEvents: "auto",
       }}
     >
+      {/* Travel Mode Selector Bar */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          backgroundColor: "var(--bg-input-light)",
+          borderRadius: "12px",
+          padding: "4px",
+          border: "1.5px solid var(--border-subtle)",
+          margin: "0 0 4px 0",
+        }}
+      >
+        {[
+          { id: "walk", label: "Walk", icon: "🚶" },
+          { id: "commute", label: "Commute", icon: "🚌" },
+          { id: "bicycle", label: "Cycle", icon: "🚲" },
+          { id: "motorcycle", label: "Moto", icon: "🏍️" },
+          { id: "car", label: "Car", icon: "🚗" },
+        ].map((mode) => {
+          const isActive = activeMode === mode.id;
+          return (
+            <button
+              key={mode.id}
+              type="button"
+              onClick={() => setActiveMode(mode.id as any)}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+                padding: "8px 4px",
+                borderRadius: "8px",
+                border: "none",
+                backgroundColor: isActive ? "var(--accent-accessibility)" : "transparent",
+                color: isActive ? "#FFFFFF" : "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                fontSize: "11px",
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ fontSize: "16px" }}>{mode.icon}</span>
+              <span>{mode.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* High-Contrast Route Header */}
       <div className="nav-header-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
+          <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "4px" }}>
             <span style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-primary)" }}>
               {routeInfo.duration || "Calculating..."}
             </span>
-            <span style={{ fontSize: "14px", color: "var(--text-secondary)", marginLeft: "8px" }}>
+            <span style={{ fontSize: "14px", color: "var(--text-secondary)", marginLeft: "4px" }}>
               ({routeInfo.distance || ""})
             </span>
+            {activeMode === "commute" && routeInfo.totalFare !== undefined && (
+              <span
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 800,
+                  color: "var(--accent-accessibility)",
+                  marginLeft: "8px",
+                  backgroundColor: "rgba(20, 184, 166, 0.12)",
+                  padding: "2px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid rgba(20, 184, 166, 0.2)",
+                  display: "inline-flex",
+                  alignItems: "center"
+                }}
+              >
+                ₱{(isDiscounted ? routeInfo.totalDiscountedFare : routeInfo.totalFare)?.toFixed(2)}
+              </span>
+            )}
           </div>
         </div>
 
@@ -244,210 +329,257 @@ export default function ActiveRoutePanel({
           </div>
         )}
 
-        {/* Start & Destination Addresses Info (Emphasized Inset block) */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            backgroundColor: "var(--bg-app-left)",
-            border: "1.5px solid var(--border-subtle)",
-            borderRadius: "12px",
-            padding: "14px 16px",
-            margin: "6px 0",
-          }}
-        >
-          {!isEditingAddresses ? (
-            <>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.5px" }}>
-                  ACTIVE ROUTE
-                </span>
-                <button
-                  onClick={() => {
-                    setTempFromAddress(fromAddress);
-                    setTempToAddress(toAddress);
-                    setIsEditingAddresses(true);
-                  }}
-                  className="btn-interactive"
-                  style={{
-                    border: "none",
-                    background: "none",
-                    color: "var(--accent-accessibility)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    padding: "2px 6px",
-                  }}
-                >
-                  ✏️ Edit
-                </button>
-              </div>
+        {activeMode === "commute" && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              backgroundColor: "var(--bg-input-light)",
+              borderRadius: "10px",
+              border: "1px solid var(--border-subtle)",
+              marginTop: "4px"
+            }}
+          >
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)" }}>
+              🎓 Student / PWD / Senior Discount
+            </span>
+            <input
+              type="checkbox"
+              checked={isDiscounted}
+              onChange={(e) => setIsDiscounted(e.target.checked)}
+              style={{
+                width: "16px",
+                height: "16px",
+                cursor: "pointer",
+                accentColor: "var(--accent-accessibility)",
+              }}
+            />
+          </div>
+        )}
+      </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#2ECC71", flexShrink: 0 }} />
-                <div style={{ fontSize: "12px", color: "var(--text-secondary)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
-                  <strong style={{ color: "var(--text-primary)" }}>From: </strong>{fromAddress || "PUP Manila"}
-                </div>
-              </div>
-              
-              {/* Visual Connector Line */}
-              <div style={{ height: "1px", backgroundColor: "var(--border-subtle)", marginLeft: "18px" }} />
+      {/* Start & Destination Addresses Info (Emphasized Inset block) */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          backgroundColor: "var(--bg-app-left)",
+          border: "1.5px solid var(--border-subtle)",
+          borderRadius: "12px",
+          padding: "14px 16px",
+          margin: "6px 0",
+        }}
+      >
+        {!isEditingAddresses ? (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.5px" }}>
+                ACTIVE ROUTE
+              </span>
+              <button
+                onClick={() => {
+                  setTempFromAddress(fromAddress);
+                  setTempToAddress(toAddress);
+                  setIsEditingAddresses(true);
+                }}
+                className="btn-interactive"
+                style={{
+                  border: "none",
+                  background: "none",
+                  color: "var(--accent-accessibility)",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  padding: "2px 6px",
+                }}
+              >
+                ✏️ Edit
+              </button>
+            </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#E74C3C", flexShrink: 0 }} />
-                <div style={{ fontSize: "12px", color: "var(--text-secondary)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
-                  <strong style={{ color: "var(--text-primary)" }}>To: </strong>{toAddress || "Master Buffalo"}
-                </div>
-              </div>
-            </>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#2ECC71", flexShrink: 0 }} />
-                <input
-                  type="text"
-                  value={tempFromAddress}
-                  onChange={(e) => setTempFromAddress(e.target.value)}
-                  placeholder="Starting address"
-                  style={{
-                    flex: 1,
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1.5px solid var(--border-subtle)",
-                    backgroundColor: "var(--bg-card)",
-                    color: "var(--text-primary)",
-                    fontSize: "12px",
-                    outline: "none",
-                  }}
-                />
-              </div>
-              
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#E74C3C", flexShrink: 0 }} />
-                <input
-                  type="text"
-                  value={tempToAddress}
-                  onChange={(e) => setTempToAddress(e.target.value)}
-                  placeholder="Destination address"
-                  style={{
-                    flex: 1,
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1.5px solid var(--border-subtle)",
-                    backgroundColor: "var(--bg-card)",
-                    color: "var(--text-primary)",
-                    fontSize: "12px",
-                    outline: "none",
-                  }}
-                />
-              </div>
-              
-              {/* Action buttons row */}
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" }}>
-                <button
-                  disabled={isGeocoding}
-                  onClick={() => setIsEditingAddresses(false)}
-                  className="btn-interactive"
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: "1.5px solid var(--border-subtle)",
-                    backgroundColor: "var(--bg-card)",
-                    color: "var(--text-primary)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  disabled={isGeocoding || !tempFromAddress.trim() || !tempToAddress.trim()}
-                  onClick={handleSaveEditedAddresses}
-                  className="btn-interactive"
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: "none",
-                    backgroundColor: "var(--accent-accessibility)",
-                    color: "#FFFFFF",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  {isGeocoding ? "Saving..." : "Save"}
-                </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#2ECC71", flexShrink: 0 }} />
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
+                <strong style={{ color: "var(--text-primary)" }}>From: </strong>{fromAddress || "PUP Manila"}
               </div>
             </div>
-          )}
-        </div>
+            
+            {/* Visual Connector Line */}
+            <div style={{ height: "1px", backgroundColor: "var(--border-subtle)", marginLeft: "18px" }} />
 
-        {/* Balanced, equally-sized travel mode toggles */}
-        <div style={{ display: "flex", gap: "8px", width: "100%" }}>
-          <button
-            onClick={() => setIsWheelchairEnabled(!isWheelchairEnabled)}
-            className={`btn-interactive badge-pill ${isWheelchairEnabled ? 'active-wheelchair' : ''}`}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "1.5px solid var(--border-subtle)",
-              backgroundColor: isWheelchairEnabled ? "var(--badge-accessible-bg)" : "var(--bg-app-left)",
-              color: isWheelchairEnabled ? "var(--badge-accessible-text)" : "var(--text-secondary)",
-              fontSize: "11px",
-              fontWeight: 700,
-              padding: "10px 4px",
-              borderRadius: "10px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            ♿ {isWheelchairEnabled ? "Accessible" : "Standard"}
-          </button>
-          <button
-            onClick={() => setIsShadedEnabled(!isShadedEnabled)}
-            className={`btn-interactive badge-pill ${isShadedEnabled ? 'active-shaded' : ''}`}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "1.5px solid var(--border-subtle)",
-              backgroundColor: isShadedEnabled ? "var(--badge-shaded-bg)" : "var(--bg-app-left)",
-              color: isShadedEnabled ? "var(--badge-shaded-text)" : "var(--text-secondary)",
-              fontSize: "11px",
-              fontWeight: 700,
-              padding: "10px 4px",
-              borderRadius: "10px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            ☀️ Shaded
-          </button>
-          <button
-            onClick={() => setIsRainEnabled(!isRainEnabled)}
-            className={`btn-interactive badge-pill ${isRainEnabled ? 'active-rain' : ''}`}
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "1.5px solid var(--border-subtle)",
-              backgroundColor: isRainEnabled ? "var(--badge-flood-bg)" : "var(--bg-app-left)",
-              color: isRainEnabled ? "var(--badge-flood-text)" : "var(--text-secondary)",
-              fontSize: "11px",
-              fontWeight: 700,
-              padding: "10px 4px",
-              borderRadius: "10px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            🌧️ Flood-Free
-          </button>
-        </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#E74C3C", flexShrink: 0 }} />
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
+                <strong style={{ color: "var(--text-primary)" }}>To: </strong>{toAddress || "Master Buffalo"}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#2ECC71", flexShrink: 0 }} />
+              <input
+                type="text"
+                value={tempFromAddress}
+                onChange={(e) => setTempFromAddress(e.target.value)}
+                placeholder="Starting address"
+                style={{
+                  flex: 1,
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1.5px solid var(--border-subtle)",
+                  backgroundColor: "var(--bg-card)",
+                  color: "var(--text-primary)",
+                  fontSize: "12px",
+                  outline: "none",
+                }}
+              />
+            </div>
+            
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#E74C3C", flexShrink: 0 }} />
+              <input
+                type="text"
+                value={tempToAddress}
+                onChange={(e) => setTempToAddress(e.target.value)}
+                placeholder="Destination address"
+                style={{
+                  flex: 1,
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1.5px solid var(--border-subtle)",
+                  backgroundColor: "var(--bg-card)",
+                  color: "var(--text-primary)",
+                  fontSize: "12px",
+                  outline: "none",
+                }}
+              />
+            </div>
+            
+            {/* Action buttons row */}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" }}>
+              <button
+                disabled={isGeocoding}
+                onClick={() => setIsEditingAddresses(false)}
+                className="btn-interactive"
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  border: "1.5px solid var(--border-subtle)",
+                  backgroundColor: "var(--bg-card)",
+                  color: "var(--text-primary)",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={isGeocoding || !tempFromAddress.trim() || !tempToAddress.trim()}
+                onClick={handleSaveEditedAddresses}
+                className="btn-interactive"
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  border: "none",
+                  backgroundColor: "var(--accent-accessibility)",
+                  color: "#FFFFFF",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {isGeocoding ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Dynamicbottom toggles card based on activeMode */}
+      {(() => {
+        const showAccessible = activeMode === "walk" || activeMode === "commute";
+        const showShaded = activeMode === "walk";
+        const showRain = true;
+
+        return (
+          <div className="nav-header-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {/* Balanced, equally-sized travel mode toggles */}
+            <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+              {showAccessible && (
+                <button
+                  onClick={() => setIsWheelchairEnabled(!isWheelchairEnabled)}
+                  className={`btn-interactive badge-pill ${isWheelchairEnabled ? 'active-wheelchair' : ''}`}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1.5px solid var(--border-subtle)",
+                    backgroundColor: isWheelchairEnabled ? "var(--badge-accessible-bg)" : "var(--bg-app-left)",
+                    color: isWheelchairEnabled ? "var(--badge-accessible-text)" : "var(--text-secondary)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "10px 4px",
+                    borderRadius: "10px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  ♿ {isWheelchairEnabled ? "Accessible" : "Standard"}
+                </button>
+              )}
+              {showShaded && (
+                <button
+                  onClick={() => setIsShadedEnabled(!isShadedEnabled)}
+                  className={`btn-interactive badge-pill ${isShadedEnabled ? 'active-shaded' : ''}`}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1.5px solid var(--border-subtle)",
+                    backgroundColor: isShadedEnabled ? "var(--badge-shaded-bg)" : "var(--bg-app-left)",
+                    color: isShadedEnabled ? "var(--badge-shaded-text)" : "var(--text-secondary)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "10px 4px",
+                    borderRadius: "10px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  ☀️ Shaded
+                </button>
+              )}
+              {showRain && (
+                <button
+                  onClick={() => setIsRainEnabled(!isRainEnabled)}
+                  className={`btn-interactive badge-pill ${isRainEnabled ? 'active-rain' : ''}`}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1.5px solid var(--border-subtle)",
+                    backgroundColor: isRainEnabled ? "var(--badge-flood-bg)" : "var(--bg-app-left)",
+                    color: isRainEnabled ? "var(--badge-flood-text)" : "var(--text-secondary)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "10px 4px",
+                    borderRadius: "10px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  🌧️ Flood-Free
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Immediate Next Turn Card with interactive pagination */}
       {routeSteps.length > 0 && routeSteps[activeStepIndex] && (
@@ -466,6 +598,7 @@ export default function ActiveRoutePanel({
             activeStepIndex={activeStepIndex}
             onStepChange={setActiveStepIndex}
             mapInstance={mapInstance}
+            isDiscounted={isDiscounted}
           />
         </div>
       )}

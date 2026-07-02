@@ -146,3 +146,44 @@ Before starting construction, ensure the following API credentials are set in yo
   - **Bypassed AI Verification:** Allow admins to skip photo attachments in `HazardModal.tsx` and instantly validate reports (`isValidated: true`) without calling the Hugging Face vision classifier route.
 - **Verification:** Log in as administrator, toggle pinning mode, verify the red banner overlay displays at the top center, click on the map to open the reporting form pre-filled with the clicked coordinates, exit the form and verify pinning mode is disabled. Confirm direct placement without photo goes live on the map instantly.
 
+---
+
+### Phase 9: Commute, Bicycle, Motorcycle, and Car Travel Modes Integration
+#### Step 9.1: Create Commute Fare Calculator Utility
+- **What to do:** Build a utility library `/lib/commute-calculator.ts` containing the hardcoded JSON parsed values for:
+  - LRT-1 (Single Journey and Stored Value matrices)
+  - LRT-2 (Single Journey and Stored Value matrices)
+  - MRT-3 (Fare matrix)
+  - PNR (Fare matrix)
+  - Jeepney (PUJ) (Distance-to-fare lookup list)
+  - Public Bus (Aircon and Ordinary distance-to-fare lookup lists)
+  Write matching logic to identify routes and fuzzy-match station names, returning segment fares, a total aggregated cost, and step-by-step cost annotations.
+- **Verification:** Write a dry-run test for Roosevelt to Central LRT-1 fare lookup and PUJ/Bus distance lookups. Verify correct prices are outputted.
+
+#### Step 9.2: Update Route API Route
+- **What to do:** Modify `/app/api/routes/route.ts` to accept `travelMode` in the POST body. Map the travel mode to Google Routes API parameters:
+  - `"walk"` -> `WALK`
+  - `"commute"` -> `TRANSIT` (adding transitDetails to X-Goog-FieldMask)
+  - `"bicycle"` -> `BICYCLE`
+  - `"motorcycle"` -> `TWO_WHEELER`
+  - `"car"` -> `DRIVE`
+- **Verification:** Call the route API with different travelModes and verify the corresponding polyline paths match the chosen vehicle format.
+
+#### Step 9.3: Add Travel Mode UI Selectors
+- **What to do:** Modify `/components/LocationPicker.tsx` and `/components/LeftPanel.tsx` to display a modern, high-contrast travel mode selector bar (🚶, 🚌, 🚲, 🏍️, 🚗) with interactive hover and active states. Pass the selected mode down to the route calculator hook.
+- **Verification:** Toggle through travel modes on the landing location setup screen and verify active state rendering.
+
+#### Step 9.4: Update Routing Calculator Hook
+- **What to do:** Modify `/components/useRouteCalculator.ts` to accept the selected travel mode. Forward it to `/api/routes` and update path styles:
+  - Commute: Teal route line
+  - Bicycle: Green route line
+  - Motorcycle: Purple route line
+  - Car: Slate route line
+  For commute mode, call the fare calculator engine and output the total cost and step-by-step price segments.
+- **Verification:** Run a route computation under Commute mode and verify that the teal line renders and the total cost state is calculated.
+
+#### Step 9.5: Update Active Route UI Panel
+- **What to do:** Modify `/components/ActiveRoutePanel.tsx` to display the aggregated travel cost (e.g. `Total Fare: ₱38.00`) next to the route metadata. Render individual segment fare annotations on the direction step items.
+- **Verification:** Compute a commute route and check that the total fare displays at the top and individual step cards show segment costs.
+
+

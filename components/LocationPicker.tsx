@@ -23,6 +23,8 @@ interface LocationPickerProps {
   selectedDestPlace?: { lat: number; lng: number; address: string } | null;
   showToast: (message: string, type: "success" | "error" | "info" | "warning") => void;
   showConfirm: (title: string, message: string, onConfirm: () => void) => void;
+  activeMode: "walk" | "commute" | "bicycle" | "motorcycle" | "car";
+  setActiveMode: (mode: "walk" | "commute" | "bicycle" | "motorcycle" | "car") => void;
 }
 
 export default function LocationPicker({
@@ -34,6 +36,8 @@ export default function LocationPicker({
   selectedDestPlace,
   showToast,
   showConfirm,
+  activeMode,
+  setActiveMode,
 }: LocationPickerProps) {
   const [fromAddress, setFromAddress] = useState("");
   const [toAddress, setToAddress] = useState("");
@@ -353,6 +357,54 @@ export default function LocationPicker({
       <div style={{ textAlign: "center", marginBottom: "8px" }}>
         <h2 style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.5px", color: "var(--text-on-app-left)" }}>Where are you heading?</h2>
         <p style={{ fontSize: "12px", color: "var(--text-on-app-left-secondary)" }}>Plan a route bypassing active local hazards</p>
+      </div>
+
+      {/* Travel Mode Selector Bar */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          backgroundColor: "var(--bg-input-light)",
+          borderRadius: "12px",
+          padding: "4px",
+          border: "1.5px solid var(--border-subtle)",
+        }}
+      >
+        {[
+          { id: "walk", label: "Walk", icon: "🚶" },
+          { id: "commute", label: "Commute", icon: "🚌" },
+          { id: "bicycle", label: "Cycle", icon: "🚲" },
+          { id: "motorcycle", label: "Moto", icon: "🏍️" },
+          { id: "car", label: "Car", icon: "🚗" },
+        ].map((mode) => {
+          const isActive = activeMode === mode.id;
+          return (
+            <button
+              key={mode.id}
+              type="button"
+              onClick={() => setActiveMode(mode.id as any)}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+                padding: "8px 4px",
+                borderRadius: "8px",
+                border: "none",
+                backgroundColor: isActive ? "var(--accent-accessibility)" : "transparent",
+                color: isActive ? "#FFFFFF" : "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                fontSize: "11px",
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ fontSize: "16px" }}>{mode.icon}</span>
+              <span>{mode.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>

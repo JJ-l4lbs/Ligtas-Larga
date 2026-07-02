@@ -15,6 +15,7 @@ interface ProfileDrawerProps {
     distance?: string;
     duration?: string;
   };
+  activeMode: "walk" | "commute" | "bicycle" | "motorcycle" | "car";
 }
 
 export default function ProfileDrawer({
@@ -27,6 +28,7 @@ export default function ProfileDrawer({
   onReportTrigger,
   avoidedCount,
   routeInfo,
+  activeMode,
 }: ProfileDrawerProps) {
   return (
     <div
@@ -70,77 +72,81 @@ export default function ProfileDrawer({
       )}
 
       {/* Profile Section (Core Profile) */}
-      <div
-        onClick={onToggleWheelchair}
-        className={`btn-interactive ${isWheelchairEnabled ? "active-wheelchair" : ""}`}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "16px",
-          borderRadius: "12px",
-          border: "1.5px solid var(--border-subtle)",
-          backgroundColor: "var(--bg-input-light)",
-          color: "var(--text-primary)",
-          cursor: "pointer",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontSize: "22px" }}>♿</span>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
-            <span style={{ fontSize: "14px", fontWeight: 700 }}>Wheelchair Accessibility Mode</span>
-            <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Enforce accessible paths & elevators</span>
-          </div>
-        </div>
+      {(activeMode === "walk" || activeMode === "commute") && (
         <div
+          onClick={onToggleWheelchair}
+          className={`btn-interactive ${isWheelchairEnabled ? "active-wheelchair" : ""}`}
           style={{
-            width: "36px",
-            height: "20px",
-            borderRadius: "10px",
-            backgroundColor: isWheelchairEnabled ? "var(--accent-accessibility)" : "rgba(0, 0, 0, 0.1)",
-            position: "relative",
-            transition: "background-color 0.2s",
-          }}
-        >
-          <div
-            style={{
-              width: "14px",
-              height: "14px",
-              borderRadius: "50%",
-              backgroundColor: "#ffffff",
-              position: "absolute",
-              top: "3px",
-              left: isWheelchairEnabled ? "19px" : "3px",
-              transition: "left 0.2s",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Environmental Modifiers (Secondary Chips) */}
-      <div style={{ display: "flex", gap: "10px" }}>
-        <button
-          onClick={onToggleShaded}
-          className={`btn-interactive ${isShadedEnabled ? "active-shaded" : ""}`}
-          style={{
-            flex: 1,
-            padding: "12px 10px",
-            border: "1.5px solid var(--border-subtle)",
-            borderRadius: "12px",
-            backgroundColor: "var(--bg-input-light)",
-            color: isShadedEnabled ? "var(--accent-shade)" : "var(--text-secondary)",
-            fontWeight: 600,
-            fontSize: "12px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
+            justifyContent: "space-between",
+            padding: "16px",
+            borderRadius: "12px",
+            border: "1.5px solid var(--border-subtle)",
+            backgroundColor: "var(--bg-input-light)",
+            color: "var(--text-primary)",
             cursor: "pointer",
           }}
         >
-          <span>🎒</span>
-          <span>Shaded/Covered</span>
-        </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontSize: "22px" }}>♿</span>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
+              <span style={{ fontSize: "14px", fontWeight: 700 }}>Wheelchair Accessibility Mode</span>
+              <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Enforce accessible paths & elevators</span>
+            </div>
+          </div>
+          <div
+            style={{
+              width: "36px",
+              height: "20px",
+              borderRadius: "10px",
+              backgroundColor: isWheelchairEnabled ? "var(--accent-accessibility)" : "rgba(0, 0, 0, 0.1)",
+              position: "relative",
+              transition: "background-color 0.2s",
+            }}
+          >
+            <div
+              style={{
+                width: "14px",
+                height: "14px",
+                borderRadius: "50%",
+                backgroundColor: "#ffffff",
+                position: "absolute",
+                top: "3px",
+                left: isWheelchairEnabled ? "19px" : "3px",
+                transition: "left 0.2s",
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Environmental Modifiers (Secondary Chips) */}
+      <div style={{ display: "flex", gap: "10px" }}>
+        {activeMode === "walk" && (
+          <button
+            onClick={onToggleShaded}
+            className={`btn-interactive ${isShadedEnabled ? "active-shaded" : ""}`}
+            style={{
+              flex: 1,
+              padding: "12px 10px",
+              border: "1.5px solid var(--border-subtle)",
+              borderRadius: "12px",
+              backgroundColor: "var(--bg-input-light)",
+              color: isShadedEnabled ? "var(--accent-shade)" : "var(--text-secondary)",
+              fontWeight: 600,
+              fontSize: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              cursor: "pointer",
+            }}
+          >
+            <span>🎒</span>
+            <span>Shaded/Covered</span>
+          </button>
+        )}
 
         <button
           onClick={onToggleRain}

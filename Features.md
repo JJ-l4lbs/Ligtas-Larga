@@ -102,7 +102,12 @@ This document serves as the master record of all planned, implemented, and salva
 * **Status:** Implemented
 * **Description:** Empowers logged-in administrators to toggle a direct pinning mode (using a custom `🔨` button in the floating map controls which turns into a red `✕` when active). When active, a red status banner displays at the top center of the screen with an "Exit" button. Clicking anywhere on the Map canvas during this mode automatically launches the hazard reporting form prefilled with the clicked coordinates. Closing the modal (either via submission or cancellation) automatically exits the pinning mode. Admins can skip attaching photos, and submissions are instantly approved and validated (`isValidated = true`) on the public map.
 * **Component:** [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx), [HazardModal.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/HazardModal.tsx), [MapControls.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/MapControls.tsx)
+### 🚌 Commute, Bicycle, Motorcycle, & Car Modes (Transit Fare Calculator)
+* **Status:** Implemented
+* **Description:** Integrates four new travel modes: Commute (Transit), Bicycle, Motorcycle, and Car with color-coded map visually distinct routes. For Commute mode, the system fetches transit legs (subway, rail, bus, tram) from Google and calculates the exact fare dynamically using local CSV databases for LRT-1, LRT-2, MRT-3, PNR, jeepneys, and buses. Features fuzzy station name matching and a UI toggle for regular vs. discounted (student/PWD/senior) fare calculation. Trains (LRT/MRT) are treated as intrinsically PWD-accessible, bypassing elevator/ramp blockages because station staff provide guaranteed assistance, and displaying accessible commute tags in step details.
+* **Files:** [commute-calculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/lib/commute-calculator.ts), [ActiveRoutePanel.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ActiveRoutePanel.tsx), [ImmediateActionCard.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ImmediateActionCard.tsx), [LocationPicker.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/LocationPicker.tsx), [useRouteCalculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useRouteCalculator.ts), [/api/routes](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/routes/route.ts)
 
 ---
 
 ## 2. Planned Features
+

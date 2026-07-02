@@ -8,6 +8,13 @@ interface RouteStep {
   warnings?: string[];
   surfaceInfo?: string;
   startLocation: google.maps.LatLngLiteral;
+  fareInfo?: {
+    fare: number;
+    discountedFare: number;
+    type: "train" | "bus" | "jeepney" | "walk";
+    warning?: string;
+  };
+  transitDetails?: any;
 }
 
 interface ImmediateActionCardProps {
@@ -15,6 +22,7 @@ interface ImmediateActionCardProps {
   activeStepIndex: number;
   onStepChange: (index: number) => void;
   mapInstance: google.maps.Map | null;
+  isDiscounted?: boolean;
 }
 
 export default function ImmediateActionCard({
@@ -22,6 +30,7 @@ export default function ImmediateActionCard({
   activeStepIndex,
   onStepChange,
   mapInstance,
+  isDiscounted = false,
 }: ImmediateActionCardProps) {
   if (routeSteps.length === 0 || !routeSteps[activeStepIndex]) return null;
 
@@ -67,6 +76,11 @@ export default function ImmediateActionCard({
           }}
         >
           {(() => {
+            if (currentStep.fareInfo) {
+              if (currentStep.fareInfo.type === "train") return "🚆";
+              if (currentStep.fareInfo.type === "bus") return "🚌";
+              if (currentStep.fareInfo.type === "jeepney") return "🛺";
+            }
             let arrow = "➜";
             if (currentStep.maneuver?.includes("LEFT")) arrow = "◄";
             if (currentStep.maneuver?.includes("RIGHT")) arrow = "►";
@@ -78,6 +92,12 @@ export default function ImmediateActionCard({
           <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.3 }}>
             {currentStep.instruction}
           </div>
+          {currentStep.transitDetails && (
+            <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px", fontWeight: 600 }}>
+              Line: {currentStep.transitDetails.transitLine?.name || currentStep.transitDetails.transitLine?.shortName || "Transit Line"} 
+              {currentStep.transitDetails.stopCount ? ` • ${currentStep.transitDetails.stopCount} stops` : ""}
+            </div>
+          )}
           <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px" }}>
             In {currentStep.distance}
           </div>
@@ -86,9 +106,28 @@ export default function ImmediateActionCard({
 
       <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
         <div style={{ fontSize: "13px", color: "var(--text-secondary)", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-          <span style={{ fontSize: "14px" }}>🚶</span>
+          <span style={{ fontSize: "14px" }}>
+            {currentStep.fareInfo?.type === "train" ? "🚆" : currentStep.fareInfo?.type === "bus" ? "🚌" : currentStep.fareInfo?.type === "jeepney" ? "🛺" : "🚶"}
+          </span>
           <span>{currentStep.surfaceInfo}</span>
         </div>
+        
+        {currentStep.fareInfo && currentStep.fareInfo.fare > 0 && (
+          <div style={{ fontSize: "13px", color: "var(--accent-accessibility)", display: "flex", alignItems: "center", gap: "6px", fontWeight: 700 }}>
+            <span style={{ fontSize: "14px" }}>💳</span>
+            <span>
+              Segment Fare: ₱{(isDiscounted ? currentStep.fareInfo.discountedFare : currentStep.fareInfo.fare).toFixed(2)}
+              {currentStep.fareInfo.warning ? " (Estimated)" : ""}
+            </span>
+          </div>
+        )}
+
+        {currentStep.fareInfo?.warning && (
+          <div style={{ fontSize: "11px", color: "var(--severity-medium, #e6a23c)", fontStyle: "italic", marginLeft: "20px" }}>
+            ⚠️ {currentStep.fareInfo.warning}
+          </div>
+        )}
+
         {currentStep.warnings && currentStep.warnings.map((w, wIdx) => (
           <div key={wIdx} className="warning-pill" style={{ marginTop: "4px", alignSelf: "flex-start" }}>
             {w}
