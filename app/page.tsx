@@ -1,5 +1,9 @@
 import React from "react";
-import MapComponent from "../components/Map";
+import dynamic from "next/dynamic";
+
+const MapComponent = dynamic(() => import("../components/Map"), {
+  ssr: false,
+});
 
 export const unstable_instant = false;
 

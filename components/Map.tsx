@@ -152,13 +152,29 @@ export default function MapComponent() {
     }
   };
 
-  // Fetch hazards on load
+  // Fetch hazards on load (with localStorage caching for instant rendering)
   const fetchHazards = async () => {
+    // 1. Instantly load from localStorage if available to prevent visual wait time
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem("ligtas_larga_hazards");
+      if (cached) {
+        try {
+          setHazards(JSON.parse(cached));
+        } catch (e) {
+          console.error("Error parsing cached hazards:", e);
+        }
+      }
+    }
+
     try {
       const response = await fetch("/api/reports");
       if (response.ok) {
         const data = await response.json();
         setHazards(data);
+        // 2. Cache the fresh reports list in localStorage
+        if (typeof window !== "undefined") {
+          localStorage.setItem("ligtas_larga_hazards", JSON.stringify(data));
+        }
       }
     } catch (err) {
       console.error("Failed to fetch hazard reports for map:", err);

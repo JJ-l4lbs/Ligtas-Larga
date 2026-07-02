@@ -67,7 +67,7 @@ The "Saved Places & Routes" functionality is complete. Currently updating the lo
 ---
 
 ## Immediate Next Objectives
-1. Verify build safety and check compilation.
+1. Verify cache stability and check database/routing integrations.
 
 ---
 
@@ -92,5 +92,7 @@ The "Saved Places & Routes" functionality is complete. Currently updating the lo
 - *Attempt 18:* Updated custom SVG icons `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to color the inner symbols solid black (`#000000`) and set custom marker scale sizes in `components/useHazardMarkers.ts` to 85% of standard size to match the visual scale of other hazard markers.
 - *Attempt 19:* Implemented continuous real-time user location tracking on the map using `navigator.geolocation.watchPosition`, including rendering a pulsing current-location marker and providing a toggle control to auto-center the map view on update.
 - *Attempt 20:* Fixed bug where start, end, and warning markers did not disappear when resetting/backing out of route planning by replacing direct assignment `m.map = null` with `m.setMap(null)` in `components/useRouteCalculator.ts`.
+- *Attempt 21:* Performed a performance audit on maps loading and route API requests. Implemented Next.js dynamic imports for `MapComponent` with SSR disabled in `app/page.tsx`, and added Vercel Edge caching headers to the `/api/reports` hazard reports GET endpoint.
+- *Attempt 22:* Added client-side `localStorage` caching inside `fetchHazards` function in `components/Map.tsx`. When the application loads, the map instantly renders the previously-cached hazards (0ms latency), and background-updates them from the API.
 
 

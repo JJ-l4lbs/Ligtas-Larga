@@ -11,7 +11,11 @@ export async function GET() {
         reportedAt: "desc",
       },
     });
-    return Response.json(reports);
+    return Response.json(reports, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=30",
+      },
+    });
   } catch (error) {
     console.error("Failed to fetch hazard reports:", error);
     return Response.json(
