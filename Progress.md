@@ -25,7 +25,7 @@ This ledger maps out the frontend and backend development tasks required to buil
 
 | Task ID | Service / API Route | Build.md Step | Status | Action Items & Requirements |
 | :--- | :--- | :--- | :--- | :--- |
-| **BE-1.2** | Package & Environment Config | Step 1.2, 1.3 | ✅ Complete | - Install dependencies (`@prisma/client`, `prisma` CLI)<br/>- Configure `.env.local` with API Keys, Hugging Face Token, and Supabase pooled connection strings |
+| **BE-1.2** | Package & Environment Config | Step 1.2, 1.3 | ✅ Complete | - Install dependencies (`@prisma/client`, `prisma` CLI)<br/>- Configure `.env.local` with API Keys, Hugging Face Token, and Supabase pooled connection strings<br/>- Add `prisma generate` to the `build` script in `package.json` to ensure client generation succeeds during Vercel deployment builds |
 | **BE-2.1** | Database Setup & Prisma ORM | Step 2.1, 2.2 | ✅ Complete | - Write `HazardReport` schema model in `/prisma/schema.prisma` targeting `postgresql` provider<br/>- Run migrations to synchronize tables with Supabase cloud database |
 | **BE-2.3** | Supabase Mock Seeding | Step 2.3 | ✅ Complete | - Build database seed script containing initial hazards near MVP area<br/>- Execute seed script and verify in Supabase or Prisma Studio |
 | **BE-3.1** | Crowdsourced Reports API | Step 3.1 | ✅ Complete | - Develop route `/api/reports` handler supporting GET (all verified reports) and POST (inserting user-submitted hazards to Supabase) |
