@@ -218,7 +218,7 @@ export default function useRouteCalculator({
       activeBypassedPolyline.setMap(null);
     }
     activeWarningMarkers.forEach((m) => {
-      m.map = null;
+      m.setMap(null);
     });
     connectingLinesRef.current.forEach((line) => line.setMap(null));
     connectingLinesRef.current = [];
@@ -237,7 +237,7 @@ export default function useRouteCalculator({
     setActivePolyline(polyline);
 
     // Draw origin/destination markers
-    startEndMarkersRef.current.forEach((m) => (m.map = null));
+    startEndMarkersRef.current.forEach((m) => m.setMap(null));
     startEndMarkersRef.current = [];
 
     if (fromCoords) {
@@ -484,12 +484,12 @@ export default function useRouteCalculator({
       setActiveBypassedPolyline(null);
     }
     activeWarningMarkers.forEach((m) => {
-      m.map = null;
+      m.setMap(null);
     });
     setActiveWarningMarkers([]);
 
     startEndMarkersRef.current.forEach((m) => {
-      m.map = null;
+      m.setMap(null);
     });
     startEndMarkersRef.current = [];
 
