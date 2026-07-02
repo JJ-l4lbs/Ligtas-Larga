@@ -154,7 +154,13 @@ export default function useRouteCalculator({
 
     // Filter active database hazards based on user profile settings
     const relevantHazards = hazards.filter((h) => {
-      if (isWheelchairEnabled && (h.category === "ELEVATOR_BROKEN" || h.category === "RAMP_BLOCKED")) {
+      if (
+        isWheelchairEnabled &&
+        (h.category === "ELEVATOR_BROKEN" ||
+          h.category === "RAMP_BLOCKED" ||
+          h.category === "CONSTRUCTION" ||
+          h.category === "PATHWAY_OBSTACLE")
+      ) {
         // If commute mode is active, train station accessibility hazards are bypassed
         // because stations provide staff assistance and guaranteed accessibility.
         if (activeMode === "commute") {
