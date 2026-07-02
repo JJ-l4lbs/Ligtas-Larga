@@ -23,6 +23,7 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **FE-9.4** | Routing Hook Update | Step 9.4 | ✅ Complete | - Integrate selected travelMode state in useRouteCalculator.ts<br/>- Handle path color updates per mode and trigger commute fare engine |
 | **FE-9.5** | Active Route UI Panel Update | Step 9.5 | ✅ Complete | - Display total commute cost and segment cost labels inside ActiveRoutePanel.tsx |
 | **FE-9.6** | Commute Route Fallback & Split Cards | Step 9.5 | ✅ Complete | - Display estimated route warning banner in ActiveRoutePanel.tsx<br/>- Split ImmediateActionCard.tsx into Commute segment cards (with boarding stops and segment fares) and Generic turn-by-turn cards |
+| **FE-9.7** | Real-time Hazard Expiration Timers | Step 9.6 | ✅ Complete | - Render ticking countdowns for open hazard info windows in real-time<br/>- Filter out expired hazards client-side on the map<br/>- Implement datetime-local configuration input in the admin edit view |
 
 ---
 
@@ -42,3 +43,4 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **BE-9.1** | Commute Fare Calculator | Step 9.1 | ✅ Complete | - Create lib/commute-calculator.ts parser utility for fares CSV matrices<br/>- Implement lookup algorithms and fuzzy station name matching |
 | **BE-9.2** | Route API Update | Step 9.2 | ✅ Complete | - Modify app/api/routes/route.ts to accept travelMode and request transit details from Google |
 | **BE-9.3** | Routes API Commute Fallback | Step 9.2 | ✅ Complete | - Automatically fall back to DRIVE mode and estimate a commute fare when TRANSIT routes are empty or lack transit steps |
+| **BE-9.4** | Expiration Timer Backend | Step 9.6 | ✅ Complete | - Configure default 2-hour expiration for new flooded hazards in `/api/reports`<br/>- Support direct updating/configuring of `expiresAt` inside `/api/admin/reports` PUT handler<br/>- Filter out expired hazard reports in public GET endpoints |

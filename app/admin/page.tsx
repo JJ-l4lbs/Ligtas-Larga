@@ -15,6 +15,7 @@ interface HazardReport {
   imageUrl?: string | null;
   isValidated: boolean;
   reportedAt: string;
+  expiresAt?: string | null;
 }
 
 export default function AdminPage() {
@@ -26,6 +27,7 @@ export default function AdminPage() {
   const [adminEmail, setAdminEmail] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDescription, setEditDescription] = useState("");
+  const [editExpiresAt, setEditExpiresAt] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchSessionAndReports = async () => {
@@ -99,19 +101,28 @@ export default function AdminPage() {
   const handleStartEdit = (report: HazardReport) => {
     setEditingId(report.id);
     setEditDescription(report.description);
+    if (report.expiresAt) {
+      const localDate = new Date(report.expiresAt);
+      const offset = localDate.getTimezoneOffset() * 60000;
+      const localISO = new Date(localDate.getTime() - offset).toISOString().slice(0, 16);
+      setEditExpiresAt(localISO);
+    } else {
+      setEditExpiresAt("");
+    }
   };
 
   const handleSaveEdit = async (id: string) => {
     setActionLoading(id);
     try {
+      const expiresAtVal = editExpiresAt ? new Date(editExpiresAt).toISOString() : null;
       const res = await fetch("/api/admin/reports", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, description: editDescription }),
+        body: JSON.stringify({ id, description: editDescription, expiresAt: expiresAtVal }),
       });
       if (res.ok) {
         setReports((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, description: editDescription } : r))
+          prev.map((r) => (r.id === id ? { ...r, description: editDescription, expiresAt: expiresAtVal } : r))
         );
         setEditingId(null);
       }
@@ -397,6 +408,7 @@ export default function AdminPage() {
                           <textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
+                            placeholder="Hazard description..."
                             style={{
                               width: "100%",
                               height: "70px",
@@ -410,7 +422,29 @@ export default function AdminPage() {
                               backgroundColor: "var(--bg-input-light)",
                             }}
                           />
-                          <div style={{ display: "flex", gap: "6px" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>
+                              EXPIRATION TIME (TIMER)
+                            </label>
+                            <input
+                              type="datetime-local"
+                              value={editExpiresAt}
+                              onChange={(e) => setEditExpiresAt(e.target.value)}
+                              style={{
+                                padding: "8px",
+                                borderRadius: "6px",
+                                border: "1.5px solid var(--border-subtle)",
+                                fontSize: "13px",
+                                outline: "none",
+                                color: "var(--text-input-typed)",
+                                backgroundColor: "var(--bg-input-light)",
+                              }}
+                            />
+                            <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                              Leave blank if this hazard does not expire (e.g. permanent obstacles).
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
                             <button
                               onClick={() => handleSaveEdit(report.id)}
                               disabled={actionLoading === report.id}
@@ -449,6 +483,14 @@ export default function AdminPage() {
                           <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
                             {report.description}
                           </p>
+                          {report.expiresAt && (
+                            <p style={{ fontSize: "12px", color: "#d97706", fontWeight: "bold", marginTop: "8px", display: "flex", alignItems: "center", gap: "4px" }}>
+                              <span>⏱️ Expiring Timer:</span>
+                              <span style={{ backgroundColor: "rgba(217, 119, 6, 0.1)", padding: "2px 6px", borderRadius: "4px" }}>
+                                {new Date(report.expiresAt).toLocaleString()}
+                              </span>
+                            </p>
+                          )}
                           <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px" }}>
                             📍 Coord: {report.latitude.toFixed(5)}, {report.longitude.toFixed(5)}
                           </p>

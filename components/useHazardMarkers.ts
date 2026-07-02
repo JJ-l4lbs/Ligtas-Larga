@@ -11,6 +11,7 @@ interface HazardReport {
   description: string;
   isValidated: boolean;
   imageUrl?: string | null;
+  expiresAt?: string | null;
 }
 
 export default function useHazardMarkers(
@@ -84,7 +85,13 @@ export default function useHazardMarkers(
       };
     };
 
-    hazards.forEach((hazard) => {
+    // Filter active hazards client-side to ensure expired hazards aren't displayed
+    const activeHazards = hazards.filter((h) => {
+      if (!h.expiresAt) return true;
+      return new Date(h.expiresAt).getTime() > Date.now();
+    });
+
+    activeHazards.forEach((hazard) => {
       let color = "#ef4444";
       if (hazard.severity === "MEDIUM") {
         color = "#f59e0b";
@@ -167,6 +174,26 @@ export default function useHazardMarkers(
             <div style="font-size: 12px; color: var(--text-secondary, #475569); line-height: 1.45; font-weight: 500;">
               ${hazard.description}
             </div>
+            ${(() => {
+              if (!hazard.expiresAt) return "";
+              return `
+                <div class="hazard-timer-container" data-expiry-time="${hazard.expiresAt}" style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 4px;
+                  margin-top: 6px;
+                  font-size: 10px;
+                  font-weight: 700;
+                  color: #d97706;
+                  background-color: rgba(217, 119, 6, 0.08);
+                  padding: 3px 6px;
+                  border-radius: 4px;
+                ">
+                  <span>⏱️</span>
+                  <span class="hazard-timer-countdown">Calculating...</span>
+                </div>
+              `;
+            })()}
             ${hazard.imageUrl ? `
               <div style="margin-top: 8px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-glass, #e2e8f0); max-height: 120px;">
                 <img src="${hazard.imageUrl}" alt="${hazard.category}" style="width: 100%; height: auto; display: block; object-fit: cover;" />
@@ -235,7 +262,7 @@ export default function useHazardMarkers(
       const size = Math.max(16, Math.min(80, (zoom - 13) * 6 + 32));
 
       newMarkers.forEach((marker, index) => {
-        const hazard = hazards[index];
+        const hazard = activeHazards[index];
         if (!hazard) return;
 
         let color = "#ef4444";
@@ -252,7 +279,41 @@ export default function useHazardMarkers(
     // Attach map zoom listener
     const zoomListener = mapInstance.addListener("zoom_changed", updateMarkerSizes);
 
+    // Setup an interval to update countdown timers inside open info windows in real-time
+    const timerInterval = setInterval(() => {
+      const containers = document.querySelectorAll(".hazard-timer-container");
+      containers.forEach((container: any) => {
+        const expiryStr = container.getAttribute("data-expiry-time");
+        if (!expiryStr) return;
+        const expiryTime = new Date(expiryStr).getTime();
+        const remainingMs = expiryTime - Date.now();
+        const countdownEl = container.querySelector(".hazard-timer-countdown");
+        if (!countdownEl) return;
+
+        if (remainingMs <= 0) {
+          countdownEl.textContent = "Expired / Subsiding";
+          countdownEl.style.color = "var(--severity-high, #ef4444)";
+        } else {
+          const totalSecs = Math.floor(remainingMs / 1000);
+          const hrs = Math.floor(totalSecs / 3600);
+          const mins = Math.floor((totalSecs % 3600) / 60);
+          const secs = totalSecs % 60;
+          
+          let displayStr = "";
+          if (hrs > 0) {
+            displayStr = `${hrs}h ${mins}m ${secs}s`;
+          } else if (mins > 0) {
+            displayStr = `${mins}m ${secs}s`;
+          } else {
+            displayStr = `${secs}s`;
+          }
+          countdownEl.textContent = `Subsides in: ${displayStr}`;
+        }
+      });
+    }, 1000);
+
     return () => {
+      clearInterval(timerInterval);
       google.maps.event.removeListener(zoomListener);
       newMarkers.forEach((m) => {
         m.setMap(null);

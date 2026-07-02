@@ -22,7 +22,7 @@ export async function GET() {
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
-    const { id, isValidated, category, severity, description } = body;
+    const { id, isValidated, category, severity, description, expiresAt } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing report ID" }, { status: 400 });
@@ -35,6 +35,7 @@ export async function PUT(req: Request) {
         ...(category !== undefined && { category }),
         ...(severity !== undefined && { severity }),
         ...(description !== undefined && { description }),
+        ...(expiresAt !== undefined && { expiresAt: expiresAt ? new Date(expiresAt) : null }),
       },
     });
 

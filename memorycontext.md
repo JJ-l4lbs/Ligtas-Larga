@@ -1,7 +1,7 @@
 # Contextual Memory Log: Ligtas-Larga
 
 ## Current Context
-The "Saved Places & Routes" functionality is complete. Currently updating the logout functionality for both administrators and regular users to trigger a full web application reload, directing them back to the splashscreen loader at the root URL (/).
+The "Expiring Hazard Timers & Real-Time Countdowns" functionality is complete. Addressed flooded hazard expiration (2-hour default) and other configurable timers on the client map interface and the admin review dashboard.
 
 ---
 
@@ -97,3 +97,7 @@ The "Saved Places & Routes" functionality is complete. Currently updating the lo
 - *Attempt 23:* Fixed cycle (bicycle) travel mode rendering issues. Implemented a try-catch fallback to WALK mode on the backend in `api/routes/route.ts` if BICYCLE mode is unsupported by Google in the region, adding a warning banner. Dynamically colored route polylines in `components/useRouteCalculator.ts` by mode (Teal for Commute, Green for Cycle, Purple for Motorcycle, Slate for Car).
 - *Attempt 24:* Implemented dynamic transit recommendation warning banner in `components/useRouteCalculator.ts` for walking routes over 1km under the shaded routing profile. Appended future planned crowdsourced shade warning implementation to `Features.md`.
 - *Attempt 25:* Expanded wheelchair accessibility routing profile constraints in `components/useRouteCalculator.ts` to include `CONSTRUCTION` and `PATHWAY_OBSTACLE` categories as avoided hazards.
+- *Attempt 26:* Added custom `expiresAt` property to `HazardReport` interface in `app/admin/page.tsx` and declared `editExpiresAt` state.
+- *Attempt 27:* Designed and implemented a datetime-local input picker in the admin review queue edit mode to configure/update the expiration timer, and rendered the expiry time details on card views.
+- *Attempt 28:* Implemented client-side expired hazard filtering in `components/useHazardMarkers.ts` and created a dynamic interval checking and updating countdown timers every 1000ms inside open info window popups.
+- *Attempt 29:* Modified the test hazard seeding script in `prisma/seed-test-hazards.js` to set the expiration of all FLOOD hazards to 2 days from now, successfully re-seeded the database, and pushed the updated script to remote.
