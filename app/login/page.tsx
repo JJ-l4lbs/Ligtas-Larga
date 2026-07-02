@@ -1,33 +1,46 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleNavigate = (path: string) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      router.push(path);
+    }, 400);
+  };
 
   useEffect(() => {
+    // Reset states in case of client-side cache restorations
+    setIsTransitioning(false);
+    setLoading(false);
+
     // Check if user is already logged in
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", { cache: "no-store", headers: { "Cache-Control": "no-cache" } })
       .then((res) => res.json())
       .then((data) => {
         if (data.user) {
           if (data.user.role === "ADMIN") {
-            router.push("/admin");
+            handleNavigate("/admin");
           } else {
-            router.push("/");
+            handleNavigate("/");
           }
         }
       })
       .catch(() => {});
-  }, [router]);
+  }, [router, pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,10 +64,11 @@ export default function LoginPage() {
 
       if (isLogin) {
         if (data.user.role === "ADMIN") {
-          router.push("/admin");
+          handleNavigate("/admin");
         } else {
-          router.push("/");
+          handleNavigate("/");
         }
+        return;
       } else {
         setError("Account created successfully! Logging in...");
         // Auto-login after signup
@@ -66,18 +80,19 @@ export default function LoginPage() {
         const loginData = await loginRes.json();
         if (loginRes.ok) {
           if (loginData.user.role === "ADMIN") {
-            router.push("/admin");
+            handleNavigate("/admin");
           } else {
-            router.push("/");
+            handleNavigate("/");
           }
+          return;
         } else {
           setIsLogin(true);
           setError("Account created! Please sign in now.");
+          setLoading(false);
         }
       }
     } catch (err: any) {
       setError(err.message || "An error occurred");
-    } finally {
       setLoading(false);
     }
   };
@@ -106,8 +121,10 @@ export default function LoginPage() {
           gap: "24px",
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           color: "#0F172A",
-          opacity: 0,
-          animation: "slideUpFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+          opacity: isTransitioning ? 0 : undefined,
+          transform: isTransitioning ? "scale(0.95)" : undefined,
+          transition: isTransitioning ? "opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)" : undefined,
+          animation: isTransitioning ? "none" : "slideUpFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         }}
       >
         <div style={{ textAlign: "center" }}>
@@ -274,9 +291,9 @@ export default function LoginPage() {
         </div>
 
         <div style={{ textAlign: "center", borderTop: "1px solid var(--border-subtle)", paddingTop: "16px" }}>
-          <Link href="/" style={{ fontSize: "13px", color: "var(--text-secondary)", textDecoration: "none", fontWeight: 600 }}>
+          <button onClick={() => handleNavigate("/")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "var(--text-secondary)", fontWeight: 600 }}>
             ← Back to Map (Browse Anonymous)
-          </Link>
+          </button>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
 interface HazardReport {
@@ -18,6 +18,7 @@ interface HazardReport {
 
 export default function AdminPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [reports, setReports] = useState<HazardReport[]>([]);
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "VERIFIED">("ALL");
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,14 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDescription, setEditDescription] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleNavigate = (path: string) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      router.push(path);
+    }, 400);
+  };
 
   const fetchSessionAndReports = async () => {
     try {
@@ -52,14 +61,15 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    setIsTransitioning(false);
     fetchSessionAndReports();
-  }, [router]);
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" });
       if (res.ok) {
-        router.push("/login");
+        handleNavigate("/login");
       }
     } catch (err) {
       console.error("Logout failed:", err);
@@ -137,18 +147,50 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100vw", height: "100vh", backgroundColor: "var(--bg-primary)" }}>
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-on-app-left)" }}>Verifying Admin Credentials...</h2>
+      <div className="splash-liquid-bg" style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100vw",
+        height: "100vh",
+      }}>
+        <div style={{ animation: "fadeInScale 0.6s ease-out forwards" }}>
+          <div style={{ textAlign: "center", animation: "pulseText 2s infinite 0.6s" }}>
+            <h2 style={{ fontSize: "20px", fontWeight: 700, color: "rgba(255,255,255,0.95)" }}>Verifying Admin Credentials...</h2>
+            <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px", marginTop: "8px" }}>Please wait a moment</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)", paddingBottom: "40px" }}>
-      {/* Admin Navbar */}
-      <div
+    <div className="splash-liquid-bg" style={{ minHeight: "100vh" }}>
+      {/* Background solid color that fades in to cover the gradient gracefully */}
+      <div style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "var(--bg-primary)",
+        animation: isTransitioning ? "none" : "fadeInOverlay 1.5s ease-in-out forwards",
+        opacity: isTransitioning ? 0 : undefined,
+        transition: "opacity 0.5s ease-out",
+        pointerEvents: "none",
+        zIndex: 0,
+      }} />
+
+      {/* Main Content */}
+      <div style={{
+        position: "relative",
+        zIndex: 1,
+        minHeight: "100vh",
+        paddingBottom: "40px",
+        animation: isTransitioning ? "none" : "fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        opacity: isTransitioning ? 0 : 1,
+        transform: isTransitioning ? "scale(0.97)" : "scale(1)",
+        transition: "opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+      }}>
+        {/* Admin Navbar */}
+        <div
         style={{
           display: "flex",
           justifyContent: "space-between",
@@ -170,8 +212,8 @@ export default function AdminPage() {
         </div>
 
         <div style={{ display: "flex", gap: "10px" }}>
-          <Link
-            href="/"
+          <button
+            onClick={() => handleNavigate("/")}
             className="btn-interactive"
             style={{
               padding: "8px 16px",
@@ -181,11 +223,11 @@ export default function AdminPage() {
               color: "var(--text-on-app-left)",
               fontWeight: 700,
               fontSize: "12px",
-              textDecoration: "none",
+              cursor: "pointer",
             }}
           >
             🗺️ View Map
-          </Link>
+          </button>
           <button
             onClick={handleLogout}
             className="btn-interactive"
@@ -504,6 +546,7 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
