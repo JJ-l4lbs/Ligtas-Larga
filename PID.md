@@ -24,6 +24,7 @@
   - **Wheelchair/Stroller Mode:** Prioritizes accessible ramps, flat terrains, and functioning elevators; avoids broken sidewalks and stair-only bridges.
   - **Student Mode:** Prioritizes shade, covered walkways, and cheap Public Utility Vehicles (PUVs) like jeepneys and tricycles.
   - **Rain Mode:** Avoids historically and currently reported flood-prone routes and waterlogged crossings.
+  - **Travel Modes & Commute Fare Calculator:** Integrates Walk, Commute (Transit), Bicycle, Motorcycle, and Car modes. Commute mode calculates Manila transit fares (LRT-1, LRT-2, MRT-3, PNR, PUJ, and buses) from local CSV tables, supporting regular vs. discounted (student/PWD/senior) fare totals and step-by-step price breakdowns.
 - **Smart Hazard Reporting & Validation:**
   - **Interactive Report Form:** Simple photo capture and description interface for reporting issues (e.g., blocked sidewalks, high floods, broken elevators).
   - **Hugging Face Inference API Verification:** Verifies uploaded image content using hosted open-source vision models (like ViT) to classify hazard types and gauge severity.

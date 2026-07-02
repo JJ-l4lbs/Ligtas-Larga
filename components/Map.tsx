@@ -2,14 +2,10 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import LocationPicker from "./LocationPicker";
-import ProfileDrawer from "./ProfileDrawer";
 import HazardModal from "./HazardModal";
-import BrandHeader from "./BrandHeader";
 import SplashLoader from "./SplashLoader";
 import MapControls from "./MapControls";
-import ActiveRoutePanel from "./ActiveRoutePanel";
-import UserProfileDashboard from "./UserProfileDashboard";
+import LeftPanel from "./LeftPanel";
 
 import useHazardMarkers from "./useHazardMarkers";
 import useRouteCalculator from "./useRouteCalculator";
@@ -121,6 +117,8 @@ export default function MapComponent() {
   // UI/UX Theme and Active Step Tracking states
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeMode, setActiveMode] = useState<"walk" | "commute" | "bicycle" | "motorcycle" | "car">("walk");
+  const [isDiscounted, setIsDiscounted] = useState(false);
 
   // Fetch session
   const fetchSession = async () => {
@@ -307,6 +305,7 @@ export default function MapComponent() {
     isVoiceActive,
     activeStepIndex,
     setActiveStepIndex,
+    activeMode,
   });
 
   const handleConfirmRoute = (
@@ -386,114 +385,57 @@ export default function MapComponent() {
       )}
 
       {/* Left Panel: Directions & Controls */}
-      <div className={`left-text-panel ${!isSidebarOpen ? "sidebar-collapsed" : ""}`} style={{ display: "flex", flexDirection: "column" }}>
-        
-        {!showSplash && (
-          <BrandHeader
-            isDarkMode={isDarkMode}
-            onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            user={user}
-            onLogout={handleLogout}
-            onToggleDashboard={() => setShowUserDashboard(!showUserDashboard)}
-          />
-        )}
-
-        {showUserDashboard ? (
-          <UserProfileDashboard
-            user={user}
-            onClose={() => setShowUserDashboard(false)}
-            onSelectPlace={(lat, lng, address, type) => {
-              if (type === "from") {
-                setSelectedStartPlace({ lat, lng, address });
-              } else {
-                setSelectedDestPlace({ lat, lng, address });
-              }
-              setShowUserDashboard(false);
-            }}
-            onSelectRoute={(fromC, toC, fromAdd, toAdd, travelMode) => {
-              setIsWheelchairEnabled(travelMode.includes("wheelchair"));
-              setIsShadedEnabled(travelMode.includes("shaded"));
-              setIsRainEnabled(travelMode.includes("rain"));
-              handleConfirmRoute(fromC, toC, fromAdd, toAdd);
-              setShowUserDashboard(false);
-            }}
-            onAccountDeleted={async () => {
-              await handleLogout();
-              setShowUserDashboard(false);
-            }}
-            showToast={addToast}
-            showConfirm={showConfirm}
-          />
-        ) : (
-          <>
-            {/* Step 1: Input stage */}
-            {!showSplash && currentStep === 1 && (
-              <>
-                <LocationPicker
-                  isLoaded={isLoaded}
-                  onConfirmRoute={handleConfirmRoute}
-                  user={user}
-                  onConfirmSavedRoute={(fromC, toC, fromAdd, toAdd, travelMode) => {
-                    setIsWheelchairEnabled(travelMode.includes("wheelchair"));
-                    setIsShadedEnabled(travelMode.includes("shaded"));
-                    setIsRainEnabled(travelMode.includes("rain"));
-                    handleConfirmRoute(fromC, toC, fromAdd, toAdd);
-                  }}
-                  selectedStartPlace={selectedStartPlace}
-                  selectedDestPlace={selectedDestPlace}
-                  showToast={addToast}
-                  showConfirm={showConfirm}
-                />
-                <ProfileDrawer
-                  isWheelchairEnabled={isWheelchairEnabled}
-                  isShadedEnabled={isShadedEnabled}
-                  isRainEnabled={isRainEnabled}
-                  onToggleWheelchair={() => setIsWheelchairEnabled(!isWheelchairEnabled)}
-                  onToggleShaded={() => setIsShadedEnabled(!isShadedEnabled)}
-                  onToggleRain={() => setIsRainEnabled(!isRainEnabled)}
-                  onReportTrigger={() => setIsReportModalOpen(true)}
-                  avoidedCount={avoidedCount}
-                  routeInfo={undefined}
-                />
-              </>
-            )}
-
-            {/* Step 2: High-contrast split turn-by-turn feed */}
-            {!showSplash && currentStep === 2 && (
-              <ActiveRoutePanel
-                routeInfo={routeInfo}
-                isVoiceActive={isVoiceActive}
-                setIsVoiceActive={setIsVoiceActive}
-                fromAddress={fromAddress}
-                toAddress={toAddress}
-                isEditingAddresses={isEditingAddresses}
-                setIsEditingAddresses={setIsEditingAddresses}
-                tempFromAddress={tempFromAddress}
-                setTempFromAddress={setTempFromAddress}
-                tempToAddress={tempToAddress}
-                setTempToAddress={setTempToAddress}
-                isGeocoding={isGeocoding}
-                handleSaveEditedAddresses={handleSaveEditedAddresses}
-                isWheelchairEnabled={isWheelchairEnabled}
-                setIsWheelchairEnabled={setIsWheelchairEnabled}
-                isShadedEnabled={isShadedEnabled}
-                setIsShadedEnabled={setIsShadedEnabled}
-                isRainEnabled={isRainEnabled}
-                setIsRainEnabled={setIsRainEnabled}
-                routeSteps={routeSteps}
-                activeStepIndex={activeStepIndex}
-                setActiveStepIndex={setActiveStepIndex}
-                mapInstance={mapInstance}
-                handleReset={handleReset}
-                user={user}
-                fromCoords={fromCoords}
-                toCoords={toCoords}
-                showToast={addToast}
-              />
-            )}
-          </>
-        )}
-      </div>
+      <LeftPanel
+        isSidebarOpen={isSidebarOpen}
+        showSplash={showSplash}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        user={user}
+        handleLogout={handleLogout}
+        showUserDashboard={showUserDashboard}
+        setShowUserDashboard={setShowUserDashboard}
+        setSelectedStartPlace={setSelectedStartPlace}
+        setSelectedDestPlace={setSelectedDestPlace}
+        setIsWheelchairEnabled={setIsWheelchairEnabled}
+        setIsShadedEnabled={setIsShadedEnabled}
+        setIsRainEnabled={setIsRainEnabled}
+        handleConfirmRoute={handleConfirmRoute}
+        addToast={addToast}
+        showConfirm={showConfirm}
+        currentStep={currentStep}
+        isLoaded={isLoaded}
+        selectedStartPlace={selectedStartPlace}
+        selectedDestPlace={selectedDestPlace}
+        isWheelchairEnabled={isWheelchairEnabled}
+        isShadedEnabled={isShadedEnabled}
+        isRainEnabled={isRainEnabled}
+        setIsReportModalOpen={setIsReportModalOpen}
+        avoidedCount={avoidedCount}
+        routeInfo={routeInfo}
+        isVoiceActive={isVoiceActive}
+        setIsVoiceActive={setIsVoiceActive}
+        fromAddress={fromAddress}
+        toAddress={toAddress}
+        isEditingAddresses={isEditingAddresses}
+        setIsEditingAddresses={setIsEditingAddresses}
+        tempFromAddress={tempFromAddress}
+        setTempFromAddress={setTempFromAddress}
+        tempToAddress={tempToAddress}
+        setTempToAddress={setTempToAddress}
+        isGeocoding={isGeocoding}
+        handleSaveEditedAddresses={handleSaveEditedAddresses}
+        routeSteps={routeSteps}
+        activeStepIndex={activeStepIndex}
+        setActiveStepIndex={setActiveStepIndex}
+        mapInstance={mapInstance}
+        handleReset={handleReset}
+        fromCoords={fromCoords}
+        toCoords={toCoords}
+        activeMode={activeMode}
+        setActiveMode={setActiveMode}
+        isDiscounted={isDiscounted}
+        setIsDiscounted={setIsDiscounted}
+      />
 
       <div className="right-map-panel">
         <div ref={mapRef} style={{ width: "100%", height: "100%" }} />

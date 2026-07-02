@@ -21,6 +21,13 @@ interface RouteStep {
   warnings?: string[];
   surfaceInfo?: string;
   startLocation: google.maps.LatLngLiteral;
+  fareInfo?: {
+    fare: number;
+    discountedFare: number;
+    type: "train" | "bus" | "jeepney" | "walk";
+    warning?: string;
+  };
+  transitDetails?: any;
 }
 
 interface UseRouteCalculatorProps {
@@ -37,6 +44,7 @@ interface UseRouteCalculatorProps {
   isVoiceActive: boolean;
   activeStepIndex: number;
   setActiveStepIndex: (idx: number) => void;
+  activeMode: "walk" | "commute" | "bicycle" | "motorcycle" | "car";
 }
 
 export default function useRouteCalculator({
@@ -53,12 +61,13 @@ export default function useRouteCalculator({
   isVoiceActive,
   activeStepIndex,
   setActiveStepIndex,
+  activeMode,
 }: UseRouteCalculatorProps) {
   const [routeSteps, setRouteSteps] = useState<RouteStep[]>([]);
-  const [routeInfo, setRouteInfo] = useState<{ distance?: string; duration?: string }>({});
+  const [routeInfo, setRouteInfo] = useState<{ distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number }>({});
   const [avoidedCount, setAvoidedCount] = useState(0);
   const [cachedRoutesData, setCachedRoutesData] = useState<any>(null);
-  const [lastRouteCoords, setLastRouteCoords] = useState<{ from: google.maps.LatLngLiteral; to: google.maps.LatLngLiteral } | null>(null);
+  const [lastRouteCoords, setLastRouteCoords] = useState<{ from: google.maps.LatLngLiteral; to: google.maps.LatLngLiteral; mode: string } | null>(null);
 
   const [activePolyline, setActivePolyline] = useState<google.maps.Polyline | null>(null);
   const [activeBypassedPolyline, setActiveBypassedPolyline] = useState<google.maps.Polyline | null>(null);
@@ -100,6 +109,7 @@ export default function useRouteCalculator({
       lastRouteCoords.from.lng === fromCoords.lng &&
       lastRouteCoords.to.lat === toCoords.lat &&
       lastRouteCoords.to.lng === toCoords.lng &&
+      lastRouteCoords.mode === activeMode &&
       cachedRoutesData
     ) {
       return;
@@ -112,7 +122,7 @@ export default function useRouteCalculator({
         const response = await fetch("/api/routes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ origin: fromCoords, destination: toCoords }),
+          body: JSON.stringify({ origin: fromCoords, destination: toCoords, travelMode: activeMode }),
         });
 
         if (!response.ok) throw new Error("Failed to fetch route options");
@@ -120,7 +130,7 @@ export default function useRouteCalculator({
 
         if (active) {
           setCachedRoutesData(data);
-          setLastRouteCoords({ from: fromCoords, to: toCoords });
+          setLastRouteCoords({ from: fromCoords, to: toCoords, mode: activeMode });
         }
       } catch (err) {
         console.error("Error calculating safe route:", err);
@@ -132,7 +142,7 @@ export default function useRouteCalculator({
     return () => {
       active = false;
     };
-  }, [isLoaded, fromCoords, toCoords, lastRouteCoords, cachedRoutesData]);
+  }, [isLoaded, fromCoords, toCoords, lastRouteCoords, cachedRoutesData, activeMode]);
 
   // Sub-millisecond Local Routing Scoring & Map Overlay rendering
   useEffect(() => {
@@ -144,6 +154,11 @@ export default function useRouteCalculator({
     // Filter active database hazards based on user profile settings
     const relevantHazards = hazards.filter((h) => {
       if (isWheelchairEnabled && (h.category === "ELEVATOR_BROKEN" || h.category === "RAMP_BLOCKED")) {
+        // If commute mode is active, train station accessibility hazards are bypassed
+        // because stations provide staff assistance and guaranteed accessibility.
+        if (activeMode === "commute") {
+          return false;
+        }
         return true;
       }
       if (isRainEnabled && h.category === "FLOOD") {
@@ -207,7 +222,15 @@ export default function useRouteCalculator({
 
     // Draw active safe route
     let strokeColor = "#cbd5e1";
-    if (isWheelchairEnabled) {
+    if (activeMode === "commute") {
+      strokeColor = "#14b8a6"; // Teal
+    } else if (activeMode === "bicycle") {
+      strokeColor = "#10b981"; // Green
+    } else if (activeMode === "motorcycle") {
+      strokeColor = "#8b5cf6"; // Purple
+    } else if (activeMode === "car") {
+      strokeColor = "#64748b"; // Slate
+    } else if (isWheelchairEnabled) {
       strokeColor = "#00f0ff";
     } else if (isRainEnabled) {
       strokeColor = "#3b82f6";
@@ -357,7 +380,22 @@ export default function useRouteCalculator({
         });
 
         let surfaceInfo = "Smooth concrete, clear walkway.";
-        if (isWheelchairEnabled) {
+        if (activeMode === "commute") {
+          const isTrain = step.fareInfo?.type === "train" || 
+                          (step.transitDetails && (
+                            step.transitDetails.transitLine?.vehicle?.type === "HEAVY_RAIL" ||
+                            step.transitDetails.transitLine?.vehicle?.type === "SUBWAY" ||
+                            step.transitDetails.transitLine?.name?.toLowerCase().includes("lrt") ||
+                            step.transitDetails.transitLine?.name?.toLowerCase().includes("mrt") ||
+                            step.transitDetails.transitLine?.shortName?.toLowerCase().includes("lrt") ||
+                            step.transitDetails.transitLine?.shortName?.toLowerCase().includes("mrt")
+                          ));
+          if (isTrain && isWheelchairEnabled) {
+            surfaceInfo = "♿ PWD Accessible Commute: Train stations support wheelchair ramps, elevators, and dedicated personnel assistance.";
+          } else {
+            surfaceInfo = step.transitDetails ? "Board designated transit route." : "Walk to transit connection stop.";
+          }
+        } else if (isWheelchairEnabled) {
           if (stepWarnings.length > 0) {
             surfaceInfo = "Low sidewalk curb or elevator issues reported near this block.";
           } else {
@@ -374,6 +412,8 @@ export default function useRouteCalculator({
           warnings: stepWarnings,
           surfaceInfo,
           startLocation: stepCoords,
+          fareInfo: step.fareInfo,
+          transitDetails: step.transitDetails,
         });
       });
     }
@@ -383,6 +423,8 @@ export default function useRouteCalculator({
     setRouteInfo({
       distance: leg ? `${(chosenRoute.distanceMeters / 1000).toFixed(1)} km` : undefined,
       duration: chosenRoute.duration ? formatDuration(chosenRoute.duration) : undefined,
+      totalFare: chosenRoute.totalFare,
+      totalDiscountedFare: chosenRoute.totalDiscountedFare,
     });
 
     setAvoidedCount(relevantHazards.length - minViolations);
@@ -391,7 +433,7 @@ export default function useRouteCalculator({
       mapInstance.setCenter(fromCoords);
       mapInstance.setZoom(16);
     }
-  }, [cachedRoutesData, mapInstance, hazards, isWheelchairEnabled, isShadedEnabled, isRainEnabled, fromCoords, toCoords]);
+  }, [cachedRoutesData, mapInstance, hazards, isWheelchairEnabled, isShadedEnabled, isRainEnabled, fromCoords, toCoords, activeMode]);
 
   const resetRoute = () => {
     setCachedRoutesData(null);
