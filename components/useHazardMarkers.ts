@@ -48,13 +48,31 @@ export default function useHazardMarkers(
         <circle cx="18" cy="18" r="2" fill="#ffffff"/>
       </svg>`;
 
+      let iconConfig: any;
+
+      if (hazard.category === "CONSTRUCTION") {
+        iconConfig = {
+          url: "/construction-tools-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 16),
+        };
+      } else if (hazard.category === "PATHWAY_OBSTACLE") {
+        iconConfig = {
+          url: "/no-pedestrians-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 16),
+        };
+      } else {
+        iconConfig = {
+          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+          anchor: new google.maps.Point(18, 18),
+        };
+      }
+
       const marker = new google.maps.Marker({
         map: mapInstance,
         position: { lat: hazard.latitude, lng: hazard.longitude },
-        icon: {
-          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-          anchor: new google.maps.Point(18, 18),
-        },
+        icon: iconConfig,
         title: "", // Prevent default tooltip
         zIndex: 1, // Base zIndex for all hazard markers
       });
@@ -78,7 +96,10 @@ export default function useHazardMarkers(
           logoHtml = `<img src="/flood.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
         } else if (hazard.category === "CONSTRUCTION") {
           categoryEmoji = "🚧";
-          logoHtml = `<span style="font-size: 16px;">🚧</span>`;
+          logoHtml = `<img src="/construction-tools-svgrepo-com.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        } else if (hazard.category === "PATHWAY_OBSTACLE") {
+          categoryEmoji = "🚫";
+          logoHtml = `<img src="/no-pedestrians-svgrepo-com.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
         } else if (hazard.category === "ACCIDENT") {
           categoryEmoji = "🚗";
           logoHtml = `<span style="font-size: 16px;">🚗</span>`;
