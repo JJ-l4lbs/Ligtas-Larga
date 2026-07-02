@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +12,42 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isBackHovered, setIsBackHovered] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionStyle, setTransitionStyle] = useState<React.CSSProperties>({});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleBackToMapClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    // Initial state: Tiny circle at cursor
+    setTransitionStyle({
+      clipPath: `circle(0px at ${x}px ${y}px)`,
+    });
+    setIsTransitioning(true);
+
+    // Next frame: Expand to cover the entire screen
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTransitionStyle({
+          clipPath: `circle(150vmax at ${x}px ${y}px)`,
+        });
+      });
+    });
+
+    // Wait for the expansion animation to finish before routing
+    setTimeout(() => {
+      router.push("/");
+      // Reset transition state after route completes
+      setTimeout(() => setIsTransitioning(false), 500);
+    }, 350);
+  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -82,17 +119,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="splash-liquid-bg"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100vw",
-        height: "100vh",
-        padding: "20px",
-        overflow: "hidden",
-      }}
+    <>
+      {isTransitioning && mounted && typeof document !== "undefined" && createPortal(
+        <div
+          className="splash-liquid-bg"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 999999,
+            transition: "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+            ...transitionStyle,
+          }}
+        />,
+        document.body
+      )}
+      <div
+        className="splash-liquid-bg"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100vw",
+          height: "100vh",
+          padding: "20px",
+          overflow: "hidden",
+        }}
     >
       <div
         className="glass-panel"
@@ -238,11 +292,33 @@ export default function LoginPage() {
         </div>
 
         <div style={{ textAlign: "center", borderTop: "1px solid var(--border-subtle)", paddingTop: "16px" }}>
-          <Link href="/" style={{ fontSize: "13px", color: "var(--text-secondary)", textDecoration: "none", fontWeight: 600 }}>
-            ← Back to Map (Browse Anonymous)
+          <Link
+            href="/"
+            onClick={handleBackToMapClick}
+            onMouseEnter={() => setIsBackHovered(true)}
+            onMouseLeave={() => setIsBackHovered(false)}
+            style={{
+              fontSize: "13px",
+              color: isBackHovered ? "var(--text-primary)" : "var(--text-secondary)",
+              textDecoration: "none",
+              fontWeight: 600,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "color 0.2s ease, transform 0.2s ease",
+              transform: isBackHovered ? "translateX(-4px)" : "translateX(0px)"
+            }}
+          >
+            <span style={{
+              display: "inline-block",
+              transition: "transform 0.2s ease",
+              transform: isBackHovered ? "translateX(-3px)" : "translateX(0px)"
+            }}>←</span>
+            <span>Back to Map (Browse Anonymous)</span>
           </Link>
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }

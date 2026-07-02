@@ -59,7 +59,7 @@ export default function BrandHeader({
       router.push("/login");
       // Reset the transition state after route finishes
       setTimeout(() => setIsTransitioning(false), 500);
-    }, 700); // 700ms matches the transition duration
+    }, 350); // 350ms matches the transition duration
   };
 
   return (
@@ -74,7 +74,7 @@ export default function BrandHeader({
             width: "100vw",
             height: "100vh",
             zIndex: 999999,
-            transition: "clip-path 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
             ...transitionStyle,
           }}
         />,
@@ -92,7 +92,10 @@ export default function BrandHeader({
         gap: "12px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div 
+        onClick={() => window.location.reload()}
+        style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+      >
         <span style={{ fontSize: "20px" }}>🚀</span>
         <span style={{ fontWeight: 800, fontSize: "16px", color: "var(--text-primary)" }}>
           Ligtas-Larga
