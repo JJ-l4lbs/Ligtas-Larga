@@ -100,4 +100,4 @@ The "Expiring Hazard Timers & Real-Time Countdowns" functionality is complete. A
 - *Attempt 26:* Added custom `expiresAt` property to `HazardReport` interface in `app/admin/page.tsx` and declared `editExpiresAt` state.
 - *Attempt 27:* Designed and implemented a datetime-local input picker in the admin review queue edit mode to configure/update the expiration timer, and rendered the expiry time details on card views.
 - *Attempt 28:* Implemented client-side expired hazard filtering in `components/useHazardMarkers.ts` and created a dynamic interval checking and updating countdown timers every 1000ms inside open info window popups.
-
+- *Attempt 29:* Modified the test hazard seeding script in `prisma/seed-test-hazards.js` to set the expiration of all FLOOD hazards to 2 days from now, successfully re-seeded the database, and pushed the updated script to remote.
