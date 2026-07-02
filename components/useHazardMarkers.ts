@@ -35,17 +35,19 @@ export default function useHazardMarkers(
       color: string
     ): google.maps.Icon | string => {
       if (hazard.category === "CONSTRUCTION") {
+        const customSize = size * 0.85;
         return {
           url: "/construction-tools-svgrepo-com.svg",
-          scaledSize: new google.maps.Size(size, size),
-          anchor: new google.maps.Point(size / 2, size / 2),
+          scaledSize: new google.maps.Size(customSize, customSize),
+          anchor: new google.maps.Point(customSize / 2, customSize / 2),
         };
       }
       if (hazard.category === "PATHWAY_OBSTACLE") {
+        const customSize = size * 0.85;
         return {
           url: "/no-pedestrians-svgrepo-com.svg",
-          scaledSize: new google.maps.Size(size, size),
-          anchor: new google.maps.Point(size / 2, size / 2),
+          scaledSize: new google.maps.Size(customSize, customSize),
+          anchor: new google.maps.Point(customSize / 2, customSize / 2),
         };
       }
 
