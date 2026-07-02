@@ -40,6 +40,7 @@ The "Saved Places & Routes" functionality for registered users is fully complete
 - **Verification & Build:**
   - Resolved deprecated `middleware.ts` warning in Next.js 16 by implementing `proxy.ts`.
   - Configured `prisma generate` execution in the `build` script in `package.json` to enable type-safe client assembly during Vercel builds.
+  - Implemented production `ssl: { rejectUnauthorized: false }` parameters inside `lib/prisma.ts` for database connection stability under serverless environments.
   - Verified a clean build with `npm run build`.
 
 ---
