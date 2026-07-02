@@ -94,5 +94,4 @@ The "Saved Places & Routes" functionality is complete. Currently updating the lo
 - *Attempt 20:* Fixed bug where start, end, and warning markers did not disappear when resetting/backing out of route planning by replacing direct assignment `m.map = null` with `m.setMap(null)` in `components/useRouteCalculator.ts`.
 - *Attempt 21:* Performed a performance audit on maps loading and route API requests. Implemented Next.js dynamic imports for `MapComponent` with SSR disabled in `app/page.tsx`, and added Vercel Edge caching headers to the `/api/reports` hazard reports GET endpoint.
 - *Attempt 22:* Added client-side `localStorage` caching inside `fetchHazards` function in `components/Map.tsx`. When the application loads, the map instantly renders the previously-cached hazards (0ms latency), and background-updates them from the API.
-
-
+- *Attempt 23:* Fixed cycle (bicycle) travel mode rendering issues. Implemented a try-catch fallback to WALK mode on the backend in `api/routes/route.ts` if BICYCLE mode is unsupported by Google in the region, adding a warning banner. Dynamically colored route polylines in `components/useRouteCalculator.ts` by mode (Teal for Commute, Green for Cycle, Purple for Motorcycle, Slate for Car).
