@@ -1,5 +1,9 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface BrandHeaderProps {
   isDarkMode: boolean;
@@ -16,14 +20,68 @@ export default function BrandHeader({
   onLogout,
   onToggleDashboard,
 }: BrandHeaderProps) {
+  const router = useRouter();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionStyle, setTransitionStyle] = useState<React.CSSProperties>({});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const getShortEmail = (email: string) => {
     if (email.length <= 15) return email;
     return email.substring(0, 12) + "...";
   };
 
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    // Initial state: Tiny circle at cursor
+    setTransitionStyle({
+      clipPath: `circle(0px at ${x}px ${y}px)`,
+    });
+    setIsTransitioning(true);
+
+    // Next frame: Expand to cover the entire screen
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTransitionStyle({
+          clipPath: `circle(150vmax at ${x}px ${y}px)`,
+        });
+      });
+    });
+
+    // Wait for the expansion animation to finish before routing
+    setTimeout(() => {
+      router.push("/login");
+      // Reset the transition state after route finishes
+      setTimeout(() => setIsTransitioning(false), 500);
+    }, 700); // 700ms matches the transition duration
+  };
+
   return (
-    <div
-      style={{
+    <>
+      {isTransitioning && mounted && typeof document !== "undefined" && createPortal(
+        <div
+          className="splash-liquid-bg"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 999999,
+            transition: "clip-path 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+            ...transitionStyle,
+          }}
+        />,
+        document.body
+      )}
+      <div
+        style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -124,6 +182,7 @@ export default function BrandHeader({
         ) : (
           <Link
             href="/login"
+            onClick={handleLoginClick}
             className="btn-interactive"
             style={{
               padding: "6px 12px",
@@ -161,5 +220,6 @@ export default function BrandHeader({
         </button>
       </div>
     </div>
+    </>
   );
 }
