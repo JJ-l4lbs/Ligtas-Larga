@@ -26,6 +26,7 @@ interface HazardReport {
   description: string;
   isValidated: boolean;
   imageUrl?: string | null;
+  expiresAt?: string | null;
 }
 
 export default function MapComponent() {

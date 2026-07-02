@@ -6,6 +6,10 @@ export async function GET() {
     const reports = await prisma.hazardReport.findMany({
       where: {
         isValidated: true,
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } }
+        ]
       },
       orderBy: {
         reportedAt: "desc",
@@ -44,6 +48,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let calculatedExpiresAt: Date | null = null;
+    if (body.expiresAt) {
+      calculatedExpiresAt = new Date(body.expiresAt);
+    } else if (category === "FLOOD") {
+      // Default flood reports to expire in 2 hours
+      calculatedExpiresAt = new Date(Date.now() + 120 * 60000);
+    }
+
     const report = await prisma.hazardReport.create({
       data: {
         latitude,
@@ -54,6 +66,7 @@ export async function POST(request: NextRequest) {
         imageUrl: imageUrl || null,
         isValidated: typeof isValidated === "boolean" ? isValidated : false,
         visionLabels: visionLabels || null,
+        expiresAt: calculatedExpiresAt,
       },
     });
 

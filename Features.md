@@ -11,6 +11,11 @@ This document serves as the master record of all planned, implemented, and salva
 * **Description:** Renders a desaturated style map canvas with support for dynamic Dark/Light mode thematic toggling, custom SVG hazard pins, custom origin/destination markers, active polylines representing directions, and a floating control button to show/hide default Google Map POI/base map icons (default view is set to hidden). Viewport is restricted strictly to the Philippines bounds (4.6°N to 21.2°N, 116.6°E to 126.6°E) with a minimum zoom limit (`minZoom: 5`) to prevent zooming out past the country boundary.
 * **Component:** [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx), [useHazardMarkers.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useHazardMarkers.ts), [useRouteCalculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useRouteCalculator.ts)
 
+### ⏱️ Expiring Hazard Timers (Flooded Hazards)
+* **Status:** Implemented
+* **Description:** Adds real-time ticking expiration timers to flooded hazards (and other temporary reports). Default flood reports expire in 2 hours. Remaining duration is viewable by everyone in the map pin info window and dynamically counts down. Admins can view and configure/edit the expiration time using a date-time picker in the review queue.
+* **Component:** [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx), [useHazardMarkers.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useHazardMarkers.ts), [admin/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/admin/page.tsx), [/api/reports](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/reports/route.ts), [/api/admin/reports](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/admin/reports/route.ts)
+
 ### 📈 Dynamic Hazard Marker Stacking (Z-Index Layering)
 * **Status:** Implemented
 * **Description:** Introduces a dynamic `zIndex` system for hazard markers. Hovered markers and their tooltips are temporarily elevated to the absolute top layer (`highestZIndex + 100`), while permanently clicked/selected markers and InfoWindows are stacked sequentially in order of selection (`highestZIndex++`), preventing overlapping markers from blocking each other's details.

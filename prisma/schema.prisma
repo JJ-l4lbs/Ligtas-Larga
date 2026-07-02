@@ -57,4 +57,5 @@ model HazardReport {
   isValidated  Boolean  @default(false)
   visionLabels String?  // Stored as JSON string
   reportedAt   DateTime @default(now())
+  expiresAt    DateTime?
 }
