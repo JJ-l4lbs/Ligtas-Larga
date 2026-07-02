@@ -65,13 +65,14 @@ This document serves as the master record of all planned, implemented, and salva
 * **File:** [maps-utils.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/lib/maps-utils.ts)
 
 ### 🔒 Role-Based Session Management (Admin & Anonymous)
-* **Status:** Implemented
+* **Status:** Implemented (Updated)
 * **Description:** Introduces distinct user sessions with Supabase Auth:
   * **Anonymous Session:** Public users can query routes, view active hazards, and submit new reports (queued for review, marked `isValidated = false` or verified).
   * **Registered User Session:** Commuters can log in to submit verified reports.
   * **Administrator Session:** Secure role-restricted partition (`/admin` layouts) allowing admins to review the verification queue, edit details, approve pending crowdsourced hazard reports, or manually add/remove hazards.
+  * **Session Termination (Logout):** Logging out as an admin or registered user hard-reloads the application and redirects to the root URL (`/`), bringing the user back to the splashscreen intro loader.
 * **Vercel Applicability:** Unified app routing structure (Next.js Proxy/Middleware + Role cookie validation) deployed as a single project on Vercel.
-* **Files:** [proxy.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/proxy.ts), [admin/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/admin/page.tsx), [login/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/login/page.tsx), [/api/auth/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/auth), [/api/admin/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/admin)
+* **Files:** [proxy.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/proxy.ts), [admin/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/admin/page.tsx), [login/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/login/page.tsx), [/api/auth/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/auth), [/api/admin/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/admin), [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx)
 
 ### ⭐ Saved Places Personalization
 * **Status:** Implemented

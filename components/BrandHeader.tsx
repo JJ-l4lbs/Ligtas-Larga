@@ -59,7 +59,7 @@ export default function BrandHeader({
       router.push("/login");
       // Reset the transition state after route finishes
       setTimeout(() => setIsTransitioning(false), 500);
-    }, 350); // 350ms matches the transition duration
+    }, 600); // Trigger the routing transition midway
   };
 
   return (
@@ -74,7 +74,7 @@ export default function BrandHeader({
             width: "100vw",
             height: "100vh",
             zIndex: 999999,
-            transition: "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1)",
             ...transitionStyle,
           }}
         />,

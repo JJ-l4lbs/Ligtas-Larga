@@ -48,7 +48,7 @@ export default function LoginPage() {
       router.push("/");
       // Reset transition state after route completes
       setTimeout(() => setIsTransitioning(false), 500);
-    }, 350);
+    }, 600);
   };
 
   useEffect(() => {
@@ -88,15 +88,34 @@ export default function LoginPage() {
       }
 
       if (isLogin) {
+        // Trigger circular transition animation from center of screen
+        const x = typeof window !== "undefined" ? window.innerWidth / 2 : 0;
+        const y = typeof window !== "undefined" ? window.innerHeight / 2 : 0;
+        setTransitionStyle({
+          clipPath: `circle(0px at ${x}px ${y}px)`,
+        });
+        setIsTransitioning(true);
         setIsExiting(true);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTransitionStyle({
+              clipPath: `circle(150vmax at ${x}px ${y}px)`,
+            });
+          });
+        });
+
         setTimeout(() => {
           if (data.user.role === "ADMIN") {
             router.push("/admin");
           } else {
-            router.push("/");
+            window.location.href = "/";
           }
-          setTimeout(() => setIsExiting(false), 500);
-        }, 400);
+          setTimeout(() => {
+            setIsTransitioning(false);
+            setIsExiting(false);
+          }, 500);
+        }, 600);
       } else {
         setError("Account created successfully! Logging in...");
         // Auto-login after signup
@@ -107,15 +126,34 @@ export default function LoginPage() {
         });
         const loginData = await loginRes.json();
         if (loginRes.ok) {
+          // Trigger circular transition animation from center of screen
+          const x = typeof window !== "undefined" ? window.innerWidth / 2 : 0;
+          const y = typeof window !== "undefined" ? window.innerHeight / 2 : 0;
+          setTransitionStyle({
+            clipPath: `circle(0px at ${x}px ${y}px)`,
+          });
+          setIsTransitioning(true);
           setIsExiting(true);
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setTransitionStyle({
+                clipPath: `circle(150vmax at ${x}px ${y}px)`,
+              });
+            });
+          });
+
           setTimeout(() => {
             if (loginData.user.role === "ADMIN") {
               router.push("/admin");
             } else {
-              router.push("/");
+              window.location.href = "/";
             }
-            setTimeout(() => setIsExiting(false), 500);
-          }, 400);
+            setTimeout(() => {
+              setIsTransitioning(false);
+              setIsExiting(false);
+            }, 500);
+          }, 600);
         } else {
           setIsLogin(true);
           setError("Account created! Please sign in now.");
@@ -140,7 +178,7 @@ export default function LoginPage() {
             width: "100vw",
             height: "100vh",
             zIndex: 999999,
-            transition: "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1)",
             ...transitionStyle,
           }}
         />,

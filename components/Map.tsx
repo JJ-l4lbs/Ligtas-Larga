@@ -138,6 +138,7 @@ export default function MapComponent() {
       const response = await fetch("/api/auth/logout", { method: "POST" });
       if (response.ok) {
         setUser(null);
+        window.location.href = "/";
       }
     } catch (err) {
       console.error("Logout failed:", err);
@@ -166,7 +167,7 @@ export default function MapComponent() {
     if (currentStep === 0) {
       const timer = setTimeout(() => {
         setCurrentStep(1);
-      }, 2500);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [currentStep]);

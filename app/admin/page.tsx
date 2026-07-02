@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import SplashLoader from "../../components/SplashLoader";
 
 interface HazardReport {
   id: string;
@@ -28,6 +29,7 @@ export default function AdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchSessionAndReports = async () => {
+    const startTime = Date.now();
     try {
       // 1. Verify user session
       const meRes = await fetch("/api/auth/me");
@@ -48,8 +50,12 @@ export default function AdminPage() {
     } catch (err) {
       console.error("Error loading admin dashboard data:", err);
     } finally {
-      setLoading(false);
-      setTimeout(() => setShowOverlay(false), 800);
+      const elapsed = Date.now() - startTime;
+      const delay = Math.max(0, 3000 - elapsed);
+      setTimeout(() => {
+        setLoading(false);
+        setTimeout(() => setShowOverlay(false), 800);
+      }, delay);
     }
   };
 
@@ -63,8 +69,7 @@ export default function AdminPage() {
       if (res.ok) {
         setLoading(true);
         setShowOverlay(true);
-        router.push("/login");
-        router.refresh();
+        window.location.href = "/";
       }
     } catch (err) {
       console.error("Logout failed:", err);
@@ -144,7 +149,6 @@ export default function AdminPage() {
     <>
       {showOverlay && (
         <div 
-          className="splash-liquid-bg" 
           style={{ 
             width: "100vw", 
             height: "100vh", 
@@ -156,7 +160,9 @@ export default function AdminPage() {
             opacity: loading ? 1 : 0,
             pointerEvents: loading ? "auto" : "none"
           }} 
-        />
+        >
+          <SplashLoader currentStep={loading ? 0 : 1} />
+        </div>
       )}
 
       {!loading && (
