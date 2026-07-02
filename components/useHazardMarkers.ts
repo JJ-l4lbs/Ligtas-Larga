@@ -29,12 +29,24 @@ export default function useHazardMarkers(
       zIndex: 999, // Render hover tooltips below permanently open windows
     });
 
-    hazards.forEach((hazard) => {
-      let color = "#ef4444";
-      if (hazard.severity === "MEDIUM") {
-        color = "#f59e0b";
-      } else if (hazard.severity === "LOW") {
-        color = "#10b981";
+    const getIconConfig = (
+      hazard: HazardReport,
+      size: number,
+      color: string
+    ): google.maps.Icon | string => {
+      if (hazard.category === "CONSTRUCTION") {
+        return {
+          url: "/construction-tools-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(size, size),
+          anchor: new google.maps.Point(size / 2, size / 2),
+        };
+      }
+      if (hazard.category === "PATHWAY_OBSTACLE") {
+        return {
+          url: "/no-pedestrians-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(size, size),
+          anchor: new google.maps.Point(size / 2, size / 2),
+        };
       }
 
       let iconUrl = "";
@@ -46,50 +58,45 @@ export default function useHazardMarkers(
         iconUrl = "/triangle-rocket/3.svg";
       }
 
-      const initialZoom = mapInstance.getZoom() || 13;
-      const initialSize = Math.max(16, Math.min(80, (initialZoom - 13) * 6 + 32));
-
-      let iconConfig: google.maps.Icon | string;
-
-      if (hazard.category === "CONSTRUCTION") {
-        iconConfig = {
-          url: "/construction-tools-svgrepo-com.svg",
-          scaledSize: new google.maps.Size(initialSize, initialSize),
-          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
-        };
-      } else if (hazard.category === "PATHWAY_OBSTACLE") {
-        iconConfig = {
-          url: "/no-pedestrians-svgrepo-com.svg",
-          scaledSize: new google.maps.Size(initialSize, initialSize),
-          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
-        };
-      } else if (iconUrl) {
-        iconConfig = {
+      if (iconUrl) {
+        return {
           url: iconUrl,
-          scaledSize: new google.maps.Size(initialSize, initialSize),
-          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
-        };
-      } else {
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${initialSize}" height="${initialSize}" viewBox="0 0 36 36">
-          <defs>
-            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
-            </filter>
-          </defs>
-          <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
-          <circle cx="18" cy="18" r="6" fill="${color}"/>
-          <circle cx="18" cy="18" r="2" fill="#ffffff"/>
-        </svg>`;
-        iconConfig = {
-          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
+          scaledSize: new google.maps.Size(size, size),
+          anchor: new google.maps.Point(size / 2, size / 2),
         };
       }
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 36 36">
+        <defs>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+          </filter>
+        </defs>
+        <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
+        <circle cx="18" cy="18" r="6" fill="${color}"/>
+        <circle cx="18" cy="18" r="2" fill="#ffffff"/>
+      </svg>`;
+      return {
+        url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+        anchor: new google.maps.Point(size / 2, size / 2),
+      };
+    };
+
+    hazards.forEach((hazard) => {
+      let color = "#ef4444";
+      if (hazard.severity === "MEDIUM") {
+        color = "#f59e0b";
+      } else if (hazard.severity === "LOW") {
+        color = "#10b981";
+      }
+
+      const initialZoom = mapInstance.getZoom() || 13;
+      const initialSize = Math.max(16, Math.min(80, (initialZoom - 13) * 6 + 32));
 
       const marker = new google.maps.Marker({
         map: mapInstance,
         position: { lat: hazard.latitude, lng: hazard.longitude },
-        icon: iconConfig,
+        icon: getIconConfig(hazard, initialSize, color),
         title: "", // Prevent default tooltip
         zIndex: 1, // Base zIndex for all hazard markers
       });
@@ -229,15 +236,6 @@ export default function useHazardMarkers(
         const hazard = hazards[index];
         if (!hazard) return;
 
-        let iconUrl = "";
-        if (hazard.category === "FLOOD") {
-          iconUrl = "/triangle-rocket/2.svg";
-        } else if (hazard.category === "RAMP_BLOCKED") {
-          iconUrl = "/triangle-rocket/1.svg";
-        } else if (hazard.category === "ELEVATOR_BROKEN") {
-          iconUrl = "/triangle-rocket/3.svg";
-        }
-
         let color = "#ef4444";
         if (hazard.severity === "MEDIUM") {
           color = "#f59e0b";
@@ -245,28 +243,7 @@ export default function useHazardMarkers(
           color = "#10b981";
         }
 
-        if (iconUrl) {
-          marker.setIcon({
-            url: iconUrl,
-            scaledSize: new google.maps.Size(size, size),
-            anchor: new google.maps.Point(size / 2, size / 2),
-          });
-        } else {
-          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 36 36">
-            <defs>
-              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
-              </filter>
-            </defs>
-            <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
-            <circle cx="18" cy="18" r="6" fill="${color}"/>
-            <circle cx="18" cy="18" r="2" fill="#ffffff"/>
-          </svg>`;
-          marker.setIcon({
-            url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-            anchor: new google.maps.Point(size / 2, size / 2),
-          });
-        }
+        marker.setIcon(getIconConfig(hazard, size, color));
       });
     };
 
