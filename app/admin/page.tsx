@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [reports, setReports] = useState<HazardReport[]>([]);
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "VERIFIED">("ALL");
   const [loading, setLoading] = useState(true);
+  const [showOverlay, setShowOverlay] = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDescription, setEditDescription] = useState("");
@@ -48,6 +49,7 @@ export default function AdminPage() {
       console.error("Error loading admin dashboard data:", err);
     } finally {
       setLoading(false);
+      setTimeout(() => setShowOverlay(false), 800);
     }
   };
 
@@ -59,7 +61,10 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" });
       if (res.ok) {
+        setLoading(true);
+        setShowOverlay(true);
         router.push("/login");
+        router.refresh();
       }
     } catch (err) {
       console.error("Logout failed:", err);
@@ -135,18 +140,35 @@ export default function AdminPage() {
     return true;
   });
 
-  if (loading) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100vw", height: "100vh", backgroundColor: "var(--bg-primary)" }}>
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-on-app-left)" }}>Verifying Admin Credentials...</h2>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)", paddingBottom: "40px" }}>
+    <>
+      {showOverlay && (
+        <div 
+          className="splash-liquid-bg" 
+          style={{ 
+            width: "100vw", 
+            height: "100vh", 
+            position: "fixed", 
+            top: 0, 
+            left: 0, 
+            zIndex: 9999,
+            transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            opacity: loading ? 1 : 0,
+            pointerEvents: loading ? "auto" : "none"
+          }} 
+        />
+      )}
+
+      {!loading && (
+        <div 
+          style={{ 
+            minHeight: "100vh", 
+            backgroundColor: "var(--bg-primary)", 
+            paddingBottom: "40px",
+            animation: "slideUpFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+            opacity: 0
+          }}
+        >
       {/* Admin Navbar */}
       <div
         style={{
@@ -505,5 +527,7 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+      )}
+    </>
   );
 }
