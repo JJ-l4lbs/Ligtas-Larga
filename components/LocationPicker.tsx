@@ -371,11 +371,11 @@ export default function LocationPicker({
         }}
       >
         {[
-          { id: "walk", label: "Walk", icon: "🚶" },
-          { id: "commute", label: "Commute", icon: "🚌" },
-          { id: "bicycle", label: "Cycle", icon: "🚲" },
-          { id: "motorcycle", label: "Moto", icon: "🏍️" },
-          { id: "car", label: "Car", icon: "🚗" },
+          { id: "walk", label: "Walk", icon: "/mode-walk.svg" },
+          { id: "commute", label: "Commute", icon: "/mode-commute.svg" },
+          { id: "bicycle", label: "Cycle", icon: "/mode-bicycle.svg" },
+          { id: "motorcycle", label: "Moto", icon: "/mode-motorcycle.svg" },
+          { id: "car", label: "Car", icon: "/mode-car.svg" },
         ].map((mode) => {
           const isActive = activeMode === mode.id;
           return (
@@ -400,7 +400,20 @@ export default function LocationPicker({
                 fontWeight: 600,
               }}
             >
-              <span style={{ fontSize: "16px" }}>{mode.icon}</span>
+              <div style={{
+                width: "16px",
+                height: "16px",
+                backgroundColor: isActive ? "#FFFFFF" : "var(--text-secondary)",
+                WebkitMaskImage: `url(${mode.icon})`,
+                maskImage: `url(${mode.icon})`,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                transition: "background-color 0.2s",
+              }} />
               <span>{mode.label}</span>
             </button>
           );
@@ -451,8 +464,8 @@ export default function LocationPicker({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: "28px",
-                height: "28px",
+                width: "36px",
+                height: "36px",
               }}
               title="Use current location"
               disabled={isLocating}
@@ -460,16 +473,16 @@ export default function LocationPicker({
               {isLocating ? (
                 <div
                   style={{
-                    width: "14px",
-                    height: "14px",
+                    width: "20px",
+                    height: "20px",
                     borderRadius: "50%",
-                    border: "2px solid var(--accent-accessibility)",
+                    border: "2.5px solid var(--accent-accessibility)",
                     borderTopColor: "transparent",
                     animation: "spin 0.6s linear infinite",
                   }}
                 />
               ) : (
-                "🎯"
+                <img src="/current-loc.svg" alt="Current Location" style={{ width: "24px", height: "24px", filter: "invert(var(--theme-icon-invert, 0))" }} />
               )}
             </button>
           </div>

@@ -2,6 +2,7 @@
 
 /* Slate & Mint Accessibility Design System Theme variables */
 :root {
+  --theme-icon-invert: 0;
   /* Layout Backgrounds */
   --bg-app-left: #F8FAFC;      /* Slate-50: Clean sidebar background */
   --bg-card: #FFFFFF;          /* Pure white for container cards */
@@ -350,6 +351,7 @@ input[type="text"]::placeholder {
 
 /* SLEEK Midnight Dark Theme variable overrides (Only background is dark, sections remain light/white) */
 .dark-theme {
+  --theme-icon-invert: 1;
   /* Layout Backgrounds */
   --bg-app-left: #090D16;      /* Deep midnight blue for Left Panel background */
   --bg-card: #FFFFFF;          /* Card sections remain light/white */

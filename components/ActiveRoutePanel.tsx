@@ -163,11 +163,11 @@ export default function ActiveRoutePanel({
         }}
       >
         {[
-          { id: "walk", label: "Walk", icon: "🚶" },
-          { id: "commute", label: "Commute", icon: "🚌" },
-          { id: "bicycle", label: "Cycle", icon: "🚲" },
-          { id: "motorcycle", label: "Moto", icon: "🏍️" },
-          { id: "car", label: "Car", icon: "🚗" },
+          { id: "walk", label: "Walk", icon: "/mode-walk.svg" },
+          { id: "commute", label: "Commute", icon: "/mode-commute.svg" },
+          { id: "bicycle", label: "Cycle", icon: "/mode-bicycle.svg" },
+          { id: "motorcycle", label: "Moto", icon: "/mode-motorcycle.svg" },
+          { id: "car", label: "Car", icon: "/mode-car.svg" },
         ].map((mode) => {
           const isActive = activeMode === mode.id;
           return (
@@ -192,7 +192,20 @@ export default function ActiveRoutePanel({
                 fontWeight: 600,
               }}
             >
-              <span style={{ fontSize: "16px" }}>{mode.icon}</span>
+              <div style={{
+                width: "16px",
+                height: "16px",
+                backgroundColor: isActive ? "#FFFFFF" : "var(--text-secondary)",
+                WebkitMaskImage: `url(${mode.icon})`,
+                maskImage: `url(${mode.icon})`,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                transition: "background-color 0.2s",
+              }} />
               <span>{mode.label}</span>
             </button>
           );
@@ -547,9 +560,24 @@ export default function ActiveRoutePanel({
                     padding: "10px 4px",
                     borderRadius: "10px",
                     whiteSpace: "nowrap",
+                    gap: "6px",
                   }}
                 >
-                  ♿ {isWheelchairEnabled ? "Accessible" : "Standard"}
+                  <div style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: isWheelchairEnabled ? "var(--badge-accessible-text)" : "var(--text-secondary)",
+                    WebkitMaskImage: "url(/wheelchair.svg)",
+                    maskImage: "url(/wheelchair.svg)",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    transition: "background-color 0.2s",
+                  }} />
+                  <span>{isWheelchairEnabled ? "Accessible" : "Standard"}</span>
                 </button>
               )}
               {showShaded && (
@@ -569,9 +597,24 @@ export default function ActiveRoutePanel({
                     padding: "10px 4px",
                     borderRadius: "10px",
                     whiteSpace: "nowrap",
+                    gap: "6px",
                   }}
                 >
-                  ☀️ Shaded
+                  <div style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: isShadedEnabled ? "var(--badge-shaded-text)" : "var(--text-secondary)",
+                    WebkitMaskImage: "url(/shaded-new.svg)",
+                    maskImage: "url(/shaded-new.svg)",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    transition: "background-color 0.2s",
+                  }} />
+                  <span>Shaded</span>
                 </button>
               )}
               {showRain && (
@@ -591,9 +634,24 @@ export default function ActiveRoutePanel({
                     padding: "10px 4px",
                     borderRadius: "10px",
                     whiteSpace: "nowrap",
+                    gap: "6px",
                   }}
                 >
-                  🌧️ Flood-Free
+                  <div style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: isRainEnabled ? "var(--badge-flood-text)" : "var(--text-secondary)",
+                    WebkitMaskImage: "url(/flood.svg)",
+                    maskImage: "url(/flood.svg)",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    transition: "background-color 0.2s",
+                  }} />
+                  <span>Flood-Free</span>
                 </button>
               )}
             </div>

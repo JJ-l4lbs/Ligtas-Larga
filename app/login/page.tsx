@@ -163,11 +163,16 @@ export default function LoginPage() {
           animation: "slideUpFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         }}
       >
-        <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: "28px", fontWeight: 800, color: "var(--text-primary)", marginBottom: "8px" }}>
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+          <img 
+            src="/logo.svg" 
+            alt="Ligtas-Larga Logo" 
+            style={{ width: "48px", height: "48px", objectFit: "contain", marginBottom: "4px" }} 
+          />
+          <h1 style={{ fontSize: "28px", fontWeight: 800, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.02em" }}>
             Ligtas-Larga
           </h1>
-          <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "4px" }}>
             {isLogin ? "Sign in to access secure dashboard" : "Create an account to start reporting"}
           </p>
         </div>
@@ -294,7 +299,6 @@ export default function LoginPage() {
         <div style={{ textAlign: "center", borderTop: "1px solid var(--border-subtle)", paddingTop: "16px" }}>
           <Link
             href="/"
-            onClick={handleBackToMapClick}
             onMouseEnter={() => setIsBackHovered(true)}
             onMouseLeave={() => setIsBackHovered(false)}
             style={{

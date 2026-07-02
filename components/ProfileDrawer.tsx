@@ -89,7 +89,32 @@ export default function ProfileDrawer({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "22px" }}>♿</span>
+            <div style={{
+              width: "28px",
+              height: "28px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "6px",
+              backgroundColor: isWheelchairEnabled ? "var(--badge-accessible-bg)" : "var(--border-subtle)",
+              padding: "4px",
+              boxSizing: "border-box"
+            }}>
+              <div style={{
+                width: "20px",
+                height: "20px",
+                backgroundColor: isWheelchairEnabled ? "var(--accent-accessibility)" : "var(--text-primary)",
+                WebkitMaskImage: "url(/wheelchair.svg)",
+                maskImage: "url(/wheelchair.svg)",
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                transition: "background-color 0.2s",
+              }} />
+            </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
               <span style={{ fontSize: "14px", fontWeight: 700 }}>Wheelchair Accessibility Mode</span>
               <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Enforce accessible paths & elevators</span>
@@ -143,7 +168,20 @@ export default function ProfileDrawer({
               cursor: "pointer",
             }}
           >
-            <span>🎒</span>
+            <div style={{
+              width: "16px",
+              height: "16px",
+              backgroundColor: isShadedEnabled ? "var(--accent-shade)" : "var(--text-secondary)",
+              WebkitMaskImage: "url(/shaded-new.svg)",
+              maskImage: "url(/shaded-new.svg)",
+              WebkitMaskSize: "contain",
+              maskSize: "contain",
+              WebkitMaskRepeat: "no-repeat",
+              maskRepeat: "no-repeat",
+              WebkitMaskPosition: "center",
+              maskPosition: "center",
+              transition: "background-color 0.2s",
+            }} />
             <span>Shaded/Covered</span>
           </button>
         )}
@@ -167,7 +205,20 @@ export default function ProfileDrawer({
             cursor: "pointer",
           }}
         >
-          <span>🌧️</span>
+          <div style={{
+            width: "16px",
+            height: "16px",
+            backgroundColor: isRainEnabled ? "var(--accent-rain)" : "var(--text-secondary)",
+            WebkitMaskImage: "url(/flood.svg)",
+            maskImage: "url(/flood.svg)",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            transition: "background-color 0.2s",
+          }} />
           <span>Flood Avoidance</span>
         </button>
       </div>
@@ -192,7 +243,20 @@ export default function ProfileDrawer({
           cursor: "pointer",
         }}
       >
-        <span>⚠️</span> Report Hazard at Current Position
+        <div style={{
+          width: "16px",
+          height: "16px",
+          backgroundColor: "var(--severity-high)",
+          WebkitMaskImage: "url(/hazard.svg)",
+          maskImage: "url(/hazard.svg)",
+          WebkitMaskSize: "contain",
+          maskSize: "contain",
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+        }} />
+        <span>Report Hazard at Current Position</span>
       </button>
     </div>
   );
