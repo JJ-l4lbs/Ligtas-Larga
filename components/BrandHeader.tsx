@@ -94,10 +94,14 @@ export default function BrandHeader({
     >
       <div 
         onClick={() => window.location.reload()}
-        style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+        style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
       >
-        <span style={{ fontSize: "20px" }}>🚀</span>
-        <span style={{ fontWeight: 800, fontSize: "16px", color: "var(--text-primary)" }}>
+        <img 
+          src="/logo.svg" 
+          alt="Ligtas-Larga Logo" 
+          style={{ width: "24px", height: "24px", objectFit: "contain" }} 
+        />
+        <span style={{ fontWeight: 800, fontSize: "17px", color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
           Ligtas-Larga
         </span>
       </div>
@@ -196,9 +200,13 @@ export default function BrandHeader({
               fontWeight: 700,
               fontSize: "10px",
               textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
           >
-            🔑 Log In
+            <img src="/log-in.svg" alt="Log In" style={{ width: "12px", height: "12px", filter: "invert(var(--theme-icon-invert, 0))" }} />
+            <span>Log In</span>
           </Link>
         )}
 
@@ -219,7 +227,11 @@ export default function BrandHeader({
             cursor: "pointer",
           }}
         >
-          <span>{isDarkMode ? "☀️" : "🌙"}</span>
+          <img 
+            src={isDarkMode ? "/lightmode.svg" : "/darkmode.svg"} 
+            alt={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"} 
+            style={{ width: "16px", height: "16px", filter: "invert(var(--theme-icon-invert, 0))" }}
+          />
         </button>
       </div>
     </div>

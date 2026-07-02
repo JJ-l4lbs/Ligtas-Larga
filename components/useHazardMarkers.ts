@@ -37,16 +37,41 @@ export default function useHazardMarkers(
         color = "#10b981";
       }
 
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-        <defs>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
-          </filter>
-        </defs>
-        <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
-        <circle cx="18" cy="18" r="6" fill="${color}"/>
-        <circle cx="18" cy="18" r="2" fill="#ffffff"/>
-      </svg>`;
+      let iconUrl = "";
+      if (hazard.category === "FLOOD") {
+        iconUrl = "/triangle-rocket/2.svg";
+      } else if (hazard.category === "RAMP_BLOCKED") {
+        iconUrl = "/triangle-rocket/1.svg";
+      } else if (hazard.category === "ELEVATOR_BROKEN") {
+        iconUrl = "/triangle-rocket/3.svg";
+      }
+
+      const initialZoom = mapInstance.getZoom() || 13;
+      const initialSize = Math.max(16, Math.min(80, (initialZoom - 13) * 6 + 32));
+
+      let iconConfig: google.maps.Icon | string;
+      if (iconUrl) {
+        iconConfig = {
+          url: iconUrl,
+          scaledSize: new google.maps.Size(initialSize, initialSize),
+          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
+        };
+      } else {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${initialSize}" height="${initialSize}" viewBox="0 0 36 36">
+          <defs>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+            </filter>
+          </defs>
+          <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
+          <circle cx="18" cy="18" r="6" fill="${color}"/>
+          <circle cx="18" cy="18" r="2" fill="#ffffff"/>
+        </svg>`;
+        iconConfig = {
+          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
+        };
+      }
 
       let iconConfig: any;
 
@@ -93,7 +118,7 @@ export default function useHazardMarkers(
         let logoHtml = `<span style="font-size: 16px;">${categoryEmoji}</span>`;
         if (hazard.category === "FLOOD") {
           categoryEmoji = "🌧️";
-          logoHtml = `<img src="/flood.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+          logoHtml = `<img src="/triangle-rocket/2.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
         } else if (hazard.category === "CONSTRUCTION") {
           categoryEmoji = "🚧";
           logoHtml = `<img src="/construction-tools-svgrepo-com.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
@@ -108,10 +133,10 @@ export default function useHazardMarkers(
           logoHtml = `<span style="font-size: 16px;">🚧</span>`;
         } else if (hazard.category === "ELEVATOR_BROKEN") {
           categoryEmoji = "🛗";
-          logoHtml = `<img src="/elevator_broken.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+          logoHtml = `<img src="/triangle-rocket/3.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
         } else if (hazard.category === "RAMP_BLOCKED") {
           categoryEmoji = "♿";
-          logoHtml = `<img src="/ramp_blocked.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+          logoHtml = `<img src="/triangle-rocket/1.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
         }
 
         return `
@@ -203,7 +228,61 @@ export default function useHazardMarkers(
       newMarkers.push(marker);
     });
 
+    // Function to calculate and update marker icon sizes based on map zoom
+    const updateMarkerSizes = () => {
+      const zoom = mapInstance.getZoom() || 13;
+      const size = Math.max(16, Math.min(80, (zoom - 13) * 6 + 32));
+
+      newMarkers.forEach((marker, index) => {
+        const hazard = hazards[index];
+        if (!hazard) return;
+
+        let iconUrl = "";
+        if (hazard.category === "FLOOD") {
+          iconUrl = "/triangle-rocket/2.svg";
+        } else if (hazard.category === "RAMP_BLOCKED") {
+          iconUrl = "/triangle-rocket/1.svg";
+        } else if (hazard.category === "ELEVATOR_BROKEN") {
+          iconUrl = "/triangle-rocket/3.svg";
+        }
+
+        let color = "#ef4444";
+        if (hazard.severity === "MEDIUM") {
+          color = "#f59e0b";
+        } else if (hazard.severity === "LOW") {
+          color = "#10b981";
+        }
+
+        if (iconUrl) {
+          marker.setIcon({
+            url: iconUrl,
+            scaledSize: new google.maps.Size(size, size),
+            anchor: new google.maps.Point(size / 2, size / 2),
+          });
+        } else {
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 36 36">
+            <defs>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+              </filter>
+            </defs>
+            <circle cx="18" cy="18" r="12" fill="rgba(11, 15, 25, 0.6)" stroke="${color}" stroke-width="2.5" filter="url(#shadow)"/>
+            <circle cx="18" cy="18" r="6" fill="${color}"/>
+            <circle cx="18" cy="18" r="2" fill="#ffffff"/>
+          </svg>`;
+          marker.setIcon({
+            url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+            anchor: new google.maps.Point(size / 2, size / 2),
+          });
+        }
+      });
+    };
+
+    // Attach map zoom listener
+    const zoomListener = mapInstance.addListener("zoom_changed", updateMarkerSizes);
+
     return () => {
+      google.maps.event.removeListener(zoomListener);
       newMarkers.forEach((m) => {
         m.setMap(null);
       });

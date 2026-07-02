@@ -58,8 +58,13 @@ export default function MapControls({
         }}
         className="floating-control-btn btn-interactive"
         title="Recenter Map"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        🎯
+        <img src="/current-loc.svg" alt="Recenter" style={{ width: "16px", height: "16px", filter: "invert(var(--theme-icon-invert, 0))" }} />
       </button>
       <button
         onClick={() => setShowAllPins(!showAllPins)}
@@ -68,10 +73,13 @@ export default function MapControls({
           border: showAllPins ? "1.5px solid var(--accent-accessibility)" : "1px solid var(--border-glass)",
           backgroundColor: showAllPins ? "var(--badge-accessible-bg)" : "var(--bg-secondary)",
           color: showAllPins ? "var(--accent-accessibility)" : "var(--text-primary)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
         title={showAllPins ? "Hide Map Icons/POIs" : "Show Map Icons/POIs"}
       >
-        📍
+        <img src="/map-pin.svg" alt="Map Pin" style={{ width: "16px", height: "16px", filter: "invert(var(--theme-icon-invert, 0))" }} />
       </button>
       {isAdmin && (
         <button
