@@ -124,6 +124,7 @@ export default function LocationPicker({
       const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
         input: val,
         sessionToken: sessionTokenRef.current,
+        includedRegionCodes: ["PH"],
       });
       setFromSuggestions(response.suggestions || []);
     } catch (e) {
@@ -151,6 +152,7 @@ export default function LocationPicker({
       const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
         input: val,
         sessionToken: sessionTokenRef.current,
+        includedRegionCodes: ["PH"],
       });
       setToSuggestions(response.suggestions || []);
     } catch (e) {
@@ -290,7 +292,7 @@ export default function LocationPicker({
 
     const geocodeAddress = (address: string): Promise<google.maps.LatLngLiteral | null> => {
       return new Promise((resolve) => {
-        geocoder.geocode({ address }, (results, status) => {
+        geocoder.geocode({ address, componentRestrictions: { country: "PH" } }, (results, status) => {
           if (status === google.maps.GeocoderStatus.OK && results && results[0]?.geometry?.location) {
             resolve({
               lat: results[0].geometry.location.lat(),

@@ -31,6 +31,7 @@ The "Saved Places & Routes" functionality for registered users is fully complete
   - Implemented the **Delete Account** handler in `api/auth/me` and added a double-confirmation trigger button inside `UserProfileDashboard`.
   - Replaced native browser dialogs (`alert()`, `confirm()`) with a custom **floating Toast container** and a **glassmorphic Confirmation Modal** globally.
   - Developed toggleable **Admin Direct Pinning Mode** (toggled via controls panel), including a top status banner and immediate "Exit" buttons.
+  - Restricted Google Places autocomplete suggestions and biased manual address geocoding queries strictly to the Philippines (`PH`), and restricted map viewport bounds and minZoom zoom-out levels to the Philippines coordinates.
 
 - **Security Gateways & Proxy Route Protection:**
   - Created `proxy.ts` to protect admin partitions and APIs.

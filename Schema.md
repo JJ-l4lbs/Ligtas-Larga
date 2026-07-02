@@ -36,7 +36,7 @@ Represents role configuration details for logged-in sessions.
 ---
 
 ## 3. Prisma Schema Layout (`prisma/schema.prisma`)
-This schema definition will be used directly to bootstrap our database. It references double environment variables (`DATABASE_URL` and `DIRECT_URL`) to support Supabase's transaction connection pooling.
+This schema definition is used directly to bootstrap our database. It references double environment variables (`DATABASE_URL` and `DIRECT_URL`) to support Supabase's transaction connection pooling.
 
 ```prisma
 datasource db {
@@ -55,10 +55,38 @@ enum Role {
 }
 
 model UserProfile {
-  id        String   @id
-  email     String   @unique
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  id          String       @id
+  email       String       @unique
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  savedPlaces SavedPlace[]
+  savedRoutes SavedRoute[]
+}
+
+model SavedPlace {
+  id        String      @id @default(uuid())
+  userId    String
+  label     String
+  address   String
+  latitude  Float
+  longitude Float
+  createdAt DateTime    @default(now())
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SavedRoute {
+  id            String      @id @default(uuid())
+  userId        String
+  label         String
+  fromAddress   String
+  toAddress     String
+  fromLatitude  Float
+  fromLongitude Float
+  toLatitude    Float
+  toLongitude   Float
+  travelMode    String      // e.g. "wheelchair", "rain", "shaded", "mixed"
+  createdAt     DateTime    @default(now())
+  user          UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model HazardReport {
@@ -74,3 +102,17 @@ model HazardReport {
   reportedAt   DateTime @default(now())
 }
 ```
+
+---
+
+## 4. Row Level Security (RLS) Policies
+Row Level Security is enabled (`rowsecurity = true`) on all tables inside Supabase PostgreSQL. This provides defense-in-depth security, ensuring that client-side Anon keys cannot bypass filters to manipulate other users' data.
+
+| Table Name | RLS Status | Allowed Commands | Target Roles | Policy Logic (`USING` / `WITH CHECK`) |
+| :--- | :--- | :--- | :--- | :--- |
+| **`UserProfile`** | Enabled | `ALL` | `authenticated` | `auth.uid()::text = id` |
+| **`SavedPlace`** | Enabled | `ALL` | `authenticated` | `auth.uid()::text = "userId"` |
+| **`SavedRoute`** | Enabled | `ALL` | `authenticated` | `auth.uid()::text = "userId"` |
+| **`HazardReport`**| Enabled | `SELECT` | `public` (All) | None (Publicly readable) |
+| | | `INSERT` | `public` (All) | None (Publicly insertable) |
+| | | `UPDATE`, `DELETE` | none (Restricted) | Admins bypass via database superuser `postgres` role |

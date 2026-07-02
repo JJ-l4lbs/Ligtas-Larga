@@ -204,6 +204,16 @@ export default function MapComponent() {
     const map = new google.maps.Map(mapRef.current, {
       center: defaultCenter,
       zoom: 13,
+      minZoom: 5,
+      restriction: {
+        latLngBounds: {
+          north: 21.2,
+          south: 4.6,
+          east: 126.6,
+          west: 116.6,
+        },
+        strictBounds: false,
+      },
       disableDefaultUI: true,
       zoomControl: false,
       styles: isDarkMode ? darkMapStyle : lightMapStyle
@@ -320,7 +330,7 @@ export default function MapComponent() {
 
       // Geocode From Address
       const fromResult = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
-        geocoder.geocode({ address: tempFromAddress }, (results, status) => {
+        geocoder.geocode({ address: tempFromAddress, componentRestrictions: { country: "PH" } }, (results, status) => {
           if (status === "OK" && results) resolve(results);
           else reject(new Error(`Failed to geocode origin: ${status}`));
         });
@@ -328,7 +338,7 @@ export default function MapComponent() {
 
       // Geocode To Address
       const toResult = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
-        geocoder.geocode({ address: tempToAddress }, (results, status) => {
+        geocoder.geocode({ address: tempToAddress, componentRestrictions: { country: "PH" } }, (results, status) => {
           if (status === "OK" && results) resolve(results);
           else reject(new Error(`Failed to geocode destination: ${status}`));
         });

@@ -73,7 +73,7 @@ This document serves as the master record of all planned, implemented, and salva
 
 ### 🗺️ Interactive Google Map Canvas
 * **Status:** Implemented (Updated)
-* **Description:** Renders a desaturated style map canvas with support for dynamic Dark/Light mode thematic toggling, custom SVG hazard pins, custom origin/destination markers, active polylines representing directions, and a floating control button to show/hide default Google Map POI/base map icons (default view is set to hidden).
+* **Description:** Renders a desaturated style map canvas with support for dynamic Dark/Light mode thematic toggling, custom SVG hazard pins, custom origin/destination markers, active polylines representing directions, and a floating control button to show/hide default Google Map POI/base map icons (default view is set to hidden). Viewport is restricted strictly to the Philippines bounds (4.6°N to 21.2°N, 116.6°E to 126.6°E) with a minimum zoom limit (`minZoom: 5`) to prevent zooming out past the country boundary.
 * **Component:** [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx), [useHazardMarkers.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useHazardMarkers.ts), [useRouteCalculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useRouteCalculator.ts)
 
 ### 📈 Dynamic Hazard Marker Stacking (Z-Index Layering)
@@ -93,7 +93,7 @@ This document serves as the master record of all planned, implemented, and salva
 
 ### ✍️ Autocomplete Location Picker
 * **Status:** Implemented (Updated)
-* **Description:** Initial overlay that gathers the route start and end positions. Integrates with the Google Places Autocomplete API to suggest addresses, fetch latitude/longitude coordinates, and center the map viewport.
+* **Description:** Initial overlay that gathers the route start and end positions. Integrates with the Google Places Autocomplete API and Google Maps Geocoder API, restricted/biased strictly to the Philippines (`region: "PH"` / `includedRegionCodes: ["PH"]`) to suggest local addresses, fetch latitude/longitude coordinates, and center the map viewport.
 * **Component:** [LocationPicker.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/LocationPicker.tsx)
 
 ### 🎛️ Commuter Profile Selector Drawer
