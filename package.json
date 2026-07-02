@@ -1,0 +1,33 @@
+{
+  "name": "ligtas-lakga",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed-test": "node prisma/seed-test-hazards.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@react-google-maps/api": "^2.20.8",
+    "@supabase/supabase-js": "^2.110.0",
+    "next": "^16.2.9",
+    "pg": "^8.22.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.65.2",
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.2.9",
+    "prisma": "^7.8.0",
+    "typescript": "^5.0.0"
+  }
+}

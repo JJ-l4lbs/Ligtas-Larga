@@ -1,43 +1,54 @@
-# Contextual Memory Log: Ligtas-Lakbay
+# Contextual Memory Log: Ligtas-Larga
 
 ## Current Context
-We are initializing the project documentation structure for **Ligtas-Lakbay**, a dynamic and inclusive urban navigation application tailored for commuters, students, and vulnerable groups (PWDs, pregnant women, senior citizens). We have referenced `GEMINI.md` rules and are establishing the initial engineering blueprints sequentially.
+The "Saved Places & Routes" functionality for registered users is fully completed and successfully verified.
 
 ---
 
 ## Accomplished Tasks
-- Created [PID.md](file:///C:/AI-Integrated-Coding/SPARKFEST/PID.md) detailing project scope, audience, MVP features, objectives, success metrics, and constraints.
-- Created [Design.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Design.md) defining design philosophy, typography, interface layouts, and interaction blueprints, including a user-side page flow diagram.
-- Created [Architecture.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Architecture.md) defining tech stack, schema flows, database structure, testing setups, and code formats.
-- Created [Schema.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Schema.md) outlining data tables, field metrics, and Prisma models.
-- Created [Build.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Build.md) mapping out step-by-step development phases and verification checkpoints.
-- Created [Progress.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Progress.md) initializing tracking charts for frontend and backend tasks.
-- Created [.gitignore](file:///C:/AI-Integrated-Coding/SPARKFEST/.gitignore) to exclude the `.agents/` folder and its files.
-- Updated [Architecture.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Architecture.md) with a high-fidelity Mermaid webapp flow diagram and the current workspace file structure.
+- **Database Schema Sync & Migrations:**
+  - Added the `Role` enum and `UserProfile` table to `prisma/schema.prisma`.
+  - Added the `SavedPlace` and `SavedRoute` models with relations to `UserProfile` to `prisma/schema.prisma` and applied the database schema update directly on Supabase via `npx prisma db push`.
+  - Re-seeded the database successfully with MVP hazard reports using `npm run seed-test`.
+  - Generated client types via `npx prisma generate`.
+
+- **Supabase Authentication API & Client Integration:**
+  - Created authentication endpoints under `/api/auth` supporting secure HTTP-only cookies and dynamic role assignment.
+  - Resolved unique constraint error on `email` field during login/signup by checking for existing profiles and matching IDs.
+  - Linked session state checking to map mount and header user indicators.
+
+- **Saved Places & Saved Routes APIs:**
+  - Created `/api/saved-places` supporting GET, POST, and DELETE requests (secured via session token validation).
+  - Created `/api/saved-routes` supporting GET, POST, and DELETE requests.
+  - Resolved `Cannot read properties of undefined (reading 'create')` caching warning: The Next.js dev server has old client caches; restarting the dev server (`npm run dev`) loads the generated Prisma models.
+
+- **Frontend User Panel Capabilities:**
+  - Separated public reports (`/api/reports` GET returns only validated) from admin reports (`/api/admin/reports` GET returns all).
+  - Added user warning and conditional validation logic in `HazardModal.tsx` (auto-validate if logged in, queue if anonymous).
+  - Integrated saved place creation widgets and quick-select buttons in `LocationPicker.tsx`.
+  - Integrated saved route creation widgets and quick-select buttons in `ActiveRoutePanel.tsx` and `LocationPicker.tsx`.
+  - Developed the glassmorphic `UserProfileDashboard.tsx` mini-dashboard to manage saved places/routes and view profiles.
+  - Implemented the **Delete Account** handler in `api/auth/me` and added a double-confirmation trigger button inside `UserProfileDashboard`.
+  - Replaced native browser dialogs (`alert()`, `confirm()`) with a custom **floating Toast container** and a **glassmorphic Confirmation Modal** globally.
+  - Developed toggleable **Admin Direct Pinning Mode** (toggled via controls panel), including a top status banner and immediate "Exit" buttons.
+  - Restricted Google Places autocomplete suggestions and biased manual address geocoding queries strictly to the Philippines (`PH`), and restricted map viewport bounds and minZoom zoom-out levels to the Philippines coordinates.
+
+- **Security Gateways & Proxy Route Protection:**
+  - Created `proxy.ts` to protect admin partitions and APIs.
+  - Implemented case-sensitive duplicate label validation in the saved places API POST handler to prevent multiple places with identical names (e.g. "Home" duplicate blocked, but "HOME" allowed).
+
+- **Verification & Build:**
+  - Resolved deprecated `middleware.ts` warning in Next.js 16 by implementing `proxy.ts`.
+  - Verified a clean build with `npm run build`.
 
 ---
 
 ## Immediate Next Objectives
-1. Configure SQLite database via Prisma ORM and generate schema client matching Phase 2, Step 2.1 in [Build.md](file:///C:/AI-Integrated-Coding/SPARKFEST/Build.md).
-2. Develop backend API routes (`/api/reports` and `/api/vision`).
-3. Set up frontend components and page layouts.
-
+1. Summarize custom toasts, custom confirm dialogs, and case-sensitive saved place validations.
+2. Confirm if the USER is satisfied with the results.
 
 ---
 
 ## Execution Logs & Attempts
-- *Attempt 1:* Successfully created all requested `.md` specifications based on the user's project descriptions and rules set by `GEMINI.md`.
-- *Attempt 2:* Addressing `ApiProjectMapError` by introducing high-fidelity interactive SVG mock map overlay and documenting API key setups.
-- *Attempt 3:* Documenting project folder structure and user flow mappings in the architectural specs.
-- *Attempt 4:* Adjusted navigation flow definitions to include the route query setup.
-- *Attempt 5:* Resetting status, mapping out a unified flow diagram and concrete API integration plan.
-- *Attempt 6:* Creating the comprehensive web app flow diagram artifact requested by the user.
-- *Attempt 7:* Updated Architecture.md with the web app flow diagram and the workspace file structure.
-- *Attempt 8:* Adjusted the page flow diagram in Design.md to collect origin/destination via an initial location picker immediately after the splash screen, before transitioning to the main map dashboard.
-- *Attempt 9:* Synchronized Build.md (Phase 6 split) and Progress.md (FE-6.1 / FE-6.2 tasks) specifications with the new page flow.
-- *Attempt 10:* Fully detailed Build.md and Progress.md, detailing exact API keys, NPM packages, injection steps, and action items for both frontend and backend tasks.
-- *Attempt 11:* Refactored Architecture.md, Schema.md, Build.md, and Progress.md to replace SQLite references with Supabase PostgreSQL to ensure full compatibility with Vercel deployment.
-
-
-
+- *Attempt 1:* Successfully updated schema, starting database migration steps for Phase 8.
 

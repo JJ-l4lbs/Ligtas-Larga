@@ -1,6 +1,6 @@
 # Master Build Plan: Ligtas-Lakbay
 
-This document outlines the detailed, step-by-step master plan to build the Ligtas-Lakbay navigation web application. It specifies what APIs are needed, where they must be configured, and at which step they are injected. It is fully configured for deployment on Vercel using Supabase PostgreSQL.
+This document outlines the detailed, step-by-step master plan to build the Ligtas-Lakbay navigation web application. It specifies what APIs are needed, where they must be configured, and at which step they are injected. It is fully configured for deployment on Vercel using Supabase PostgreSQL, designed from the ground up as a mobile-first architecture.
 
 ---
 
@@ -13,7 +13,7 @@ Before starting construction, ensure the following API credentials are set in yo
 | **Google Maps JS API** | `@react-google-maps/api` | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Render map canvas, place markers | Step 5.1 |
 | **Google Places API** | Google Maps Autocomplete | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Autocomplete "Where To" & "From" inputs | Step 6.1 |
 | **Google Routes API** | Google Directions Service | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Retrieve direction path coordinates | Step 6.2 |
-| **Google Cloud Vision**| `@google-cloud/vision` | `GOOGLE_APPLICATION_CREDENTIALS` | Image classification & hazard confirmation | Step 3.2 |
+| **Hugging Face Inference API**| native fetch client | `HUGGING_FACE_API_KEY` | Image classification & hazard confirmation | Step 3.2 |
 | **Prisma ORM (Supabase)**| `@prisma/client` | `DATABASE_URL` & `DIRECT_URL` | Connect to hosted PostgreSQL database | Step 2.1 |
 
 ---
@@ -26,7 +26,7 @@ Before starting construction, ensure the following API credentials are set in yo
 - **Verification:** Execute `npm run dev` and ensure the application boots on `http://localhost:3000` with no compilation errors.
 
 #### Step 1.2: Install Core Dependencies
-- **What to do:** Install the npm packages: `@react-google-maps/api`, `@google-cloud/vision`, `@prisma/client`, and development dependencies: `prisma`, `typescript`, `@types/react`.
+- **What to do:** Install the npm packages: `@react-google-maps/api`, `@prisma/client`, and development dependencies: `prisma`, `typescript`, `@types/react`.
 - **Verification:** Inspect `package.json` to verify packages are installed.
 
 #### Step 1.3: Configure Local Environment Variables
@@ -62,8 +62,8 @@ Before starting construction, ensure the following API credentials are set in yo
   - `POST`: Creates a new report record with coordinate locations and returns the created model.
 - **Verification:** Query `http://localhost:3000/api/reports` with a tool or browser to verify it returns a JSON list of seeded hazards.
 
-#### Step 3.2: Develop Vision API Photo Verification Route
-- **What to do:** Create `/app/api/vision/route.ts` to accept an attached image payload, forward it to the Google Cloud Vision API, analyze returned image classification labels (e.g. "flooding", "water", "sidewalk", "barrier"), and return validation status (`isValidated: true/false`).
+#### Step 3.2: Develop Hugging Face Photo Verification Route
+- **What to do:** Create `/app/api/vision/route.ts` to accept an attached image payload, forward it to the Hugging Face Inference API (using a hosted open-source vision model), analyze returned labels (e.g. "flooding", "water", "sidewalk", "barrier"), and return validation status (`isValidated: true/false`).
 - **Verification:** Send a POST request containing a sample photo to `/api/vision` and check the JSON response structure.
 
 ---
@@ -104,5 +104,45 @@ Before starting construction, ensure the following API credentials are set in yo
   - Choose a hazard category (Flooding, Obstacle, Accessibility Outage).
   - Pick location coordinates on the map.
   - Select/snap verification photos.
-  - Submit the record. Submitting must call `/api/vision` first to verify the image, then call `/api/reports` to save to Supabase database.
+  - Submit the record. Submitting must call `/api/vision` first to verify the image via Hugging Face API, then call `/api/reports` to save to Supabase database.
 - **Verification:** Trigger the reporting flow, select a location, upload an image, and submit. Verify that a verification loading screen displays, and a new validated pin is instantly added to the map.
+
+---
+
+### Phase 8: Role-Based Session Management & Admin Validation Panel
+#### Step 8.1: Supabase Auth & Session Integration
+- **What to do:** Integrate Supabase Auth client helpers. Build a `/login` page for administrator and registered user sessions. Configure a database profile check or user metadata mapping to distinguish `Role: USER | ADMIN`. Unauthenticated sessions fall back to the default "Anonymous" role (read-only navigation & queue-restricted reporting).
+- **Verification:** Navigate to `/login` and verify form elements render. Attempt access with incorrect credentials and confirm error indicators.
+
+#### Step 8.2: Next.js Security Middleware & Route Protection
+- **What to do:** Create `middleware.ts` in the project root. Configure it to intercept all admin routes under `/admin/*` and admin API handlers under `/api/admin/*`. Inspect session cookies or JWT role metadata, redirecting unauthenticated or non-admin users to `/login`.
+- **Verification:** Attempt to navigate to `/admin` while unauthenticated and confirm immediate redirection to `/login`.
+
+#### Step 8.3: Admin Verification Dashboard Layout
+- **What to do:** Create page layout under `/app/admin/page.tsx`. Build a glassmorphic dashboard queue displaying all reports, highlighting `isValidated` status. Provide quick action buttons: "Approve / Verify", "Edit Description", and "Delete / Archive".
+- **Verification:** Access `/admin` as an administrator and verify listing of all active and pending reports.
+
+#### Step 8.4: Admin Review API Handlers
+- **What to do:** Develop API routes under `/app/api/admin/reports/route.ts` supporting:
+  - `PUT`: Allows updating a hazard report's status (e.g. toggling `isValidated`) or editing category/description.
+  - `DELETE`: Allows removing resolved or false-alarm reports from Supabase.
+- **Verification:** Verify that clicking "Approve" updates the database flag and renders the pin on the public map. Verify that "Delete" removes the report from the DB and map.
+
+#### Step 8.5: Commuter Personalization, Profile Dashboard, Account Deletion, & Custom Dialogs
+- **What to do:**
+  - **Database Models:** Define `SavedPlace` and `SavedRoute` schema tables with Cascade-on-Delete relations to `UserProfile` inside `prisma/schema.prisma` and sync using `npx prisma db push`.
+  - **API Endpoints:** Build `/api/saved-places` and `/api/saved-routes` route handlers for GET, POST, and DELETE actions. Integrate a database auto-sync helper inside `lib/auth-utils.ts` to generate missing profiles on session check.
+  - **Personalization UI:** Design the sliding glassmorphic `UserProfileDashboard.tsx` displaying user credentials, saved place coordinates (with quick Start/Dest routing buttons), and saved routes (with instant travel profile filter recall).
+  - **Duplicate Prevention:** Add strict case-sensitive unique label verification checks on saved place creation (rejecting duplicates of same case like "Home", but allowing variations like "HOME").
+  - **Account Deletion:** Add a `DELETE` endpoint to `/api/auth/me` that deletes the PostgreSQL user profile, runs raw superuser SQL to delete from Supabase Auth (`auth.users`), clears session cookies, and redirects.
+  - **Custom Toast & Modal Confirmations:** Implement React state-driven floating Toast notifications and custom Confirmation Modals in `Map.tsx` to replace browser `alert()` and `confirm()` globally.
+- **Verification:** Restart Next.js dev server, sign in, save places/routes, verify successful/error custom toast notifications trigger, select saved route to verify filter recall, and verify account deletion deletes both Postgres profile and Supabase Auth records. Ensure `npm run build` compiles successfully.
+
+#### Step 8.6: Admin Map Direct Pinning Controls
+- **What to do:**
+  - **Map Toggle Controls:** Integrate a toggle button (`🔨`) inside `MapControls.tsx` visible only to admins that switches to `✕` when active.
+  - **Banner Overlay Indicator:** Render a status warning banner centered at the top of the map when active, prompting the admin that map click pinning is active and providing an "Exit" action.
+  - **Auto-Exit Form Logic:** Modify `HazardModal.tsx` header to add a top-right `✕` exit button. When the modal closes (via successful submission or cancel/exit actions), automatically turn off active pinning mode state (`isAdminPinning`).
+  - **Bypassed AI Verification:** Allow admins to skip photo attachments in `HazardModal.tsx` and instantly validate reports (`isValidated: true`) without calling the Hugging Face vision classifier route.
+- **Verification:** Log in as administrator, toggle pinning mode, verify the red banner overlay displays at the top center, click on the map to open the reporting form pre-filled with the clicked coordinates, exit the form and verify pinning mode is disabled. Confirm direct placement without photo goes live on the map instantly.
+

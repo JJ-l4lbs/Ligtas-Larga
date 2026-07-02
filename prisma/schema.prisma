@@ -1,0 +1,60 @@
+datasource db {
+  provider  = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model UserProfile {
+  id          String       @id
+  email       String       @unique
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  savedPlaces SavedPlace[]
+  savedRoutes SavedRoute[]
+}
+
+model SavedPlace {
+  id        String      @id @default(uuid())
+  userId    String
+  label     String
+  address   String
+  latitude  Float
+  longitude Float
+  createdAt DateTime    @default(now())
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SavedRoute {
+  id            String      @id @default(uuid())
+  userId        String
+  label         String
+  fromAddress   String
+  toAddress     String
+  fromLatitude  Float
+  fromLongitude Float
+  toLatitude    Float
+  toLongitude   Float
+  travelMode    String      // e.g. "wheelchair", "rain", "shaded", "mixed"
+  createdAt     DateTime    @default(now())
+  user          UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model HazardReport {
+  id           String   @id @default(uuid())
+  latitude     Float
+  longitude    Float
+  category     String
+  severity     String
+  description  String
+  imageUrl     String?
+  isValidated  Boolean  @default(false)
+  visionLabels String?  // Stored as JSON string
+  reportedAt   DateTime @default(now())
+}

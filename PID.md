@@ -26,14 +26,16 @@
   - **Rain Mode:** Avoids historically and currently reported flood-prone routes and waterlogged crossings.
 - **Smart Hazard Reporting & Validation:**
   - **Interactive Report Form:** Simple photo capture and description interface for reporting issues (e.g., blocked sidewalks, high floods, broken elevators).
-  - **Google Cloud Vision API Verification (Simulation/Integration):** Verifies uploaded image content to classify hazard types and gauge severity.
+  - **Hugging Face Inference API Verification:** Verifies uploaded image content using hosted open-source vision models (like ViT) to classify hazard types and gauge severity.
   - **Dynamic Map Annotations:** Custom map markers displaying user reports with verified statuses.
+  - **Role-Based Session Management:** Secure login and session handling via Supabase Auth distinguishing Anonymous commuter sessions, Registered user sessions, and Administrator dashboards.
+  - **Admin Validation Queue:** A dedicated administration review dashboard at `/admin` to verify, override, edit, or reject submitted reports.
 - **Interactive Map Dashboard:** A responsive mobile-first map interface displaying custom navigation routes, current weather-related overlays, and crowd-reported hazards.
 
 ---
 
 ## 5. Success Metrics
-- **Verification Accuracy:** >85% accuracy in hazard classification using Google Cloud Vision API.
+- **Verification Accuracy:** >85% accuracy in hazard classification using the Hugging Face Inference API.
 - **Active User Engagement:** Number of crowdsourced reports submitted per week.
 - **Route Adoption Rate:** Percentage of users selecting alternative routes based on reported hazards.
 - **Accessibility Index:** Number of accessibility hazards (e.g., broken ramps) logged and bypassed.
@@ -44,4 +46,4 @@
 - **Data Integrity:** Prevention of spam or fake hazard reports via location validation and automated photo verification.
 - **API Quota Management:** Optimization of Google Maps Routes & Places API calls to remain cost-efficient.
 - **Next.js Conventions:** Adherence to strict Next.js conventions (according to local docs).
-- **Mobile-First Responsiveness:** The application must run perfectly on mobile browsers since it mimics a mobile navigation app.
+- **Mobile-First Architecture:** The application must be designed, structured, and implemented as a mobile-first architecture since it targets students and urban commuters accessing services via mobile browsers. All pages, layouts, and navigation drawers are optimized primarily for compact mobile touchscreens.

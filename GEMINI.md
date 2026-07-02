@@ -6,7 +6,10 @@
 * **Surgical Precision Over Broad Rebuilds:** Code with tight intentionality. Always exhaustively investigate opportunities to modify localized, specific parts of the existing codebase before blindly attempting to rebuild or rewrite an entire script or structural asset.
 * **Simple is Best (Relentless Simplicity):** Prioritize writing the cleanest, most efficient code and the best possible algorithms while keeping the simplicity of the code. Every single line of generated code must be continually cross-examined to avoid over-engineering.
 * **Uncompromising User Security:** Prioritize user and system security above all else. Under no circumstances should security measures be lax, bypassed, or deferred. Secure coding patterns, strict authentication boundaries, and data safety protocols must be baked natively into every feature from line one.
+* **Mobile-First Architecture:** Always prioritize layout structure, touch interaction, viewport sizing, performance, and asset delivery for mobile devices first. Desktop styling is a secondary responsive enhancement.
 * **More with Less (No Bloated Code):** Do not overcomplicate or bloat files into hundreds of lines. Prioritize modularizing logic into small, reusable, and easily manageable modules, helper functions, custom hooks, and components. Always verify that all the files are modularized or check that you have not accidentally introduced bloated code when implementing any specific instruction or function. Refer to Architecture.md to consult the line counts of all active files and audit for bloat. Note: This constraint applies to all application source and execution code (e.g., TypeScript, JavaScript, Python, TSX) and is not enforced for `.md` files or other meta-documentation assets.
+* **Relentless Verification Before Completion:** Run a preliminary check to see if all the changes applied to the project works. Then ask the user if you are gonna continue to run more test or will the user take over, if the user says to take over, we can terminate and wait for the user prompt otherwise Always exhaustively verify all changes and project state before declaring any task complete. If browser-based verification tools or MCPs (e.g., Playwright) are available in the workspace environment, you must use them to run validation tests on user interface components, verify styling layout parameters, check browser log errors, and ensure functional correctness. Upon finishing the validation, ensure to cleanly close the browser session using `browser_close` to prevent orphaned execution processes.
+
 
 ---
 
@@ -54,6 +57,8 @@
 * **Step 8 - Contextual Memory Sync (`memorycontext.md` Check):** Maintain an unbroken chain of historical and situational awareness.
   * The `memorycontext.md` file acts as a living operational log containing: current context of the work, what was previously accomplished, immediate next objectives, detailed records of where executions failed, where they succeeded, alternative approaches already attempted, and finalized tasks.
   * **Imperative Constraint:** Always update this document before writing, building, or generating any new code.
+
+* **Step 9 - Feature Ledger (`Features.md` Check & Sync):** Maintain a comprehensive register of all application features, including planned, implemented (marked if updated), and salvaged items. Every feature must have a brief description of its function and status. You must update this document whenever a new feature is planned, completed, or salvaged.
 
 ---
 
