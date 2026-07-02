@@ -110,7 +110,7 @@ export default function LocationPicker({
 
   // Fetch suggestions for Start Location
   const fetchFromSuggestions = async (val: string) => {
-    if (!val.trim() || !(window as any).google || !google.maps.places) {
+    if (!val.trim() || !(window as any).google) {
       setFromSuggestions([]);
       return;
     }
@@ -119,14 +119,15 @@ export default function LocationPicker({
       return;
     }
     try {
-      const service = new google.maps.places.AutocompleteService();
+      const { AutocompleteService, PlacesServiceStatus } = (await google.maps.importLibrary("places")) as any;
+      const service = new AutocompleteService();
       service.getPlacePredictions(
         {
           input: val,
           componentRestrictions: { country: "PH" },
         },
-        (predictions, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+        (predictions: any, status: any) => {
+          if (status === PlacesServiceStatus.OK && predictions) {
             setFromSuggestions(predictions);
           } else {
             setFromSuggestions([]);
@@ -140,7 +141,7 @@ export default function LocationPicker({
 
   // Fetch suggestions for Destination
   const fetchToSuggestions = async (val: string) => {
-    if (!val.trim() || !(window as any).google || !google.maps.places) {
+    if (!val.trim() || !(window as any).google) {
       setToSuggestions([]);
       return;
     }
@@ -149,14 +150,15 @@ export default function LocationPicker({
       return;
     }
     try {
-      const service = new google.maps.places.AutocompleteService();
+      const { AutocompleteService, PlacesServiceStatus } = (await google.maps.importLibrary("places")) as any;
+      const service = new AutocompleteService();
       service.getPlacePredictions(
         {
           input: val,
           componentRestrictions: { country: "PH" },
         },
-        (predictions, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+        (predictions: any, status: any) => {
+          if (status === PlacesServiceStatus.OK && predictions) {
             setToSuggestions(predictions);
           } else {
             setToSuggestions([]);
