@@ -50,7 +50,20 @@ export default function useHazardMarkers(
       const initialSize = Math.max(16, Math.min(80, (initialZoom - 13) * 6 + 32));
 
       let iconConfig: google.maps.Icon | string;
-      if (iconUrl) {
+
+      if (hazard.category === "CONSTRUCTION") {
+        iconConfig = {
+          url: "/construction-tools-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(initialSize, initialSize),
+          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
+        };
+      } else if (hazard.category === "PATHWAY_OBSTACLE") {
+        iconConfig = {
+          url: "/no-pedestrians-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(initialSize, initialSize),
+          anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
+        };
+      } else if (iconUrl) {
         iconConfig = {
           url: iconUrl,
           scaledSize: new google.maps.Size(initialSize, initialSize),
@@ -70,27 +83,6 @@ export default function useHazardMarkers(
         iconConfig = {
           url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
           anchor: new google.maps.Point(initialSize / 2, initialSize / 2),
-        };
-      }
-
-      let iconConfig: any;
-
-      if (hazard.category === "CONSTRUCTION") {
-        iconConfig = {
-          url: "/construction-tools-svgrepo-com.svg",
-          scaledSize: new google.maps.Size(32, 32),
-          anchor: new google.maps.Point(16, 16),
-        };
-      } else if (hazard.category === "PATHWAY_OBSTACLE") {
-        iconConfig = {
-          url: "/no-pedestrians-svgrepo-com.svg",
-          scaledSize: new google.maps.Size(32, 32),
-          anchor: new google.maps.Point(16, 16),
-        };
-      } else {
-        iconConfig = {
-          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-          anchor: new google.maps.Point(18, 18),
         };
       }
 

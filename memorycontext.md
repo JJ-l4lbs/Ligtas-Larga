@@ -86,5 +86,6 @@ The "Saved Places & Routes" functionality is complete. Currently updating the lo
 - *Attempt 12:* Refined the database seeding script in `prisma/seed-test-hazards.js` to generate exactly 100 well-distributed hazards across Metro Manila. Placed transit-related hazards (e.g. `ELEVATOR_BROKEN`) specifically at LRT/MRT stations and road-related hazards on major corridors, eliminating clustering and ensuring pins remain strictly on public pathways/sidewalks.
 - *Attempt 13:* Rewrote the database seeding script in `prisma/seed-test-hazards.js` to contain exactly 50 distinct, hand-coded, and highly-realistic hazard records. Hand-crafted precise coordinates and descriptions for LRT-1, LRT-2, and MRT-3 station elevator/ramp faults and major road intersections across Metro Manila to guarantee 0% clustering and absolute path alignment.
 - *Attempt 14:* Updated `components/useHazardMarkers.ts` to use custom SVG icons for `CONSTRUCTION` and `PATHWAY_OBSTACLE` hazards. Associated the files `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to their respective markers and popup window labels.
+- *Attempt 15:* Fixed compile-time error in `components/useHazardMarkers.ts` caused by duplicate declaration of the variable `iconConfig` by refactoring and unifying icon configuration resolution.
 
 
