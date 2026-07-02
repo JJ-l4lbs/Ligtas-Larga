@@ -110,7 +110,7 @@ export default function LocationPicker({
 
   // Fetch suggestions for Start Location
   const fetchFromSuggestions = async (val: string) => {
-    if (!val.trim() || !(window as any).google) {
+    if (!val.trim() || !(window as any).google || !google.maps.places) {
       setFromSuggestions([]);
       return;
     }
@@ -119,18 +119,20 @@ export default function LocationPicker({
       return;
     }
     try {
-      const { AutocompleteSessionToken, AutocompleteSuggestion } = (await google.maps.importLibrary(
-        "places"
-      )) as any;
-      if (!sessionTokenRef.current) {
-        sessionTokenRef.current = new AutocompleteSessionToken();
-      }
-      const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
-        input: val,
-        sessionToken: sessionTokenRef.current,
-        includedRegionCodes: ["PH"],
-      });
-      setFromSuggestions(response.suggestions || []);
+      const service = new google.maps.places.AutocompleteService();
+      service.getPlacePredictions(
+        {
+          input: val,
+          componentRestrictions: { country: "PH" },
+        },
+        (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setFromSuggestions(predictions);
+          } else {
+            setFromSuggestions([]);
+          }
+        }
+      );
     } catch (e) {
       console.error("Error fetching start suggestions:", e);
     }
@@ -138,7 +140,7 @@ export default function LocationPicker({
 
   // Fetch suggestions for Destination
   const fetchToSuggestions = async (val: string) => {
-    if (!val.trim() || !(window as any).google) {
+    if (!val.trim() || !(window as any).google || !google.maps.places) {
       setToSuggestions([]);
       return;
     }
@@ -147,18 +149,20 @@ export default function LocationPicker({
       return;
     }
     try {
-      const { AutocompleteSessionToken, AutocompleteSuggestion } = (await google.maps.importLibrary(
-        "places"
-      )) as any;
-      if (!sessionTokenRef.current) {
-        sessionTokenRef.current = new AutocompleteSessionToken();
-      }
-      const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
-        input: val,
-        sessionToken: sessionTokenRef.current,
-        includedRegionCodes: ["PH"],
-      });
-      setToSuggestions(response.suggestions || []);
+      const service = new google.maps.places.AutocompleteService();
+      service.getPlacePredictions(
+        {
+          input: val,
+          componentRestrictions: { country: "PH" },
+        },
+        (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setToSuggestions(predictions);
+          } else {
+            setToSuggestions([]);
+          }
+        }
+      );
     } catch (e) {
       console.error("Error fetching destination suggestions:", e);
     }
@@ -182,20 +186,21 @@ export default function LocationPicker({
 
   // Handle selecting start location suggestion
   const handleSelectFrom = async (suggestion: any) => {
-    const text = suggestion.placePrediction.text.text;
+    const text = suggestion.description;
     setFromText(text);
     setFromAddress(text);
     setFromSuggestions([]);
 
     try {
-      const place = suggestion.placePrediction.toPlace();
-      await place.fetchFields({ fields: ["location"] });
-      if (place.location) {
-        setFromCoords({
-          lat: place.location.lat(),
-          lng: place.location.lng(),
-        });
-      }
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ placeId: suggestion.place_id }, (results, status) => {
+        if (status === "OK" && results && results[0]) {
+          setFromCoords({
+            lat: results[0].geometry.location.lat(),
+            lng: results[0].geometry.location.lng(),
+          });
+        }
+      });
     } catch (e) {
       console.error("Error fetching details for start location:", e);
     }
@@ -203,20 +208,21 @@ export default function LocationPicker({
 
   // Handle selecting destination suggestion
   const handleSelectTo = async (suggestion: any) => {
-    const text = suggestion.placePrediction.text.text;
+    const text = suggestion.description;
     setToText(text);
     setToAddress(text);
     setToSuggestions([]);
 
     try {
-      const place = suggestion.placePrediction.toPlace();
-      await place.fetchFields({ fields: ["location"] });
-      if (place.location) {
-        setToCoords({
-          lat: place.location.lat(),
-          lng: place.location.lng(),
-        });
-      }
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ placeId: suggestion.place_id }, (results, status) => {
+        if (status === "OK" && results && results[0]) {
+          setToCoords({
+            lat: results[0].geometry.location.lat(),
+            lng: results[0].geometry.location.lng(),
+          });
+        }
+      });
     } catch (e) {
       console.error("Error fetching details for destination:", e);
     }
@@ -630,7 +636,7 @@ export default function LocationPicker({
                 >
                   <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>📍</span>
                   <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
-                    {s.placePrediction.text.text}
+                    {s.description}
                   </span>
                 </div>
               ))}
@@ -834,7 +840,7 @@ export default function LocationPicker({
                 >
                   <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>📍</span>
                   <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
-                    {s.placePrediction.text.text}
+                    {s.description}
                   </span>
                 </div>
               ))}
