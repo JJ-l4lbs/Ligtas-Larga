@@ -1,7 +1,7 @@
 # Contextual Memory Log: Ligtas-Larga
 
 ## Current Context
-The "Saved Places & Routes" functionality for registered users is fully completed and successfully verified.
+The "Saved Places & Routes" functionality is complete. Currently updating the logout functionality for both administrators and regular users to trigger a full web application reload, directing them back to the splashscreen loader at the root URL (/).
 
 ---
 
@@ -58,16 +58,41 @@ The "Saved Places & Routes" functionality for registered users is fully complete
   - Integrated transit details, vehicle icons, and segment fares in [ImmediateActionCard.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ImmediateActionCard.tsx).
   - Verified compilation via `npx tsc --noEmit` and production build optimization via `npm run build` (both succeeded with zero errors!).
 
+- **Session Termination & Redirect Enhancements:**
+  - Configured user and admin logouts to reload the entire webapp back to the root splash screen loader.
+  - Implemented a unified 3-second loading/splash screen upon successful login/signup redirection for both administrators and regular users.
+  - Imported `SplashLoader` into the admin dashboard (`app/admin/page.tsx`) to show the progress sprite loader during initialization.
+  - Adjusted the walking progress CSS animation duration to `3s` to match the loading screen timeframe.
+
 ---
 
 ## Immediate Next Objectives
-1. Ask the user if they'd like to test the travel modes locally or make further refinements.
-2. If satisfied, ask if they would like to commit and push changes to the remote branch.
+1. Verify cache stability and check database/routing integrations.
 
 ---
 
 ## Execution Logs & Attempts
-- *Attempt 1:* Refactored Map.tsx and created LeftPanel.tsx. Ran TypeScript compiler verification check.
-- *Attempt 2:* Updated Build.md and Progress.md, initiated Step 9.1 (fare calculator engine design).
-- *Attempt 3:* Implemented all frontend & backend components for Phase 9. Ran local dry-runs and verified type safety and successful Next.js builds.
+- *Attempt 1:* Updated memorycontext.md to track the logout reload task.
+- *Attempt 2:* Implemented the 3-second loading screen post-login for admin and user, and synced CSS animation timers.
+- *Attempt 3:* Reverted login page redirections to client-side router navigation (`router.push`) to provide a seamless, flash-free transition into the loading screens.
+- *Attempt 4:* Reverted experimental dashboard parent transitions in `LeftPanel` and `Map` to preserve original layout collapse animations.
+- *Attempt 5:* Integrated a circular clip-path wipe animation from the center of the screen upon form submission success. This seamlessly bridges the login page and the loading screen without jumpiness.
+- *Attempt 6:* Configured the user-side login/signup redirect to perform a hard reload (`window.location.href = "/"`) after completing the circular wipe animation, which enables the user to view the full 3-second loader screen fresh.
+- *Attempt 7:* Restored `window.location.href = "/"` inside the main `handleLogout` function in `components/Map.tsx` to ensure that clicking "Log Out" on the homepage header's `BrandHeader` triggers a reload of the webapp.
+- *Attempt 8:* Updated the circular wipe transition animation duration to `1s` (1000ms) in both `BrandHeader.tsx` and `login/page.tsx` and aligned the JavaScript timeouts to 1000ms.
+- *Attempt 9:* Decreased the redirection and page reload timeouts in `login/page.tsx` and `BrandHeader.tsx` to `400ms` (while keeping the animation duration at `1s` / 1000ms). This triggers the navigation midway through the circular expand wipe animation, masking browser repaint delays and rendering the new page seamlessly under the wipe overlay.
+- *Attempt 10:* Tuned the circular transition wipe duration to `1.5s` (1500ms) and configured the redirection timeouts to trigger at `600ms` (midway through the animation) in both `BrandHeader.tsx` and `login/page.tsx` as requested by the user.
+- *Attempt 11:* Wrote a randomized database seeding script in `prisma/seed-test-hazards.js` leveraging `@faker-js/faker` to generate over 200 random, realistic hazard records within the bounding box of Manila/Metro Manila.
+- *Attempt 12:* Refined the database seeding script in `prisma/seed-test-hazards.js` to generate exactly 100 well-distributed hazards across Metro Manila. Placed transit-related hazards (e.g. `ELEVATOR_BROKEN`) specifically at LRT/MRT stations and road-related hazards on major corridors, eliminating clustering and ensuring pins remain strictly on public pathways/sidewalks.
+- *Attempt 13:* Rewrote the database seeding script in `prisma/seed-test-hazards.js` to contain exactly 50 distinct, hand-coded, and highly-realistic hazard records. Hand-crafted precise coordinates and descriptions for LRT-1, LRT-2, and MRT-3 station elevator/ramp faults and major road intersections across Metro Manila to guarantee 0% clustering and absolute path alignment.
+- *Attempt 14:* Updated `components/useHazardMarkers.ts` to use custom SVG icons for `CONSTRUCTION` and `PATHWAY_OBSTACLE` hazards. Associated the files `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to their respective markers and popup window labels.
+- *Attempt 15:* Fixed compile-time error in `components/useHazardMarkers.ts` caused by duplicate declaration of the variable `iconConfig` by refactoring and unifying icon configuration resolution.
+- *Attempt 16:* Wrapped custom SVG icons for `CONSTRUCTION` and `PATHWAY_OBSTACLE` within the standard map pin shape from `hazard.svg` (using mask cutout rules) and unified icon scaling logic in `components/useHazardMarkers.ts` so that custom icons resize correctly during map zoom changes.
+- *Attempt 17:* Redesigned `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to match the red outline, transparent body, and red center symbol aesthetics of `/triangle-rocket/1.svg`.
+- *Attempt 18:* Updated custom SVG icons `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to color the inner symbols solid black (`#000000`) and set custom marker scale sizes in `components/useHazardMarkers.ts` to 85% of standard size to match the visual scale of other hazard markers.
+- *Attempt 19:* Implemented continuous real-time user location tracking on the map using `navigator.geolocation.watchPosition`, including rendering a pulsing current-location marker and providing a toggle control to auto-center the map view on update.
+- *Attempt 20:* Fixed bug where start, end, and warning markers did not disappear when resetting/backing out of route planning by replacing direct assignment `m.map = null` with `m.setMap(null)` in `components/useRouteCalculator.ts`.
+- *Attempt 21:* Performed a performance audit on maps loading and route API requests. Implemented Next.js dynamic imports for `MapComponent` with SSR disabled in `app/page.tsx`, and added Vercel Edge caching headers to the `/api/reports` hazard reports GET endpoint.
+- *Attempt 22:* Added client-side `localStorage` caching inside `fetchHazards` function in `components/Map.tsx`. When the application loads, the map instantly renders the previously-cached hazards (0ms latency), and background-updates them from the API.
+
 

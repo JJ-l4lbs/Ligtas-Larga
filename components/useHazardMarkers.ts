@@ -29,15 +29,46 @@ export default function useHazardMarkers(
       zIndex: 999, // Render hover tooltips below permanently open windows
     });
 
-    hazards.forEach((hazard) => {
-      let color = "#ef4444";
-      if (hazard.severity === "MEDIUM") {
-        color = "#f59e0b";
-      } else if (hazard.severity === "LOW") {
-        color = "#10b981";
+    const getIconConfig = (
+      hazard: HazardReport,
+      size: number,
+      color: string
+    ): google.maps.Icon | string => {
+      if (hazard.category === "CONSTRUCTION") {
+        const customSize = size * 0.85;
+        return {
+          url: "/construction-tools-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(customSize, customSize),
+          anchor: new google.maps.Point(customSize / 2, customSize / 2),
+        };
+      }
+      if (hazard.category === "PATHWAY_OBSTACLE") {
+        const customSize = size * 0.85;
+        return {
+          url: "/no-pedestrians-svgrepo-com.svg",
+          scaledSize: new google.maps.Size(customSize, customSize),
+          anchor: new google.maps.Point(customSize / 2, customSize / 2),
+        };
       }
 
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+      let iconUrl = "";
+      if (hazard.category === "FLOOD") {
+        iconUrl = "/triangle-rocket/2.svg";
+      } else if (hazard.category === "RAMP_BLOCKED") {
+        iconUrl = "/triangle-rocket/1.svg";
+      } else if (hazard.category === "ELEVATOR_BROKEN") {
+        iconUrl = "/triangle-rocket/3.svg";
+      }
+
+      if (iconUrl) {
+        return {
+          url: iconUrl,
+          scaledSize: new google.maps.Size(size, size),
+          anchor: new google.maps.Point(size / 2, size / 2),
+        };
+      }
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 36 36">
         <defs>
           <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
@@ -47,14 +78,27 @@ export default function useHazardMarkers(
         <circle cx="18" cy="18" r="6" fill="${color}"/>
         <circle cx="18" cy="18" r="2" fill="#ffffff"/>
       </svg>`;
+      return {
+        url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+        anchor: new google.maps.Point(size / 2, size / 2),
+      };
+    };
+
+    hazards.forEach((hazard) => {
+      let color = "#ef4444";
+      if (hazard.severity === "MEDIUM") {
+        color = "#f59e0b";
+      } else if (hazard.severity === "LOW") {
+        color = "#10b981";
+      }
+
+      const initialZoom = mapInstance.getZoom() || 13;
+      const initialSize = Math.max(16, Math.min(80, (initialZoom - 13) * 6 + 32));
 
       const marker = new google.maps.Marker({
         map: mapInstance,
         position: { lat: hazard.latitude, lng: hazard.longitude },
-        icon: {
-          url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
-          anchor: new google.maps.Point(18, 18),
-        },
+        icon: getIconConfig(hazard, initialSize, color),
         title: "", // Prevent default tooltip
         zIndex: 1, // Base zIndex for all hazard markers
       });
@@ -72,12 +116,29 @@ export default function useHazardMarkers(
         }
 
         let categoryEmoji = "⚠️";
-        if (hazard.category === "FLOOD") categoryEmoji = "🌧️";
-        else if (hazard.category === "CONSTRUCTION") categoryEmoji = "🚧";
-        else if (hazard.category === "ACCIDENT") categoryEmoji = "🚗";
-        else if (hazard.category === "ROAD_BLOCK") categoryEmoji = "🚧";
-        else if (hazard.category === "ELEVATOR_BROKEN") categoryEmoji = "🛗";
-        else if (hazard.category === "RAMP_BLOCKED") categoryEmoji = "♿";
+        let logoHtml = `<span style="font-size: 16px;">${categoryEmoji}</span>`;
+        if (hazard.category === "FLOOD") {
+          categoryEmoji = "🌧️";
+          logoHtml = `<img src="/triangle-rocket/2.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        } else if (hazard.category === "CONSTRUCTION") {
+          categoryEmoji = "🚧";
+          logoHtml = `<img src="/construction-tools-svgrepo-com.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        } else if (hazard.category === "PATHWAY_OBSTACLE") {
+          categoryEmoji = "🚫";
+          logoHtml = `<img src="/no-pedestrians-svgrepo-com.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        } else if (hazard.category === "ACCIDENT") {
+          categoryEmoji = "🚗";
+          logoHtml = `<span style="font-size: 16px;">🚗</span>`;
+        } else if (hazard.category === "ROAD_BLOCK") {
+          categoryEmoji = "🚧";
+          logoHtml = `<span style="font-size: 16px;">🚧</span>`;
+        } else if (hazard.category === "ELEVATOR_BROKEN") {
+          categoryEmoji = "🛗";
+          logoHtml = `<img src="/triangle-rocket/3.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        } else if (hazard.category === "RAMP_BLOCKED") {
+          categoryEmoji = "♿";
+          logoHtml = `<img src="/triangle-rocket/1.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        }
 
         return `
           <div style="
@@ -88,7 +149,7 @@ export default function useHazardMarkers(
           ">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
               <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">${categoryEmoji}</span>
+                ${logoHtml}
                 <span style="font-weight: 700; font-size: 13px; letter-spacing: -0.01em; color: inherit;">
                   ${hazard.category.replace(/_/g, " ")}
                 </span>
@@ -168,7 +229,31 @@ export default function useHazardMarkers(
       newMarkers.push(marker);
     });
 
+    // Function to calculate and update marker icon sizes based on map zoom
+    const updateMarkerSizes = () => {
+      const zoom = mapInstance.getZoom() || 13;
+      const size = Math.max(16, Math.min(80, (zoom - 13) * 6 + 32));
+
+      newMarkers.forEach((marker, index) => {
+        const hazard = hazards[index];
+        if (!hazard) return;
+
+        let color = "#ef4444";
+        if (hazard.severity === "MEDIUM") {
+          color = "#f59e0b";
+        } else if (hazard.severity === "LOW") {
+          color = "#10b981";
+        }
+
+        marker.setIcon(getIconConfig(hazard, size, color));
+      });
+    };
+
+    // Attach map zoom listener
+    const zoomListener = mapInstance.addListener("zoom_changed", updateMarkerSizes);
+
     return () => {
+      google.maps.event.removeListener(zoomListener);
       newMarkers.forEach((m) => {
         m.setMap(null);
       });

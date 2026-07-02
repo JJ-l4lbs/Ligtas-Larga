@@ -46,7 +46,7 @@ This document serves as the master record of all planned, implemented, and salva
 
 ### 📋 High-Contrast Turn-by-Turn Directions Card
 * **Status:** Implemented (Updated)
-* **Description:** A pagination card that displays immediate navigation maneuvers, distances, walking path surface materials, and danger notifications.
+* **Description:** A pagination card that displays immediate navigation maneuvers. Features split card layouts: a stylized Commute Turn-by-Turn Card (teal borders, segment fare badges, and boarding/alighting stops) when a commute fare is present, and a Generic Turn-by-Turn Card (classic arrow controls) for walking, driving, or fallback segments.
 * **Component:** [ImmediateActionCard.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ImmediateActionCard.tsx)
 
 ### 📝 Crowdsourced Hazard Reporting Form
@@ -65,13 +65,14 @@ This document serves as the master record of all planned, implemented, and salva
 * **File:** [maps-utils.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/lib/maps-utils.ts)
 
 ### 🔒 Role-Based Session Management (Admin & Anonymous)
-* **Status:** Implemented
+* **Status:** Implemented (Updated)
 * **Description:** Introduces distinct user sessions with Supabase Auth:
   * **Anonymous Session:** Public users can query routes, view active hazards, and submit new reports (queued for review, marked `isValidated = false` or verified).
   * **Registered User Session:** Commuters can log in to submit verified reports.
   * **Administrator Session:** Secure role-restricted partition (`/admin` layouts) allowing admins to review the verification queue, edit details, approve pending crowdsourced hazard reports, or manually add/remove hazards.
+  * **Session Termination (Logout):** Logging out as an admin or registered user hard-reloads the application and redirects to the root URL (`/`), bringing the user back to the splashscreen intro loader.
 * **Vercel Applicability:** Unified app routing structure (Next.js Proxy/Middleware + Role cookie validation) deployed as a single project on Vercel.
-* **Files:** [proxy.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/proxy.ts), [admin/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/admin/page.tsx), [login/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/login/page.tsx), [/api/auth/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/auth), [/api/admin/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/admin)
+* **Files:** [proxy.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/proxy.ts), [admin/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/admin/page.tsx), [login/page.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/app/login/page.tsx), [/api/auth/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/auth), [/api/admin/*](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/admin), [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx)
 
 ### ⭐ Saved Places Personalization
 * **Status:** Implemented
@@ -103,8 +104,8 @@ This document serves as the master record of all planned, implemented, and salva
 * **Description:** Empowers logged-in administrators to toggle a direct pinning mode (using a custom `🔨` button in the floating map controls which turns into a red `✕` when active). When active, a red status banner displays at the top center of the screen with an "Exit" button. Clicking anywhere on the Map canvas during this mode automatically launches the hazard reporting form prefilled with the clicked coordinates. Closing the modal (either via submission or cancellation) automatically exits the pinning mode. Admins can skip attaching photos, and submissions are instantly approved and validated (`isValidated = true`) on the public map.
 * **Component:** [Map.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/Map.tsx), [HazardModal.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/HazardModal.tsx), [MapControls.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/MapControls.tsx)
 ### 🚌 Commute, Bicycle, Motorcycle, & Car Modes (Transit Fare Calculator)
-* **Status:** Implemented
-* **Description:** Integrates four new travel modes: Commute (Transit), Bicycle, Motorcycle, and Car with color-coded map visually distinct routes. For Commute mode, the system fetches transit legs (subway, rail, bus, tram) from Google and calculates the exact fare dynamically using local CSV databases for LRT-1, LRT-2, MRT-3, PNR, jeepneys, and buses. Features fuzzy station name matching and a UI toggle for regular vs. discounted (student/PWD/senior) fare calculation. Trains (LRT/MRT) are treated as intrinsically PWD-accessible, bypassing elevator/ramp blockages because station staff provide guaranteed assistance, and displaying accessible commute tags in step details.
+* **Status:** Implemented (Updated)
+* **Description:** Integrates four new travel modes: Commute (Transit), Bicycle, Motorcycle, and Car with color-coded map visually distinct routes. For Commute mode, the system fetches transit legs (subway, rail, bus, tram) from Google and calculates the exact fare dynamically using local CSV databases for LRT-1, LRT-2, MRT-3, PNR, jeepneys, and buses. Features fuzzy station name matching and a UI toggle for regular vs. discounted (student/PWD/senior) fare calculation. If no direct transit routes or fares are available, it automatically falls back to driving (road network) routes as the estimated route and estimates the commute fare based on distance (using the jeepney base + distance scheme) with a clear warning banner. Trains (LRT/MRT) are treated as intrinsically PWD-accessible, bypassing elevator/ramp blockages because station staff provide guaranteed assistance, and displaying accessible commute tags in step details.
 * **Files:** [commute-calculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/lib/commute-calculator.ts), [ActiveRoutePanel.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ActiveRoutePanel.tsx), [ImmediateActionCard.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/ImmediateActionCard.tsx), [LocationPicker.tsx](file:///C:/AI-Integrated-Coding/SPARKFEST/components/LocationPicker.tsx), [useRouteCalculator.ts](file:///C:/AI-Integrated-Coding/SPARKFEST/components/useRouteCalculator.ts), [/api/routes](file:///C:/AI-Integrated-Coding/SPARKFEST/app/api/routes/route.ts)
 
 ---

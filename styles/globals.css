@@ -2,6 +2,7 @@
 
 /* Slate & Mint Accessibility Design System Theme variables */
 :root {
+  --theme-icon-invert: 0;
   /* Layout Backgrounds */
   --bg-app-left: #F8FAFC;      /* Slate-50: Clean sidebar background */
   --bg-card: #FFFFFF;          /* Pure white for container cards */
@@ -350,6 +351,7 @@ input[type="text"]::placeholder {
 
 /* SLEEK Midnight Dark Theme variable overrides (Only background is dark, sections remain light/white) */
 .dark-theme {
+  --theme-icon-invert: 1;
   /* Layout Backgrounds */
   --bg-app-left: #090D16;      /* Deep midnight blue for Left Panel background */
   --bg-card: #FFFFFF;          /* Card sections remain light/white */
@@ -430,7 +432,7 @@ input[type="text"]::placeholder {
 }
 
 .walking-progress-anim {
-  animation: walk-to-destination 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: walk-to-destination 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes bounce-marker {
@@ -486,32 +488,37 @@ input[type="text"]::placeholder {
 
 /* Close button styling */
 .gm-ui-hover-effect {
-  top: 6px !important;
-  right: 6px !important;
+  top: 10px !important;
+  right: 10px !important;
   border-radius: 50% !important;
-  background-color: rgba(15, 23, 42, 0.08) !important;
-  width: 22px !important;
-  height: 22px !important;
+  background-color: #ef4444 !important; /* Noticeable red close button */
+  width: 24px !important;
+  height: 24px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+  transition: background-color 0.2s ease, transform 0.1s ease !important;
 }
 
 .gm-ui-hover-effect:hover {
-  background-color: rgba(15, 23, 42, 0.15) !important;
+  background-color: #dc2626 !important;
+  transform: scale(1.08) !important;
+}
+
+.gm-ui-hover-effect > span {
+  background-color: #ffffff !important; /* Make X mask white */
+  width: 10px !important;
+  height: 10px !important;
+  margin: 0 !important;
 }
 
 .dark-theme .gm-ui-hover-effect {
-  background-color: rgba(248, 250, 252, 0.15) !important;
+  background-color: #ef4444 !important;
 }
 
 .dark-theme .gm-ui-hover-effect:hover {
-  background-color: rgba(248, 250, 252, 0.25) !important;
-}
-
-.dark-theme .gm-ui-hover-effect > span {
-  background-color: #ffffff !important;
+  background-color: #dc2626 !important;
 }
 
 /* ===== Seamless Page Transitions ===== */

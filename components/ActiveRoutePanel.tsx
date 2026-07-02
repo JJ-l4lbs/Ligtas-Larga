@@ -22,7 +22,7 @@ interface RouteStep {
 }
 
 interface ActiveRoutePanelProps {
-  routeInfo: { distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number };
+  routeInfo: { distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number; warning?: string };
   isVoiceActive: boolean;
   setIsVoiceActive: (active: boolean) => void;
   fromAddress: string;
@@ -57,6 +57,8 @@ interface ActiveRoutePanelProps {
   setActiveMode: (mode: "walk" | "commute" | "bicycle" | "motorcycle" | "car") => void;
   isDiscounted: boolean;
   setIsDiscounted: (val: boolean) => void;
+  isNavigating: boolean;
+  setIsNavigating: (val: boolean) => void;
 }
 
 export default function ActiveRoutePanel({
@@ -92,6 +94,8 @@ export default function ActiveRoutePanel({
   setActiveMode,
   isDiscounted,
   setIsDiscounted,
+  isNavigating,
+  setIsNavigating,
 }: ActiveRoutePanelProps) {
   // Saved route state
   const [isSavingRoute, setIsSavingRoute] = useState(false);
@@ -163,11 +167,11 @@ export default function ActiveRoutePanel({
         }}
       >
         {[
-          { id: "walk", label: "Walk", icon: "🚶" },
-          { id: "commute", label: "Commute", icon: "🚌" },
-          { id: "bicycle", label: "Cycle", icon: "🚲" },
-          { id: "motorcycle", label: "Moto", icon: "🏍️" },
-          { id: "car", label: "Car", icon: "🚗" },
+          { id: "walk", label: "Walk", icon: "/mode-walk.svg" },
+          { id: "commute", label: "Commute", icon: "/mode-commute.svg" },
+          { id: "bicycle", label: "Cycle", icon: "/mode-bicycle.svg" },
+          { id: "motorcycle", label: "Moto", icon: "/mode-motorcycle.svg" },
+          { id: "car", label: "Car", icon: "/mode-car.svg" },
         ].map((mode) => {
           const isActive = activeMode === mode.id;
           return (
@@ -192,7 +196,20 @@ export default function ActiveRoutePanel({
                 fontWeight: 600,
               }}
             >
-              <span style={{ fontSize: "16px" }}>{mode.icon}</span>
+              <div style={{
+                width: "16px",
+                height: "16px",
+                backgroundColor: isActive ? "#FFFFFF" : "var(--text-secondary)",
+                WebkitMaskImage: `url(${mode.icon})`,
+                maskImage: `url(${mode.icon})`,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                transition: "background-color 0.2s",
+              }} />
               <span>{mode.label}</span>
             </button>
           );
@@ -229,6 +246,26 @@ export default function ActiveRoutePanel({
             )}
           </div>
         </div>
+        {routeInfo.warning && (
+          <div
+            style={{
+              padding: "10px 12px",
+              backgroundColor: "rgba(180, 83, 9, 0.1)",
+              border: "1.5px solid rgba(180, 83, 9, 0.2)",
+              borderRadius: "8px",
+              color: "var(--severity-medium, #B45309)",
+              fontSize: "12px",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginTop: "4px",
+            }}
+          >
+            <span style={{ fontSize: "14px" }}>⚠️</span>
+            <span>{routeInfo.warning}</span>
+          </div>
+        )}
 
         {/* Action Row: Voice & Save Route */}
         <div style={{ display: "flex", gap: "8px", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
@@ -527,9 +564,24 @@ export default function ActiveRoutePanel({
                     padding: "10px 4px",
                     borderRadius: "10px",
                     whiteSpace: "nowrap",
+                    gap: "6px",
                   }}
                 >
-                  ♿ {isWheelchairEnabled ? "Accessible" : "Standard"}
+                  <div style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: isWheelchairEnabled ? "var(--badge-accessible-text)" : "var(--text-secondary)",
+                    WebkitMaskImage: "url(/wheelchair.svg)",
+                    maskImage: "url(/wheelchair.svg)",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    transition: "background-color 0.2s",
+                  }} />
+                  <span>{isWheelchairEnabled ? "Accessible" : "Standard"}</span>
                 </button>
               )}
               {showShaded && (
@@ -549,9 +601,24 @@ export default function ActiveRoutePanel({
                     padding: "10px 4px",
                     borderRadius: "10px",
                     whiteSpace: "nowrap",
+                    gap: "6px",
                   }}
                 >
-                  ☀️ Shaded
+                  <div style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: isShadedEnabled ? "var(--badge-shaded-text)" : "var(--text-secondary)",
+                    WebkitMaskImage: "url(/shaded-new.svg)",
+                    maskImage: "url(/shaded-new.svg)",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    transition: "background-color 0.2s",
+                  }} />
+                  <span>Shaded</span>
                 </button>
               )}
               {showRain && (
@@ -571,9 +638,24 @@ export default function ActiveRoutePanel({
                     padding: "10px 4px",
                     borderRadius: "10px",
                     whiteSpace: "nowrap",
+                    gap: "6px",
                   }}
                 >
-                  🌧️ Flood-Free
+                  <div style={{
+                    width: "14px",
+                    height: "14px",
+                    backgroundColor: isRainEnabled ? "var(--badge-flood-text)" : "var(--text-secondary)",
+                    WebkitMaskImage: "url(/flood.svg)",
+                    maskImage: "url(/flood.svg)",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    transition: "background-color 0.2s",
+                  }} />
+                  <span>Flood-Free</span>
                 </button>
               )}
             </div>
@@ -602,6 +684,40 @@ export default function ActiveRoutePanel({
           />
         </div>
       )}
+
+      {/* Start/Stop Navigation Button */}
+      <button
+        onClick={() => {
+          if (isNavigating) {
+            setIsNavigating(false);
+            showToast("Navigation stopped.", "info");
+          } else {
+            setIsNavigating(true);
+            showToast("Navigation started. Safe travels!", "success");
+            // Focus on start position immediately on start
+            if (fromCoords && mapInstance) {
+              mapInstance.panTo(fromCoords);
+              mapInstance.setZoom(16);
+            }
+          }
+        }}
+        className="btn-interactive"
+        style={{
+          width: "100%",
+          padding: "12px",
+          borderRadius: "10px",
+          border: isNavigating ? "1.5px solid #EF4444" : "none",
+          backgroundColor: isNavigating ? "rgba(239, 68, 68, 0.15)" : "var(--accent-accessibility)",
+          color: isNavigating ? "#EF4444" : "#fff",
+          fontWeight: 700,
+          fontSize: "13px",
+          cursor: "pointer",
+          boxShadow: "var(--shadow-glass)",
+          marginBottom: "12px",
+        }}
+      >
+        {isNavigating ? "🛑 Stop Navigation" : "🚀 Start Navigation"}
+      </button>
 
       {/* Reset button */}
       <button

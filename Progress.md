@@ -22,6 +22,7 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **FE-9.3** | Travel Mode UI Selectors | Step 9.3 | ✅ Complete | - Add horizontal sliding mode selector bar in LocationPicker.tsx and LeftPanel.tsx<br/>- Implement hover, active states, and icons for Walk, Commute, Cycle, Motorcycle, and Car |
 | **FE-9.4** | Routing Hook Update | Step 9.4 | ✅ Complete | - Integrate selected travelMode state in useRouteCalculator.ts<br/>- Handle path color updates per mode and trigger commute fare engine |
 | **FE-9.5** | Active Route UI Panel Update | Step 9.5 | ✅ Complete | - Display total commute cost and segment cost labels inside ActiveRoutePanel.tsx |
+| **FE-9.6** | Commute Route Fallback & Split Cards | Step 9.5 | ✅ Complete | - Display estimated route warning banner in ActiveRoutePanel.tsx<br/>- Split ImmediateActionCard.tsx into Commute segment cards (with boarding stops and segment fares) and Generic turn-by-turn cards |
 
 ---
 
@@ -40,3 +41,4 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **BE-8.6** | Admin Direct Placement Logic | Step 8.6 | ✅ Complete | - Bypass vision image requirement for admin submissions in HazardModal.tsx<br/>- Auto-exit pinning mode when form closes |
 | **BE-9.1** | Commute Fare Calculator | Step 9.1 | ✅ Complete | - Create lib/commute-calculator.ts parser utility for fares CSV matrices<br/>- Implement lookup algorithms and fuzzy station name matching |
 | **BE-9.2** | Route API Update | Step 9.2 | ✅ Complete | - Modify app/api/routes/route.ts to accept travelMode and request transit details from Google |
+| **BE-9.3** | Routes API Commute Fallback | Step 9.2 | ✅ Complete | - Automatically fall back to DRIVE mode and estimate a commute fare when TRANSIT routes are empty or lack transit steps |

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import SplashLoader from "../../components/SplashLoader";
 
 interface HazardReport {
   id: string;
@@ -21,12 +22,14 @@ export default function AdminPage() {
   const [reports, setReports] = useState<HazardReport[]>([]);
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "VERIFIED">("ALL");
   const [loading, setLoading] = useState(true);
+  const [showOverlay, setShowOverlay] = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDescription, setEditDescription] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchSessionAndReports = async () => {
+    const startTime = Date.now();
     try {
       // 1. Verify user session
       const meRes = await fetch("/api/auth/me");
@@ -47,7 +50,12 @@ export default function AdminPage() {
     } catch (err) {
       console.error("Error loading admin dashboard data:", err);
     } finally {
-      setLoading(false);
+      const elapsed = Date.now() - startTime;
+      const delay = Math.max(0, 3000 - elapsed);
+      setTimeout(() => {
+        setLoading(false);
+        setTimeout(() => setShowOverlay(false), 800);
+      }, delay);
     }
   };
 
@@ -59,7 +67,9 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" });
       if (res.ok) {
-        router.push("/login");
+        setLoading(true);
+        setShowOverlay(true);
+        window.location.href = "/";
       }
     } catch (err) {
       console.error("Logout failed:", err);
@@ -135,18 +145,36 @@ export default function AdminPage() {
     return true;
   });
 
-  if (loading) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100vw", height: "100vh", backgroundColor: "var(--bg-primary)" }}>
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-on-app-left)" }}>Verifying Admin Credentials...</h2>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)", paddingBottom: "40px" }}>
+    <>
+      {showOverlay && (
+        <div 
+          style={{ 
+            width: "100vw", 
+            height: "100vh", 
+            position: "fixed", 
+            top: 0, 
+            left: 0, 
+            zIndex: 9999,
+            transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            opacity: loading ? 1 : 0,
+            pointerEvents: loading ? "auto" : "none"
+          }} 
+        >
+          <SplashLoader currentStep={loading ? 0 : 1} />
+        </div>
+      )}
+
+      {!loading && (
+        <div 
+          style={{ 
+            minHeight: "100vh", 
+            backgroundColor: "var(--bg-primary)", 
+            paddingBottom: "40px",
+            animation: "slideUpFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+            opacity: 0
+          }}
+        >
       {/* Admin Navbar */}
       <div
         style={{
@@ -505,5 +533,7 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+      )}
+    </>
   );
 }

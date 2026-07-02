@@ -64,7 +64,7 @@ export default function useRouteCalculator({
   activeMode,
 }: UseRouteCalculatorProps) {
   const [routeSteps, setRouteSteps] = useState<RouteStep[]>([]);
-  const [routeInfo, setRouteInfo] = useState<{ distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number }>({});
+  const [routeInfo, setRouteInfo] = useState<{ distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number; warning?: string }>({});
   const [avoidedCount, setAvoidedCount] = useState(0);
   const [cachedRoutesData, setCachedRoutesData] = useState<any>(null);
   const [lastRouteCoords, setLastRouteCoords] = useState<{ from: google.maps.LatLngLiteral; to: google.maps.LatLngLiteral; mode: string } | null>(null);
@@ -73,6 +73,7 @@ export default function useRouteCalculator({
   const [activeBypassedPolyline, setActiveBypassedPolyline] = useState<google.maps.Polyline | null>(null);
   const [activeWarningMarkers, setActiveWarningMarkers] = useState<any[]>([]);
   const startEndMarkersRef = useRef<any[]>([]);
+  const connectingLinesRef = useRef<google.maps.Polyline[]>([]);
 
   // Speech synthesis speaker
   const speakText = (text: string) => {
@@ -217,26 +218,13 @@ export default function useRouteCalculator({
       activeBypassedPolyline.setMap(null);
     }
     activeWarningMarkers.forEach((m) => {
-      m.map = null;
+      m.setMap(null);
     });
+    connectingLinesRef.current.forEach((line) => line.setMap(null));
+    connectingLinesRef.current = [];
 
     // Draw active safe route
-    let strokeColor = "#cbd5e1";
-    if (activeMode === "commute") {
-      strokeColor = "#14b8a6"; // Teal
-    } else if (activeMode === "bicycle") {
-      strokeColor = "#10b981"; // Green
-    } else if (activeMode === "motorcycle") {
-      strokeColor = "#8b5cf6"; // Purple
-    } else if (activeMode === "car") {
-      strokeColor = "#64748b"; // Slate
-    } else if (isWheelchairEnabled) {
-      strokeColor = "#00f0ff";
-    } else if (isRainEnabled) {
-      strokeColor = "#3b82f6";
-    } else if (isShadedEnabled) {
-      strokeColor = "#ff9f00";
-    }
+    const strokeColor = "#00f0ff";
 
     const polyline = new google.maps.Polyline({
       path: chosenPath,
@@ -249,7 +237,7 @@ export default function useRouteCalculator({
     setActivePolyline(polyline);
 
     // Draw origin/destination markers
-    startEndMarkersRef.current.forEach((m) => (m.map = null));
+    startEndMarkersRef.current.forEach((m) => m.setMap(null));
     startEndMarkersRef.current = [];
 
     if (fromCoords) {
@@ -257,12 +245,9 @@ export default function useRouteCalculator({
         position: fromCoords,
         map: mapInstance,
         icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: "#2ECC71",
-          fillOpacity: 1,
-          strokeColor: "#FFFFFF",
-          strokeWeight: 3,
+          url: "/start-marker.svg",
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 16),
         },
         title: `Start: ${fromAddress}`
       });
@@ -274,16 +259,63 @@ export default function useRouteCalculator({
         position: toCoords,
         map: mapInstance,
         icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: "#E74C3C",
-          fillOpacity: 1,
-          strokeColor: "#FFFFFF",
-          strokeWeight: 3,
+          url: "/end-marker.svg",
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 32),
         },
         title: `Destination: ${toAddress}`
       });
       startEndMarkersRef.current.push(endMarker);
+    }
+
+    // Add connecting dotted lines to map if road route is not near target start/destination locations
+    const lineSymbol = {
+      path: "M 0,-1 0,1",
+      strokeOpacity: 0.8,
+      scale: 3,
+      strokeColor: "#94a3b8",
+    };
+
+    if (fromCoords && chosenPath.length > 0) {
+      const startPoint = { lat: fromCoords.lat, lng: fromCoords.lng };
+      const routeStartPoint = { lat: chosenPath[0].lat(), lng: chosenPath[0].lng() };
+      const distStart = getDistanceKm(startPoint.lat, startPoint.lng, routeStartPoint.lat, routeStartPoint.lng) * 1000;
+      if (distStart > 5) {
+        const startDottedLine = new google.maps.Polyline({
+          path: [startPoint, routeStartPoint],
+          strokeOpacity: 0,
+          icons: [
+            {
+              icon: lineSymbol,
+              offset: "0",
+              repeat: "10px",
+            },
+          ],
+          map: mapInstance,
+        });
+        connectingLinesRef.current.push(startDottedLine);
+      }
+    }
+
+    if (toCoords && chosenPath.length > 0) {
+      const endPoint = { lat: toCoords.lat, lng: toCoords.lng };
+      const routeEndPoint = { lat: chosenPath[chosenPath.length - 1].lat(), lng: chosenPath[chosenPath.length - 1].lng() };
+      const distEnd = getDistanceKm(endPoint.lat, endPoint.lng, routeEndPoint.lat, routeEndPoint.lng) * 1000;
+      if (distEnd > 5) {
+        const endDottedLine = new google.maps.Polyline({
+          path: [routeEndPoint, endPoint],
+          strokeOpacity: 0,
+          icons: [
+            {
+              icon: lineSymbol,
+              offset: "0",
+              repeat: "10px",
+            },
+          ],
+          map: mapInstance,
+        });
+        connectingLinesRef.current.push(endDottedLine);
+      }
     }
 
     // Highlight bypassed route if chosen route has bypassed barriers
@@ -425,6 +457,7 @@ export default function useRouteCalculator({
       duration: chosenRoute.duration ? formatDuration(chosenRoute.duration) : undefined,
       totalFare: chosenRoute.totalFare,
       totalDiscountedFare: chosenRoute.totalDiscountedFare,
+      warning: chosenRoute.warning,
     });
 
     setAvoidedCount(relevantHazards.length - minViolations);
@@ -451,14 +484,19 @@ export default function useRouteCalculator({
       setActiveBypassedPolyline(null);
     }
     activeWarningMarkers.forEach((m) => {
-      m.map = null;
+      m.setMap(null);
     });
     setActiveWarningMarkers([]);
 
     startEndMarkersRef.current.forEach((m) => {
-      m.map = null;
+      m.setMap(null);
     });
     startEndMarkersRef.current = [];
+
+    connectingLinesRef.current.forEach((line) => {
+      line.setMap(null);
+    });
+    connectingLinesRef.current = [];
   };
 
   return {

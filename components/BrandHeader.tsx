@@ -59,7 +59,7 @@ export default function BrandHeader({
       router.push("/login");
       // Reset the transition state after route finishes
       setTimeout(() => setIsTransitioning(false), 500);
-    }, 700); // 700ms matches the transition duration
+    }, 600); // Trigger the routing transition midway
   };
 
   return (
@@ -74,7 +74,7 @@ export default function BrandHeader({
             width: "100vw",
             height: "100vh",
             zIndex: 999999,
-            transition: "clip-path 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1)",
             ...transitionStyle,
           }}
         />,
@@ -92,9 +92,16 @@ export default function BrandHeader({
         gap: "12px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "20px" }}>🚀</span>
-        <span style={{ fontWeight: 800, fontSize: "16px", color: "var(--text-primary)" }}>
+      <div 
+        onClick={() => window.location.reload()}
+        style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+      >
+        <img 
+          src="/logo.svg" 
+          alt="Ligtas-Larga Logo" 
+          style={{ width: "24px", height: "24px", objectFit: "contain" }} 
+        />
+        <span style={{ fontWeight: 800, fontSize: "17px", color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
           Ligtas-Larga
         </span>
       </div>
@@ -193,9 +200,13 @@ export default function BrandHeader({
               fontWeight: 700,
               fontSize: "10px",
               textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
           >
-            🔑 Log In
+            <img src="/log-in.svg" alt="Log In" style={{ width: "12px", height: "12px", filter: "invert(var(--theme-icon-invert, 0))" }} />
+            <span>Log In</span>
           </Link>
         )}
 
@@ -216,7 +227,11 @@ export default function BrandHeader({
             cursor: "pointer",
           }}
         >
-          <span>{isDarkMode ? "☀️" : "🌙"}</span>
+          <img 
+            src={isDarkMode ? "/lightmode.svg" : "/darkmode.svg"} 
+            alt={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"} 
+            style={{ width: "16px", height: "16px", filter: "invert(var(--theme-icon-invert, 0))" }}
+          />
         </button>
       </div>
     </div>
