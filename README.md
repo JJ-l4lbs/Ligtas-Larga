@@ -9,36 +9,35 @@ Ligtas-Larga aims to democratize city accessibility. By calculating routes that 
 
 ---
 
-## 🛠️ Complete Feature Set
+## 🛠️ Implemented Features (Index from Features.md)
 
-Here is the exact index of features currently implemented in the application:
-
-* **Interactive Google Map Canvas:** Desaturated maps layout with custom SVG pins, responsive polyline paths, and options to hide base map POIs. Restricted to the Philippines bounds with a minimum zoom limit.
-* **Dynamic Hazard Marker Stacking (Z-Indices):** Hovered markers and tooltips temporarily elevate to the top layer (`highestZIndex + 100`) while clicked/selected markers stack sequentially in selection order.
-* **Map Subcontroller Modularization:** Extracted complex overlays and directions calculators into distinct React hooks (`useHazardMarkers`, `useRouteCalculator`) and standalone components.
-* **Liquid Progress Splash Loader:** Fullscreen gradient loading screen featuring a walking commuter SVG sprite and bouncing markers running during initial app hydration.
-* **Autocomplete Location Picker:** Search boxes for origin and destination integrating classic `AutocompleteService` predictions and Geocoder Place ID coordinate lookups, restricted to the Philippines.
-* **Commuter Profile Selector Drawer:** Toggle controls for independent travel profiles:
-  * *Wheelchair Access Mode:* Bypasses severe physical blockages like broken ramps or stairs.
+* **🗺️ Interactive Google Map Canvas:** Renders a desaturated style map canvas with support for dynamic Dark/Light mode thematic toggling, custom SVG hazard pins, custom origin/destination markers, active polylines representing directions, and a floating control button to show/hide default Google Map POI/base map icons. Viewport is restricted strictly to the Philippines bounds with a minimum zoom limit.
+* **📈 Dynamic Hazard Marker Stacking (Z-Index Layering):** Introduces a dynamic `zIndex` system for hazard markers. Hovered markers and their tooltips are temporarily elevated to the absolute top layer (`highestZIndex + 100`), while permanently clicked/selected markers and InfoWindows are stacked sequentially in order of selection.
+* **🧹 Map Subcontroller Modularization (Debloat):** Shifted complex layout rendering to `ActiveRoutePanel` and extracted core maps logic into modular, reusable hooks (`useHazardMarkers`, `useRouteCalculator`) to maintain a clean codebase.
+* **🌊 Fullscreen Liquid Progress Splash Loader:** A fullscreen splash welcome loader that runs during initial state hydration. Features an animated fluid gradient background, a walking commuter SVG sprite, a bouncing destination marker, and transition effects.
+* **✍️ Autocomplete Location Picker:** Search fields integrating with classic `AutocompleteService` predictions and Geocoder `placeId` queries, restricted/biased strictly to the Philippines to suggest local addresses, fetch coordinates, and center the map viewport.
+* **🎛️ Commuter Profile Selector Drawer:** A drawer containing toggle controls for independent travel modifiers:
+  * *Wheelchair Access Mode:* Modifies routes to bypass severe physical blockages like broken ramps or pathways.
   * *Rain Bypass Mode:* Reroutes to avoid flood-prone zones.
-  * *Shaded Area Mode:* Bypasses unsheltered pathways to reduce solar exposure.
-* **Voice Directions Synthesizer:** Integrates the Web Speech Synthesis API to read turn-by-turn maneuvers out loud to the commuter.
-* **High-Contrast Directions Card:** Pagination widget rendering Commute Turn-by-Turn cards (with teal borders and boarding markers) or Generic Turn-by-Turn cards depending on mode.
-* **Smart Hazard Reporting Form:** Modal interface allowing users to categorize, describe, drop pins, and upload a verification photo of street obstacles.
-* **Hugging Face AI Image Verification:** Validates crowdsourced hazard photos using a hosted image classification model before public markers are published.
-* **Centralized Maps Utilities:** Contains mathematical Haversine calculations, map loaders, theme styles, and formatters to reduce codebase footprint.
-* **Role-Based Session Management:** Integrates cookie-based sessions with Supabase Auth:
-  * *Anonymous Session:* Users can query routes, view active pins, and queue reports for review.
-  * *User Session:* Logged-in commuters can submit instantly verified reports.
-  * *Admin Session:* Role-restricted admin interface (`/admin`) for review queues.
-* **Saved Places Personalization:** Allows logged-in users to save coordinates with custom labels (e.g. *Home*) with case-sensitive duplicate checking.
-* **Saved Routes Personalization:** Enables users to save calculated safe routes (retaining origin, destination, and selected accessibility modifiers).
-* **Commuter Profile Dashboard:** Sidebar panel displaying account stats, allowing place shortcut creation, route calculation, and account deletion.
-* **Permanent Account Deletion:** Permanent deletion of user profiles, saved places/routes, and credentials from Supabase Auth.
-* **Glassmorphic Toast & Confirmation Dialogs:** Custom React overlays replacing browser dialogs (`alert()`, `confirm()`) globally.
-* **Admin Direct Map Placement:** Click-to-pin mode for admins to drop coordinates on the map canvas, bypassing photo requirements and instantly publishing verified hazard markers.
-* **Commute, Bicycle, Motorcycle, & Car Modes:** Fare calculator using local matrices for LRT-1, LRT-2, MRT-3, PNR, jeepneys, and buses, supporting discounted rates. Falls back to drive paths if transit is unavailable.
-* **Expiring Hazard Timers:** Default 2-hour expiration window for temporary hazards (like flood reports). Popups show a live countdown timer ticking down to the second in real-time.
+  * *Shaded Area Mode:* Reroutes to optimize paths with solar shade.
+* **🔊 Voice Directions Synthesizer:** Utilizes the Web Speech Synthesis API to read turn-by-turn navigation steps out loud to the commuter, enhancing accessibility.
+* **📋 High-Contrast Turn-by-Turn Directions Card:** Displays immediate navigation maneuvers with custom layouts: a Commute Card (with teal borders, segment fare badges, and boarding stops) when a commute fare is present, and a Generic Card for other segments.
+* **📝 Crowdsourced Hazard Reporting Form:** A user interface modal to report on-street hazards. Commuters can select categories, type descriptions, drop a coordinate pin on the map, and upload a verification photo.
+* **👁️ Hugging Face AI Image Verification:** An API endpoint that passes user-reported hazard images to a hosted Hugging Face Inference image classification model. Confirms details like "flooding" or "pathway blockages" before setting the validation flag.
+* **🛠️ Centralized Maps Utilities Library:** Centralized utility wrapper holding mathematical coordinate calculations, map loaders, light/dark map theme styles, and duration formatting helpers to reduce file bloat.
+* **🔒 Role-Based Session Management (Admin & Anonymous):** Introduces distinct user sessions with Supabase Auth:
+  * *Anonymous Session:* Public users can query routes, view active hazards, and queue submissions.
+  * *Registered User Session:* Commuters can log in to submit instantly verified reports.
+  * *Administrator Session:* Secure role-restricted partition (`/admin` layout) allowing admins to review queues, edit details, or delete/verify reports.
+  * *Session Termination (Logout):* Logouts reload the application and redirect to the root URL.
+* **⭐ Saved Places Personalization:** Allows authenticated users to save specific coordinates with custom labels (e.g. *Home*, *School*). Supports case-sensitive duplicate checks to prevent duplicate naming while permitting variations.
+* **🛣️ Saved Routes Personalization:** Enables authenticated users to save calculated safe routes (including origin, destination, and selected travel profile modifiers).
+* **👤 Commuter Profile Dashboard:** A dedicated, glassmorphic overlay panel inside the left sidebar. Displays account details, handles saved place management, lists saved routes, and handles user account removal.
+* **⚠️ Permanent Account Deletion:** Deletes the `UserProfile` record from the database (triggering a cascade-delete of saved places and routes), executes raw SQL to delete the user credentials from Supabase Auth, and clears session cookies.
+* **✨ Custom Glassmorphic Toast & Confirmation Dialogs:** Replaces native browser alert popups and confirm boxes with responsive, floating glassmorphic toast cards and custom confirmation modals globally.
+* **📍 Admin Direct Map Placement:** Click-to-pin mode for admins to drop coordinates on the map canvas, bypassing photo requirements and instantly publishing verified hazard markers.
+* **🚌 Commute, Bicycle, Motorcycle, & Car Modes (Transit Fare Calculator):** Calculates transit leg fares dynamically using local CSV databases for LRT-1, LRT-2, MRT-3, PNR, jeepneys, and buses. Supports discounted rates and falls back to driving paths if transit is unavailable.
+* **⏱️ Expiring Hazard Timers (Flooded Hazards):** Default 2-hour expiration window for temporary hazards (like flood reports). Popups show a live countdown timer ticking down to the second in real-time.
 
 ---
 
