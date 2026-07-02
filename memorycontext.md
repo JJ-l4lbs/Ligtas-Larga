@@ -88,5 +88,6 @@ The "Saved Places & Routes" functionality is complete. Currently updating the lo
 - *Attempt 14:* Updated `components/useHazardMarkers.ts` to use custom SVG icons for `CONSTRUCTION` and `PATHWAY_OBSTACLE` hazards. Associated the files `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to their respective markers and popup window labels.
 - *Attempt 15:* Fixed compile-time error in `components/useHazardMarkers.ts` caused by duplicate declaration of the variable `iconConfig` by refactoring and unifying icon configuration resolution.
 - *Attempt 16:* Wrapped custom SVG icons for `CONSTRUCTION` and `PATHWAY_OBSTACLE` within the standard map pin shape from `hazard.svg` (using mask cutout rules) and unified icon scaling logic in `components/useHazardMarkers.ts` so that custom icons resize correctly during map zoom changes.
+- *Attempt 17:* Redesigned `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to match the red outline, transparent body, and red center symbol aesthetics of `/triangle-rocket/1.svg`.
 
 
