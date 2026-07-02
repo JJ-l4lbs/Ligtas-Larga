@@ -10,6 +10,9 @@ interface MapControlsProps {
   isAdmin: boolean;
   isAdminPinning: boolean;
   setIsAdminPinning: (pinning: boolean) => void;
+  userLocation: google.maps.LatLngLiteral | null;
+  followUser: boolean;
+  setFollowUser: (follow: boolean) => void;
 }
 
 export default function MapControls({
@@ -21,6 +24,9 @@ export default function MapControls({
   isAdmin,
   isAdminPinning,
   setIsAdminPinning,
+  userLocation,
+  followUser,
+  setFollowUser,
 }: MapControlsProps) {
   if (!mapInstance) return null;
 
@@ -53,8 +59,12 @@ export default function MapControls({
       </button>
       <button
         onClick={() => {
-          mapInstance.panTo(fromCoords || defaultCenter);
+          const target = userLocation || fromCoords || defaultCenter;
+          mapInstance.panTo(target);
           mapInstance.setZoom(15);
+          if (userLocation) {
+            setFollowUser(true);
+          }
         }}
         className="floating-control-btn btn-interactive"
         title="Recenter Map"
@@ -62,9 +72,20 @@ export default function MapControls({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          border: (userLocation && followUser) ? "1.5px solid var(--accent-accessibility)" : "1px solid var(--border-glass)",
+          backgroundColor: (userLocation && followUser) ? "var(--badge-accessible-bg)" : "var(--bg-secondary)",
+          color: (userLocation && followUser) ? "var(--accent-accessibility)" : "var(--text-primary)",
         }}
       >
-        <img src="/current-loc.svg" alt="Recenter" style={{ width: "16px", height: "16px", filter: "invert(var(--theme-icon-invert, 0))" }} />
+        <img 
+          src="/current-loc.svg" 
+          alt="Recenter" 
+          style={{ 
+            width: "16px", 
+            height: "16px", 
+            filter: (userLocation && followUser) ? "none" : "invert(var(--theme-icon-invert, 0))" 
+          }} 
+        />
       </button>
       <button
         onClick={() => setShowAllPins(!showAllPins)}

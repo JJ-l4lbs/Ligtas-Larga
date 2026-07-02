@@ -90,5 +90,6 @@ The "Saved Places & Routes" functionality is complete. Currently updating the lo
 - *Attempt 16:* Wrapped custom SVG icons for `CONSTRUCTION` and `PATHWAY_OBSTACLE` within the standard map pin shape from `hazard.svg` (using mask cutout rules) and unified icon scaling logic in `components/useHazardMarkers.ts` so that custom icons resize correctly during map zoom changes.
 - *Attempt 17:* Redesigned `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to match the red outline, transparent body, and red center symbol aesthetics of `/triangle-rocket/1.svg`.
 - *Attempt 18:* Updated custom SVG icons `construction-tools-svgrepo-com.svg` and `no-pedestrians-svgrepo-com.svg` to color the inner symbols solid black (`#000000`) and set custom marker scale sizes in `components/useHazardMarkers.ts` to 85% of standard size to match the visual scale of other hazard markers.
+- *Attempt 19:* Implemented continuous real-time user location tracking on the map using `navigator.geolocation.watchPosition`, including rendering a pulsing current-location marker and providing a toggle control to auto-center the map view on update.
 
 

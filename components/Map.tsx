@@ -42,6 +42,12 @@ export default function MapComponent() {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [showAllPins, setShowAllPins] = useState(false);
 
+  // Real-time location tracking states and refs
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [followUser, setFollowUser] = useState(false);
+  const userMarkerRef = useRef<google.maps.Marker | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+
   // User session state
   const [user, setUser] = useState<{ email: string; role: string } | null>(null);
 
@@ -226,7 +232,88 @@ export default function MapComponent() {
         setMapCenter({ lat: center.lat(), lng: center.lng() });
       }
     });
+
+    map.addListener("drag", () => {
+      setFollowUser(false);
+    });
   }, [isLoaded, mapInstance, isDarkMode]);
+
+  // Real-time location tracking watch effect
+  useEffect(() => {
+    if (!isLoaded || !mapInstance) return;
+
+    if (!navigator.geolocation) {
+      console.warn("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    let marker: google.maps.Marker | null = null;
+
+    const successCallback = (position: GeolocationPosition) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const newPos = { lat, lng };
+
+      setUserLocation(newPos);
+
+      // Create or update the user location blue dot marker
+      if (!marker) {
+        const blueDotSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+          <defs>
+            <radialGradient id="halo" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.6" />
+              <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.2" />
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="18" cy="18" r="14" fill="url(#halo)" />
+          <circle cx="18" cy="18" r="7" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.5" />
+          <circle cx="18" cy="18" r="5" fill="#3b82f6" />
+        </svg>`;
+
+        marker = new google.maps.Marker({
+          position: newPos,
+          map: mapInstance,
+          title: "Your Location",
+          icon: {
+            url: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(blueDotSvg)}`,
+            anchor: new google.maps.Point(18, 18),
+          },
+          zIndex: 9999, // Keep user location above all other markers
+        });
+        userMarkerRef.current = marker;
+      } else {
+        marker.setPosition(newPos);
+      }
+
+      if (followUser) {
+        mapInstance.panTo(newPos);
+      }
+    };
+
+    const errorCallback = (error: GeolocationPositionError) => {
+      console.warn("Geolocation watch error:", error.message);
+    };
+
+    const options = {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000,
+    };
+
+    const watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, options);
+    watchIdRef.current = watchId;
+
+    return () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+      if (marker) {
+        marker.setMap(null);
+      }
+      userMarkerRef.current = null;
+    };
+  }, [isLoaded, mapInstance, followUser]);
 
   // Admin map click handler to drop hazard pins
   useEffect(() => {
@@ -524,6 +611,9 @@ export default function MapComponent() {
           isAdmin={user?.role === "ADMIN"}
           isAdminPinning={isAdminPinning}
           setIsAdminPinning={setIsAdminPinning}
+          userLocation={userLocation}
+          followUser={followUser}
+          setFollowUser={setFollowUser}
         />
 
         {!isLoaded && (
