@@ -58,6 +58,8 @@ interface LeftPanelProps {
   setActiveMode: (mode: "walk" | "commute" | "bicycle" | "motorcycle" | "car") => void;
   isDiscounted: boolean;
   setIsDiscounted: (val: boolean) => void;
+  isNavigating: boolean;
+  setIsNavigating: (val: boolean) => void;
 }
 
 export default function LeftPanel({
@@ -110,6 +112,8 @@ export default function LeftPanel({
   setActiveMode,
   isDiscounted,
   setIsDiscounted,
+  isNavigating,
+  setIsNavigating,
 }: LeftPanelProps) {
   return (
     <div
@@ -224,6 +228,8 @@ export default function LeftPanel({
               setActiveMode={setActiveMode}
               isDiscounted={isDiscounted}
               setIsDiscounted={setIsDiscounted}
+              isNavigating={isNavigating}
+              setIsNavigating={setIsNavigating}
             />
           )}
         </>

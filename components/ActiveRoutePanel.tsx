@@ -57,6 +57,8 @@ interface ActiveRoutePanelProps {
   setActiveMode: (mode: "walk" | "commute" | "bicycle" | "motorcycle" | "car") => void;
   isDiscounted: boolean;
   setIsDiscounted: (val: boolean) => void;
+  isNavigating: boolean;
+  setIsNavigating: (val: boolean) => void;
 }
 
 export default function ActiveRoutePanel({
@@ -92,6 +94,8 @@ export default function ActiveRoutePanel({
   setActiveMode,
   isDiscounted,
   setIsDiscounted,
+  isNavigating,
+  setIsNavigating,
 }: ActiveRoutePanelProps) {
   // Saved route state
   const [isSavingRoute, setIsSavingRoute] = useState(false);
@@ -680,6 +684,40 @@ export default function ActiveRoutePanel({
           />
         </div>
       )}
+
+      {/* Start/Stop Navigation Button */}
+      <button
+        onClick={() => {
+          if (isNavigating) {
+            setIsNavigating(false);
+            showToast("Navigation stopped.", "info");
+          } else {
+            setIsNavigating(true);
+            showToast("Navigation started. Safe travels!", "success");
+            // Focus on start position immediately on start
+            if (fromCoords && mapInstance) {
+              mapInstance.panTo(fromCoords);
+              mapInstance.setZoom(16);
+            }
+          }
+        }}
+        className="btn-interactive"
+        style={{
+          width: "100%",
+          padding: "12px",
+          borderRadius: "10px",
+          border: isNavigating ? "1.5px solid #EF4444" : "none",
+          backgroundColor: isNavigating ? "rgba(239, 68, 68, 0.15)" : "var(--accent-accessibility)",
+          color: isNavigating ? "#EF4444" : "#fff",
+          fontWeight: 700,
+          fontSize: "13px",
+          cursor: "pointer",
+          boxShadow: "var(--shadow-glass)",
+          marginBottom: "12px",
+        }}
+      >
+        {isNavigating ? "🛑 Stop Navigation" : "🚀 Start Navigation"}
+      </button>
 
       {/* Reset button */}
       <button

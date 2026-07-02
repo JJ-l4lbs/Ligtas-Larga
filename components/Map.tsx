@@ -43,6 +43,7 @@ export default function MapComponent() {
   const [showAllPins, setShowAllPins] = useState(false);
 
   // Real-time location tracking states and refs
+  const [isNavigating, setIsNavigating] = useState(false);
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [followUser, setFollowUser] = useState(false);
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
@@ -240,7 +241,14 @@ export default function MapComponent() {
 
   // Real-time location tracking watch effect
   useEffect(() => {
-    if (!isLoaded || !mapInstance) return;
+    if (!isLoaded || !mapInstance || !isNavigating) {
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setMap(null);
+        userMarkerRef.current = null;
+      }
+      setUserLocation(null);
+      return;
+    }
 
     if (!navigator.geolocation) {
       console.warn("Geolocation is not supported by this browser.");
@@ -313,7 +321,7 @@ export default function MapComponent() {
       }
       userMarkerRef.current = null;
     };
-  }, [isLoaded, mapInstance, followUser]);
+  }, [isLoaded, mapInstance, followUser, isNavigating]);
 
   // Admin map click handler to drop hazard pins
   useEffect(() => {
@@ -462,6 +470,7 @@ export default function MapComponent() {
     setActiveStepIndex(0);
     setIsEditingAddresses(false);
     setIsVoiceActive(false);
+    setIsNavigating(false);
     resetRoute();
     setCurrentStep(1);
   };
@@ -523,6 +532,8 @@ export default function MapComponent() {
         setActiveMode={setActiveMode}
         isDiscounted={isDiscounted}
         setIsDiscounted={setIsDiscounted}
+        isNavigating={isNavigating}
+        setIsNavigating={setIsNavigating}
       />
 
       <div className="right-map-panel">
