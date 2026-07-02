@@ -271,18 +271,21 @@ body {
 .left-text-panel {
   width: 100%;
   height: 55%;
+  min-height: 55%;
+  margin-top: 0;
   overflow-y: auto;
   background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
   z-index: 10;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: height 0.35s ease, width 0.35s ease, opacity 0.25s ease, box-shadow 0.35s ease;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.15), 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+  transition: margin-top 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, box-shadow 0.4s ease;
 }
 
 .left-text-panel.sidebar-collapsed {
-  height: 0;
-  min-height: 0;
+  margin-top: -55vh;
+  height: 55%;
+  min-height: 55%;
   opacity: 0;
   overflow: hidden;
   box-shadow: none;
@@ -293,7 +296,7 @@ body {
   width: 100%;
   height: 45%;
   position: relative;
-  transition: height 0.35s ease, width 0.35s ease;
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-split-container.sidebar-collapsed .right-map-panel {
@@ -308,11 +311,16 @@ body {
     width: 40%;
     min-width: 40%;
     height: 100%;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+    margin-top: 0;
+    margin-left: 0;
+    box-shadow: 12px 0 24px -4px rgba(0, 0, 0, 0.15), 4px 0 8px -2px rgba(0, 0, 0, 0.1);
+    transition: margin-left 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, box-shadow 0.4s ease;
   }
   .left-text-panel.sidebar-collapsed {
-    width: 0;
-    min-width: 0;
+    margin-left: -40%;
+    margin-top: 0;
+    width: 40%;
+    min-width: 40%;
     height: 100%;
   }
   .right-map-panel {
