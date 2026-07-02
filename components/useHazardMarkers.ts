@@ -72,12 +72,26 @@ export default function useHazardMarkers(
         }
 
         let categoryEmoji = "⚠️";
-        if (hazard.category === "FLOOD") categoryEmoji = "🌧️";
-        else if (hazard.category === "CONSTRUCTION") categoryEmoji = "🚧";
-        else if (hazard.category === "ACCIDENT") categoryEmoji = "🚗";
-        else if (hazard.category === "ROAD_BLOCK") categoryEmoji = "🚧";
-        else if (hazard.category === "ELEVATOR_BROKEN") categoryEmoji = "🛗";
-        else if (hazard.category === "RAMP_BLOCKED") categoryEmoji = "♿";
+        let logoHtml = `<span style="font-size: 16px;">${categoryEmoji}</span>`;
+        if (hazard.category === "FLOOD") {
+          categoryEmoji = "🌧️";
+          logoHtml = `<img src="/flood.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        } else if (hazard.category === "CONSTRUCTION") {
+          categoryEmoji = "🚧";
+          logoHtml = `<span style="font-size: 16px;">🚧</span>`;
+        } else if (hazard.category === "ACCIDENT") {
+          categoryEmoji = "🚗";
+          logoHtml = `<span style="font-size: 16px;">🚗</span>`;
+        } else if (hazard.category === "ROAD_BLOCK") {
+          categoryEmoji = "🚧";
+          logoHtml = `<span style="font-size: 16px;">🚧</span>`;
+        } else if (hazard.category === "ELEVATOR_BROKEN") {
+          categoryEmoji = "🛗";
+          logoHtml = `<img src="/elevator_broken.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        } else if (hazard.category === "RAMP_BLOCKED") {
+          categoryEmoji = "♿";
+          logoHtml = `<img src="/ramp_blocked.svg" style="width: 20px; height: 20px; object-fit: contain;" />`;
+        }
 
         return `
           <div style="
@@ -88,7 +102,7 @@ export default function useHazardMarkers(
           ">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
               <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">${categoryEmoji}</span>
+                ${logoHtml}
                 <span style="font-weight: 700; font-size: 13px; letter-spacing: -0.01em; color: inherit;">
                   ${hazard.category.replace(/_/g, " ")}
                 </span>

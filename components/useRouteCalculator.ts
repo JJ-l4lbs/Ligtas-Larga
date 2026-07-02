@@ -64,7 +64,7 @@ export default function useRouteCalculator({
   activeMode,
 }: UseRouteCalculatorProps) {
   const [routeSteps, setRouteSteps] = useState<RouteStep[]>([]);
-  const [routeInfo, setRouteInfo] = useState<{ distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number }>({});
+  const [routeInfo, setRouteInfo] = useState<{ distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number; warning?: string }>({});
   const [avoidedCount, setAvoidedCount] = useState(0);
   const [cachedRoutesData, setCachedRoutesData] = useState<any>(null);
   const [lastRouteCoords, setLastRouteCoords] = useState<{ from: google.maps.LatLngLiteral; to: google.maps.LatLngLiteral; mode: string } | null>(null);
@@ -425,6 +425,7 @@ export default function useRouteCalculator({
       duration: chosenRoute.duration ? formatDuration(chosenRoute.duration) : undefined,
       totalFare: chosenRoute.totalFare,
       totalDiscountedFare: chosenRoute.totalDiscountedFare,
+      warning: chosenRoute.warning,
     });
 
     setAvoidedCount(relevantHazards.length - minViolations);

@@ -186,4 +186,11 @@ Before starting construction, ensure the following API credentials are set in yo
 - **What to do:** Modify `/components/ActiveRoutePanel.tsx` to display the aggregated travel cost (e.g. `Total Fare: ₱38.00`) next to the route metadata. Render individual segment fare annotations on the direction step items.
 - **Verification:** Compute a commute route and check that the total fare displays at the top and individual step cards show segment costs.
 
+#### Step 9.6: Commute Route Fallback, Estimations, & Split Direction Cards
+- **What to do:**
+  - Update `/app/api/routes/route.ts` to automatically detect when a commute request returns no direct transit routes/fares and fall back to a `DRIVE` (road network) route with estimated distance-based jeepney fares and warnings.
+  - Propagate this warning via `/components/useRouteCalculator.ts` to `/components/ActiveRoutePanel.tsx`, and display a warning banner when active.
+  - Split `/components/ImmediateActionCard.tsx` into a stylized Commute Turn-by-Turn Card (teal border theme, boarding stops, segment cost chips) and a Generic Turn-by-Turn Card (standard walk/drive control directions).
+- **Verification:** Run a route calculation between places with no transit connections under commute mode. Confirm the estimated road route renders, the estimated fare is calculated and displayed, and the warning banner is present. Confirm that steps with fares use the commute layout while others use the generic layout.
+
 

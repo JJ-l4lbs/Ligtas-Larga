@@ -61,8 +61,10 @@ The "Saved Places & Routes" functionality for registered users is fully complete
 ---
 
 ## Immediate Next Objectives
-1. Ask the user if they'd like to test the travel modes locally or make further refinements.
-2. If satisfied, ask if they would like to commit and push changes to the remote branch.
+1. Implement commute fallback route and fare estimation in `/api/routes` if no direct transit route/fare is available.
+2. Update `useRouteCalculator.ts` to propagate the global warning.
+3. Update `ActiveRoutePanel.tsx` to render the global route warning banner.
+4. Separate the generic turn-by-turn card and the commute turn-by-turn card in `ImmediateActionCard.tsx` based on the existence of a commute segment fare.
 
 ---
 
