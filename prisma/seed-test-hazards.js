@@ -587,9 +587,20 @@ async function main() {
   await prisma.hazardReport.deleteMany({});
   console.log("Cleared existing hazard reports.");
 
+  // Process hazards to add a 2-day expiration timer to all FLOOD category hazards
+  const processedHazards = testHazards.map((hazard) => {
+    if (hazard.category === "FLOOD") {
+      return {
+        ...hazard,
+        expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+      };
+    }
+    return hazard;
+  });
+
   // Insert generated hazards in batch
   const result = await prisma.hazardReport.createMany({
-    data: testHazards
+    data: processedHazards
   });
 
   console.log(`Successfully seeded ${result.count} highly-spread, road-aligned hazards across Metro Manila.`);
