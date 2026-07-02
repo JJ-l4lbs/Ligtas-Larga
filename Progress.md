@@ -18,6 +18,7 @@ This ledger maps out the frontend and backend development tasks required to buil
 | **FE-8.3** | Admin Dashboard Layout | Step 8.3 | ✅ Complete | - Design review queue layout at `/admin` displaying pending and verified lists<br/>- Implement visual verification toggles and descriptive fields editing |
 | **FE-8.5** | Saved Places, Routes & Profile Dashboard | Step 8.5 | ✅ Complete | - Build UserProfileDashboard overlay manager in sidebar<br/>- Render saved places quick-shortcuts and route calculators<br/>- Integrate custom toast and confirmation overlays |
 | **FE-8.6** | Admin Direct Map Pinning UI | Step 8.6 | ✅ Complete | - Add toggle button inside MapControls.tsx<br/>- Implement top status banner overlay with exit controls<br/>- Add header close button to HazardModal.tsx |
+| **FE-8.7** | Seamless Login Page Transition | UX Enhancement | ✅ Complete | - Add full-screen animated gradient overlay on Log In click<br/>- Implement staggered routing delay for smooth visual transition<br/>- Add slide-up and fade-in keyframes to login card container |
 
 ---
 

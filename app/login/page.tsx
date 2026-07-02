@@ -105,6 +105,8 @@ export default function LoginPage() {
           gap: "24px",
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           color: "#0F172A",
+          opacity: 0,
+          animation: "slideUpFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         }}
       >
         <div style={{ textAlign: "center" }}>
