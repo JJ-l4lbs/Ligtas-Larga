@@ -22,7 +22,7 @@ interface RouteStep {
 }
 
 interface ActiveRoutePanelProps {
-  routeInfo: { distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number };
+  routeInfo: { distance?: string; duration?: string; totalFare?: number; totalDiscountedFare?: number; warning?: string };
   isVoiceActive: boolean;
   setIsVoiceActive: (active: boolean) => void;
   fromAddress: string;
@@ -229,6 +229,26 @@ export default function ActiveRoutePanel({
             )}
           </div>
         </div>
+        {routeInfo.warning && (
+          <div
+            style={{
+              padding: "10px 12px",
+              backgroundColor: "rgba(180, 83, 9, 0.1)",
+              border: "1.5px solid rgba(180, 83, 9, 0.2)",
+              borderRadius: "8px",
+              color: "var(--severity-medium, #B45309)",
+              fontSize: "12px",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginTop: "4px",
+            }}
+          >
+            <span style={{ fontSize: "14px" }}>⚠️</span>
+            <span>{routeInfo.warning}</span>
+          </div>
+        )}
 
         {/* Action Row: Voice & Save Route */}
         <div style={{ display: "flex", gap: "8px", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
